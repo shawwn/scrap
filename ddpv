@@ -1,0 +1,31 @@
+#!/bin/bash
+
+IF=$1
+OF=$2
+BS=$3
+shift 1
+shift 1
+shift 1
+
+if [ -z "$IF" ] || [ -z "$OF" ]; then
+  echo "ddpv <infile> <outfile> [blocksize]"
+  exit 1
+fi
+
+if [ -z "$BS" ]; then
+
+cat <<EOF
+  dd if="$IF" $* | pv | dd of="$OF" $*
+EOF
+  dd if="$IF" $* | pv | dd of="$OF" $*
+
+else
+
+cat <<EOF
+  dd if="$IF" bs=$BS $* | pv | dd of="$OF" bs=$BS $*
+EOF
+  dd if="$IF" bs=$BS $* | pv | dd of="$OF" bs=$BS $*
+
+fi
+
+

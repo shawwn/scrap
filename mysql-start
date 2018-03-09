@@ -1,0 +1,14 @@
+#!/bin/sh
+
+# https://gorails.com/setup/osx/10.10-yosemite
+
+# # To have launchd start mysql at login:
+# ln -sfv /usr/local/opt/mysql/*plist ~/Library/LaunchAgents
+
+# # Then to load mysql now:
+# launchctl load ~/Library/LaunchAgents/homebrew.mxcl.mysql.plist
+
+mysql.server start
+
+
+

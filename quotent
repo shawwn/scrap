@@ -1,0 +1,3 @@
+#!/bin/bash
+quote "$@" | replace '\\n' '\n' | replace '\\t' '\t'
+

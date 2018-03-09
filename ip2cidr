@@ -1,0 +1,47 @@
+#!/usr/bin/env python
+
+#==============================================================================
+# Functionality
+#==============================================================================
+
+# utility funcs, classes, etc go here.
+
+#==============================================================================
+# Cmdline
+#==============================================================================
+import argparse
+
+parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter, 
+    description="""
+TODO
+""")
+     
+parser.add_argument('-v', '--verbose',
+    action="store_true",
+    help="verbose output" )
+
+parser.add_argument('args', nargs=argparse.REMAINDER)
+
+#==============================================================================
+# Main
+#==============================================================================
+import sys
+import re
+import imp
+import scrap
+hex2ip = scrap.load('hex2ip')
+
+rxips = re.compile(r'(?P<addr> [:ip:]) \b .*? (?P<netmask> [:ip:])', re.VERBOSE)
+
+def main():
+    for line in sys.stdin:
+        m = rxips.search(line)
+        if m:
+            addr = m.expand(r'\g<addr>')
+            netmask = m.expand(r'\g<netmask>')
+        sys.stdout.write(hex2ip.hex2ip(line))
+
+if __name__ == "__main__":
+    args = parser.parse_args()
+    main()
+

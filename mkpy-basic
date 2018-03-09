@@ -1,0 +1,69 @@
+#!/usr/bin/env python
+
+#===============================================================================
+
+HEAD = """
+#!/usr/bin/env python
+""".lstrip()
+
+
+#
+# Version 1
+#
+BODY = """
+import fileinput
+import sys
+
+args = sys.argv[1:]
+if len(args) <= 0:
+    pass
+
+for line in fileinput.input():
+    sys.stdout.write(line)
+
+""".lstrip()
+
+#==============================================================================
+# Arguments
+#==============================================================================
+import argparse
+
+parser = argparse.ArgumentParser(description='TODO')
+     
+parser.add_argument('filename', help="Name of the script")
+parser.add_argument('desc', nargs='?', help="Describe what the script does")
+
+args = parser.parse_args()
+
+#==============================================================================
+# Main
+#==============================================================================
+import scrap
+import os
+import sys
+
+_name = os.path.basename(os.path.splitext(args.filename)[0])
+_desc = ' '.join(args.desc or []).strip()
+if len(_desc) <= 0:
+    _desc = 'TODO'
+if _desc == '-':
+    _desc = sys.stdin.read()
+_desc = '\n' + _desc.strip() + '\n'
+
+def py_is_exec(fname):
+    root, ext = os.path.splitext(fname)
+    # if we have an extension, then we're not is_exec
+    return scrap.empty(ext)
+
+def py_gen(is_exec):
+    out = ''
+    if is_exec:
+        out += HEAD
+    out += BODY.replace('@name', _name).replace('@description', _desc)
+    return out
+
+if __name__ == "__main__":
+    fpath = scrap.mkscript(is_exec=py_is_exec, gen=py_gen, name=args.filename)
+    if fpath:
+        scrap.edit(fpath, 'python')
+

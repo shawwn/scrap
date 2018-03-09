@@ -1,0 +1,33 @@
+#!/bin/bash
+
+# usage examples:
+#
+#   backup the ~/bin folder minus large binary files:
+#     $ backupbin
+#
+#   backup the entire ~/bin folder
+#     $ backupbin all 
+#
+
+BACKING_THIS_UP=~/bin
+DST=~/backups
+NAME=bin-`utcstamp`
+
+BAK_DIR=$(dirname $BACKING_THIS_UP)
+BAK_PATH=$(basename $BACKING_THIS_UP)
+
+read -r -d '' BAK_EXCLUDE << EOM
+--exclude=example-exclusion-*.ext
+EOM
+BAK_EXCLUDE=`echo -n $BAK_EXCLUDE`
+
+# backup everything and ignore exclusions?
+if [[ "$1" = "all" ]]; then
+  BAK_EXCLUDE=""
+fi;
+
+mkdir -p $DST
+cd $BAK_DIR
+tar $BAK_EXCLUDE -czvf $DST/$NAME.tar.gz $BAK_PATH
+echo $NAME.tar.gz saved to $DST
+

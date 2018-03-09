@@ -1,0 +1,2 @@
+#!/bin/bash
+git checkout $* && (echo "---"; llcommit1; echo "---"; git status)

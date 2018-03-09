@@ -1,0 +1,10 @@
+#!/bin/bash
+
+m=${1:-1}
+n=${2:-1}
+
+cat <<EOF
+last $m | first $n
+EOF
+last $m | first $n
+

@@ -1,0 +1,3 @@
+#!/bin/bash
+exec github-branch-create-local "$@"
+

@@ -1,0 +1,36 @@
+#!/bin/bash
+dir="`pwd`"
+cd "$(dirname "$0")"
+home="`pwd`"
+cd "${dir}"
+
+old="$1"
+new="$2"
+if [ -z "$new" ]; then
+  cat <<'EOF'
+  mvbin <existing-script-name> <new-name>
+  aborts if <new-name> already exists.
+EOF
+  exit 1
+fi
+
+found="$(echo "`llbin "$new"`" | grep -i "^$new$" | firstline)"
+script="`which "$found"`"
+scriptdir="$(dirname "$script")"
+if [ -e "$script" ]; then
+  1>&2 echo "$new already exists at $script"
+  1>&2 echo "Opening it in an editor..."
+else
+  found="$(echo "`llbin "$old"`" | grep -i "^$old$" | firstline)"
+  if [ -z "$found" ]; then
+    1>&2 echo "No such scriptfile: $old"
+    exit 1
+  fi
+  script="`which "$found"`"
+  scriptdir="$(dirname "$script")"
+  cp "$script" "$scriptdir/$new"
+  echo "\"$script\" => \"$scriptdir/$new\""
+fi
+
+exec edit "$scriptdir/$new"
+

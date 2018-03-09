@@ -1,0 +1,7 @@
+#!/bin/bash
+
+path="$1"
+shift 1
+
+GIT_SSH="$path" git "$@"
+

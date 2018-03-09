@@ -1,0 +1,35 @@
+#!/bin/sh
+# set -x
+
+# `shift 3` apparently doesn't work. Not sure why.
+# Instead, use multiple `shift` commands.
+
+url="$1"
+shift
+commit="$1"
+shift
+directory="${1:-"${commit}"}"
+shift
+
+if [ -z "${url}" ] || [ -z "${commit}" ] || [ -z "${directory}" ]
+then
+  echo "git-clone-from-commit <url> <commit> [<directory>]"
+  exit 1
+fi
+
+git clone "${url}" "${directory}" "$@" || exit 1
+
+cat <<EOF
+
+# Now run or paste the following command:
+# (CAUTION: This will wipe all local changes in "${directory}")
+
+  cd "${directory}" && git reset --hard "${commit}"
+
+# To go to latest, run \`git pull\`
+
+EOF
+
+# Copy the command to the system clipboard
+printf "%s" "cd \"${directory}\" && git reset --hard \"${commit}\"" | ctrlc
+exit 0

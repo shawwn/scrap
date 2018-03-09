@@ -1,0 +1,6 @@
+#!/bin/sh
+repo="$1"
+shift 1
+repo="https://github.com/${repo}"
+
+exec "git-clone-from-commit" "$repo" "$@"

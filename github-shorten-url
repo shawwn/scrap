@@ -1,0 +1,34 @@
+#!/bin/bash
+
+set -x
+
+url="$1"
+code="$2"
+
+# build the curl command.
+if [ -z "$code" ]; then
+  cmd="$(curl-get-with-headers "https://git.io" "url=$url")"
+else
+  cmd="$(curl-get-with-headers "https://git.io" "url=$url" "code=$code")"
+fi
+
+#echo $cmd
+
+# issue the request to the URL shortener using the curl command.
+response="`printf "%s\n" "$cmd" | sh`"
+
+ # print the entire response to stderr.
+>&2 cat <<EOF
+$response
+EOF
+
+# print only the shortened URL to stdout.
+shortened_url="$(cat <<EOF | printf "%s" "$response" | grep ^Location: | resub "^Location:\s" "" | rtrim
+$response
+EOF)"
+echo "$shortened_url"
+
+
+
+
+

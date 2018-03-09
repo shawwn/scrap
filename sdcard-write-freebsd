@@ -1,0 +1,17 @@
+#!/bin/bash
+
+set -x
+
+brew install pv
+
+img="${HOME}/Downloads/FreeBSD-11.0-CURRENT-arm-armv6-RPI2-20160308-r296485.img"
+
+disk="`sdcard-detect-disk`"
+if [[ -z "$disk" ]] || [[ -z "`echo $disk | grep disk`" ]]; then
+  echo "No sdcard detected.  (try running \`lsdisk\` and try to find out which /dev/diskN it might be.)"
+  exit 1
+fi
+
+sudo diskutil unmountDisk "$disk"
+
+exec sdcard-dd "$img" "$disk"

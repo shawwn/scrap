@@ -1,0 +1,9 @@
+#!/bin/bash
+#grep -oE $*
+
+# cat <<EOF
+# resub -mf "$* .*? $"
+# EOF
+resub -mf "$* .*? $"
+
+

@@ -1,0 +1,177 @@
+#!/usr/bin/env python
+
+#==============================================================================
+# Functionality
+#==============================================================================
+import pdb
+import sys
+import os
+import re
+
+# utility funcs, classes, etc go here.
+
+def asserting(cond):
+    if not cond:
+        pdb.set_trace()
+    assert(cond)
+
+def has_stdin():
+    return not sys.stdin.isatty()
+
+def reg(pat, flags=0):
+    return re.compile(pat, re.VERBOSE | flags)
+
+def regall(pat, flags=0):
+    return re.compile(pat, re.VERBOSE | re.MULTILINE | re.DOTALL | flags)
+
+#==============================================================================
+# Cmdline
+#==============================================================================
+import argparse
+
+parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter, 
+    description="""
+TODO
+""")
+     
+parser.add_argument('-v', '--verbose',
+    action="store_true",
+    help="verbose output" )
+
+args = None
+
+#==============================================================================
+# Main
+#==============================================================================
+
+def run():
+    if args.verbose:
+        print args
+    if len(args.args) <= 0 and not has_stdin():
+        # if there were no args and there was no input, prompt user.
+        print 'Enter input (press Ctrl-D when done):'
+    if len(args.args) <= 0 or has_stdin():
+        indata = sys.stdin.read()
+
+    newdata = indata
+
+    ops = []
+
+    dups = set()
+
+    indent = '\n        '
+    for m in regall(r'\n [\s]*? (?P<code> class .*? avr_op_ (?P<name> [^: \s *]+) [^{]+? [{] .*? [}] [;])').finditer(indata):
+        kvs = {}
+        name = m.group('name')
+        if name in dups:
+            continue
+        dups.add(name)
+        code = m.group('code')
+        kvs['name'] = name
+        #kvs['code'] = code
+
+        #print ''
+        #print m.group('name')
+        #print '//============================'
+        #print m.group('code')
+
+        params = []
+        rx = regall(r'(?P<type> (?: signed | unsigned) [\s]+ (int | char) ) [\s]+ (?P<param> [^);\n]+) [;]')
+        for m in rx.finditer(code):
+            typ = m.group('type')
+            param = m.group('param')
+            params.append({'type': typ, 'param': param})
+            #print repr(name), repr(m.group('param')), repr(m.group('type'))
+        kvs['params'] = params
+
+        methods = []
+        methods += [r'virtual EAvrOpcode     Get%-18s { return AVR_OP_%s; }' % ('Type() const', name.upper())]
+        #methods += [r'inline  unsigned char* GetName() const { return AvrOpcodeName[AVR_OP_%s]; }' % name]
+
+        def camelcase(name):
+            if isinstance(name, str) or isinstance(name, unicode):
+                if len(name) > 0:
+                    return name[0].upper() + name[1:]
+            return name
+
+        for param in kvs['params']:
+            methods += [r'inline  %-14s Get%-18s { return %s; }' % (param['type'], camelcase(param['param']) + '() const', param['param'])]
+            #print methods
+
+        if len(methods) > 0:
+            methcode = indent + indent.join(methods)
+
+        rx = regall(r'\n [\s]*? [}] [;]')
+        newcode = code
+        if len(methods) > 0:
+            newcode = rx.sub('%s\n};' % methcode, newcode)
+        newdata = newdata.replace(code, newcode)
+
+        ops.append(kvs)
+
+    # hack.
+    if 'ILLEGAL' not in [v['name'] for v in ops]:
+        ops.append({'name': 'ILLEGAL'})
+
+    if False:
+        print 'enum EAvrOpcode {'
+        def printop(i, name, end=','):
+            print '    AVR_OP_%s = %d%s' % (name.upper(), i, end)
+            return i + 1
+        i = 0
+        for op in ops:
+            i = printop(i, op['name'])
+        i = printop(i, 'MAX', end='')
+        print '};'
+
+
+    if False:
+        print 'const char* AvrOpcodeName[AVR_OP_MAX + 1] = {'
+        def printop(i, name, end=','):
+            print '    "%s"%s' % (name.upper(), end)
+            return i + 1
+        i = 0
+        for op in ops:
+            i = printop(i, op['name'])
+        i = printop(i, 'MAX', end='')
+        print '};'
+
+    if False:
+        for op in ops:
+            name = op['name']
+            method = 'inline   '
+            method += '%-20s' % ('avr_op_%s*' % name)
+            method += 'as_%-18s' % (name.lower() + '()')
+            method += ('%-40s' % ('{ if (GetType() == AVR_OP_'+name.upper()+')')) + '{ return static_cast< avr_op_'+name+'* >(this); } return NULL; }'
+            print method
+
+    if False:
+        for op in ops:
+            name = op['name']
+            print 'class avr_op_'+name+';'
+
+    if True:
+        dups = set()
+        for op in ops:
+            if op['params']:
+                for param in op['params']:
+                    name = param['param']
+                    if name not in dups:
+                        print name
+                        dups.add(name)
+
+    if False:
+        if newdata != indata:
+            print newdata
+
+
+def main():
+    global args
+    if not args:
+        args, leftovers = parser.parse_known_args()
+        args.args = leftovers
+    return run()
+
+if __name__ == "__main__":
+    main()
+

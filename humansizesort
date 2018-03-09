@@ -1,0 +1,3 @@
+#!/bin/bash
+human2bytes | natsort | bytes2human $@
+

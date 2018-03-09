@@ -1,0 +1,2 @@
+#!/bin/bash
+cols -1 0:3 3:-1 | natsort "$@" | cols ,1 r2 0 | cols 0 1 2 r3 4

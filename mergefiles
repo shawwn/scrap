@@ -1,0 +1,20 @@
+#!/bin/sh
+
+#matchfiles $* | grep -v "\\.swp$" | xargs merge
+#matchfiles $* | xargs merge
+
+recurse="`echo "$@" | flags -nr`"
+if [ -z "$recurse" ]; then
+  recurse=-r
+fi
+
+set -x
+
+# cat <<EOF
+# matchfiles $recurse "$@" -v \\.swp$ -v \\.DS_Store$ -v \\.jar$ -v \\.pyc$ | print0 | xargs -0 merge
+# EOF
+
+set -x
+
+matchfiles $recurse "$@" -v \\.swp$ -v \\.DS_Store$ -v \\.jar$ -v \\.pyc$ | print0 | xargs -0 merge
+

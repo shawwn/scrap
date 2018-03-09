@@ -1,0 +1,5 @@
+#!/bin/bash
+git checkout -b patch-integration
+git am < "$@"
+git log master..HEAD --stat
+

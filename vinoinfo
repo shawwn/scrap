@@ -1,0 +1,6 @@
+#!/bin/sh
+
+# vi -N -u NONE --cmd 'set viminfo=' -c 'quit'
+
+echo vi -N -u NONE --cmd 'set viminfo=' --cmd 'set nowritebackup' --cmd 'set nobackup' --cmd 'set noswapfile' $*
+     vi -N -u NONE --cmd 'set viminfo=' --cmd 'set nowritebackup' --cmd 'set nobackup' --cmd 'set noswapfile' $*

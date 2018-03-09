@@ -1,0 +1,7 @@
+#!/bin/bash
+
+cat <<EOF
+sudo lsof | igrep "$@"
+EOF
+sudo lsof | igrep "$@"
+

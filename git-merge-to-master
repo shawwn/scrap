@@ -1,0 +1,13 @@
+#!/bin/bash
+branch="$(git-branch-current)"
+cdbranch master
+git merge "$branch"
+
+read -r -p "Push the merge? [y/N] " response
+if [[ $response =~ ^([yY][eE][sS]|[yY])$ ]]; then
+  git push
+  cdbranch "$branch"
+fi
+
+
+

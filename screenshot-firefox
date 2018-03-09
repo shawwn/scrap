@@ -1,0 +1,11 @@
+#!/bin/bash
+echo
+echo "The following command has been copied to your clipboard:"
+echo "  screenshot --fullpage --clipboard"
+echo
+echo "Go to Firefox -> Tools -> Developer -> Developer Console, then paste it."
+echo "(Or press Shift-F2 then paste.)"
+echo
+
+echo "screenshot --fullpage --clipboard" | ctrlctrim
+

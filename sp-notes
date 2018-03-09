@@ -1,0 +1,3 @@
+#!/bin/bash
+/Applications/Outline.app/Contents/MacOS/Outline $*
+

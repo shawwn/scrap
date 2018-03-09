@@ -1,0 +1,6 @@
+#!/bin/bash
+
+iface="${*:-.*}"
+
+ifconfig | resub -v -m -f '(^[\w\d]+ | ^ \t inet \s [0-9.]+ \s+ netmask \s+ [\d\w]+ \s+ broadcast \s+ [0-9.]+)' | replace '\t' ' ' | replace '\n inet' ' inet' | grep inet | replace 'inet ' '' | grep --color=never "$iface"
+

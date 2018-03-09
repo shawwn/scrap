@@ -1,0 +1,72 @@
+#!/usr/bin/env python
+
+#==============================================================================
+# Functionality
+#==============================================================================
+import CommonMark
+
+def parse_md_images(x):
+    parser = CommonMark.DocParser()
+    renderer = CommonMark.HTMLRenderer()
+    ast = parser.parse(x)
+    html = renderer.render(ast)
+    js = CommonMark.ASTtoJSON(ast)
+    #CommonMark.dumpAST(ast) # pretty print generated AST structure
+    #import json
+    #print json.dumps(json.loads(js), indent=4)
+    import pdb
+    import json
+    obj = json.loads(js)
+    for elem in obj['children'][0]['inline_content']:
+        if 'destination' in elem and 'label' in elem and 'c' in elem['label'][0]:
+            label = elem['label'][0]
+            tag = label['c']
+            url = elem['destination']
+            yield (tag, url)
+
+#==============================================================================
+# Cmdline
+#==============================================================================
+import argparse
+
+parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter, 
+    description="""
+TODO
+""")
+     
+parser.add_argument('-v', '--verbose',
+    action="store_true",
+    help="verbose output" )
+
+parser.add_argument('args', nargs=argparse.REMAINDER)
+
+#==============================================================================
+# Main
+#==============================================================================
+import sys
+import os
+import re
+
+WS = re.compile(r'\s+', re.MULTILINE)
+
+def host(lines):
+    for tag, url in parse_md_images('\n'.join(lines)):
+        #print tag, '\t', url
+        assert(not WS.search(tag))
+        os.system("github-shorten-url %s %s" % (url, tag))
+        print ''
+        print ''
+
+
+if __name__ == "__main__":
+    args = parser.parse_args()
+    lines = list(args.args)
+    if not sys.stdin.isatty() or len(args.args) == 0:
+        lines += [line.rstrip() for line in sys.stdin]
+    host(lines)
+
+
+"""
+github-image-host '![FailFish](https://cloud.githubusercontent.com/assets/12214175/7583938/75c00586-f85f-11e4-9c63-032cf7ee1dda.png) ![failfish](https://cloud.githubusercontent.com/assets/12214175/7583941/7a00be74-f85f-11e4-85f7-f0852cf791c2.png)'
+"""
+

@@ -1,0 +1,8 @@
+#!/usr/bin/env python
+import sys
+wasblank=True
+for line in sys.stdin:
+    if wasblank and len(line.strip()) <= 0:
+        continue
+    sys.stdout.write(line)
+

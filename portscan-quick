@@ -1,0 +1,18 @@
+#!/bin/sh
+
+#ARGS="$ARGS --system-dns"
+
+#UDP and TCP
+#ARGS="$ARGS -sU -sS"
+
+# fingerprint
+#ARGS="$ARGS -sV"
+
+# echo nmap -p1-65535 -vv $ARGS $*
+#      nmap -p1-65535 -vv $ARGS $*
+
+# echo nmap -Pn -oX - -p1-65535 --initial-rtt-timeout=100ms --max-rtt-timeout=500ms --max-retries=2 --host-timeout=1m -v -sV -sT --version-light $ARGS $*
+#      nmap -Pn -oX - -p1-65535 --initial-rtt-timeout=100ms --max-rtt-timeout=500ms --max-retries=2 --host-timeout=1m -v -sV -sT --version-light $ARGS $*
+
+echo nmap -Pn -oX - -p80,443 --initial-rtt-timeout=100ms --max-rtt-timeout=500ms --max-retries=2 -vv -sV -sT --version-light $ARGS $*
+     nmap -Pn -oX - -p80,443 --initial-rtt-timeout=100ms --max-rtt-timeout=500ms --max-retries=2 -vv -sV -sT --version-light $ARGS $*

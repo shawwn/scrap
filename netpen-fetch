@@ -1,0 +1,19 @@
+#!/bin/sh
+
+USR=$1
+HOST=$2
+shift 1
+shift 1
+
+if [[ -z "$USR" || -z "$HOST" ]]; then
+  echo "usage: test-fetch username host"
+  echo
+  echo "example:"
+  echo "  $ test-fetch admin 10.0.0.1"
+  echo
+  exit 1
+fi
+
+echo scp $* $USR@$HOST:/home/$USR/pentest/info.txt "info-$USR-${HOST}.txt"
+     scp $* $USR@$HOST:/home/$USR/pentest/info.txt "info-$USR-${HOST}.txt"
+

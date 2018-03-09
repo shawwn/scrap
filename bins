@@ -1,0 +1,15 @@
+#!/bin/sh
+
+args="$@"
+
+if [ ! -z "$args" ]; then
+  scripts="`bin-paths | eachline ls1 '"{}"'`"
+  while [ ! -z "$1" ]; do
+    scripts="`echo "$scripts" | grep -i "$1"`"
+    shift 1
+  done
+  echo "$scripts"
+else
+  exec bin-paths | eachline ls1 '"{}"'
+fi
+

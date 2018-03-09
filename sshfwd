@@ -1,0 +1,8 @@
+#!/bin/sh
+
+PORT=$1
+shift 1
+
+echo ssh -L $PORT:localhost:$PORT $*
+     ssh -L $PORT:localhost:$PORT $*
+

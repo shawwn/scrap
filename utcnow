@@ -1,0 +1,24 @@
+#!/usr/bin/env python
+
+#
+# Alternatively:
+#
+# $ python -c 'from datetime import datetime; from calendar import timegm; print timegm(datetime.utcnow().utctimetuple())'
+# 1437101771
+# $ date -ur $(python -c 'from datetime import datetime; from calendar import timegm; print timegm(datetime.utcnow().utctimetuple())') "+%Y%m%d-%H%M%S"
+# 20150717-025816
+#
+
+
+#
+# return current UTC timestamp.
+#
+def utc():
+    from datetime import datetime
+    d = datetime.utcnow()
+    import calendar
+    return calendar.timegm(d.utctimetuple())
+
+if __name__ == "__main__":
+    print utc()
+

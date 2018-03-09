@@ -1,0 +1,17 @@
+#!/bin/bash
+
+
+read -r -d '' script <<EOF
+import os
+import sys
+import re
+import scrap
+from scrap import *
+args = sys.argv[1:]
+$1
+EOF
+shift 1
+
+printf "%s\n" "$script"
+python -c "$script" "$@"
+

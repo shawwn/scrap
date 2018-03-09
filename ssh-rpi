@@ -1,0 +1,12 @@
+#!/bin/sh
+
+IFACE=en0
+
+RPI=`netinfo-arp-scan $IFACE | grep Raspberry | awk '{print $1;}' | xargs -I{} -n1 sh -c 'echo pi@{}'`
+if [[ -z "$RPI" ]]; then
+  echo "Couldn't find any raspberry pi on interface $IFACE"
+  exit 1
+fi
+
+echo $RPI
+

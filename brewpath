@@ -1,0 +1,9 @@
+#!/bin/bash
+result="$(2>&1 brew info $1 | egrep 'Cellar|Caskroom' | cols 0)"
+if [[ -z "$(echo "$result" | grep -v 'No available')" ]]; then
+  result="$(2>&1 brew cask info $1 | egrep 'Cellar|Caskroom' | cols 0)"
+fi
+if [[ ! -z "$result" ]]; then
+  echo $result
+fi
+

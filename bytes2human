@@ -1,0 +1,29 @@
+#!/usr/bin/env python
+
+import fileinput
+import sys
+import humanbytes
+import re
+
+args = sys.argv[1:]
+if len(args) <= 0:
+    pass
+
+getcol1 = re.compile(r'^ (?P<match> [\d.]+ ) \s (?P<rest> .*)', re.VERBOSE)
+r = re.compile(r' (?P<num> [0-9][0-9]+ )[.][0-9]+ (?P<suffix> [\w])', re.VERBOSE)
+
+for line in fileinput.input():
+    orig = line
+    line = line.strip()
+    m = getcol1.search(line)
+    if m:
+        inp = m.expand(r'\g<match>')
+        rest = m.expand(r'\g<rest>')
+
+        outp = humanbytes.bytes2human(inp, format='%(value)0.1f%(symbol)s')
+        if r.search(outp):
+            outp = re.sub(r, '\g<num>\g<suffix>', outp)
+        sys.stdout.write("%s %s\n" % (outp, rest))
+    else:
+        sys.stdout.write(orig)
+

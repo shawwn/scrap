@@ -1,0 +1,5 @@
+#!/bin/bash
+PORT=${1:-1234}
+NC="nc -l $PORT"
+$NC
+

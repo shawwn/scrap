@@ -1,0 +1,9 @@
+#!/bin/bash
+
+phrase=$1
+shift 1
+
+cat <<EOF
+sed -E "s/^.*$phrase/$phrase/$*"
+EOF
+

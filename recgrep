@@ -1,0 +1,89 @@
+#!/usr/bin/env python
+
+#
+# Usage example:
+#
+#   # search for foo in all files 
+#   rgrep foo
+#
+#   # search for foo in all .rb files
+#   rgrep .rb foo
+#
+#   # search for foo in all .rb and .txt files
+#   rgrep .rb .txt foo
+#
+
+
+# Example of grep we want to emulate:
+#
+#   grep -r -i --include \*.h --include \*.cpp CP_Image ~/path[12345] 
+#
+
+
+import sys
+import os
+
+if __name__ == '__main__':
+    debug = False
+    flags = '-Ir'
+    args = sys.argv[1:]
+    color = '--color=always'
+    ignorecase = '-i'
+
+    for i in xrange(len(args) - 1, -1, -1):
+        savearg = False
+
+        # debug, prints the final cmd without executing it
+        if args[i] == '-d':
+            debug = True
+
+        # "no coloring", disables colorization of output.  (by default
+        # colorization is forced to be always on, which then causes
+        # problems if you pipe to a file.  I like it force on by default
+        # because it enables you to do `rgrep foo | less` and still
+        # get highlighted results plus ability to scroll and search.
+        elif args[i] == '-off' or args[i] == '--nocolor':
+            color = '--color=never'
+
+        elif args[i] == '-case':
+            ignorecase = ''
+
+        # add any additional options to cmd
+        elif args[i].startswith('--'):
+            flags += ' %s' % args[i]
+        else:
+            savearg = True
+
+        if not savearg:
+            del args[i]
+
+    if len(args) == 0:
+        sys.stderr.write('specify a search pattern\n')
+        sys.exit(1)
+
+    if len(args) == 1:
+        args = args + ['.']
+
+    pattern, searchdir = args[-2], args[-1]
+    args = args[:-2]
+
+    params = ''
+    for item in args:
+        op = '--include='
+        if item.startswith('-'):
+            op = '--exclude='
+            item = item[1:]
+        params += op
+        params += r'"*%s"' % item
+    args = args[:-2]
+
+
+    cmd = 'grep %s' % ' '.join([flags, color, ignorecase, params, '"%s"' % pattern, searchdir])
+
+    if debug:
+        print cmd
+    else:
+        os.system(cmd)
+
+
+

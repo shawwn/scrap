@@ -1,0 +1,9 @@
+#!/bin/sh
+set -x
+if [ ! -z "$*" ]
+then
+  exec git log -i --grep="$*"
+else
+  exec git log
+fi
+

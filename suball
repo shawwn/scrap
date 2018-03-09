@@ -1,0 +1,9 @@
+#!/bin/bash
+
+pattern=$1
+replacement=$2
+shift 1
+shift 1
+
+sed -E "s/$pattern/$replacement/g"
+

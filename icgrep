@@ -1,0 +1,3 @@
+#!/bin/bash
+exec igrep -C 99999999 "$@"
+

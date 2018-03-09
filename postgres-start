@@ -1,0 +1,40 @@
+#!/bin/sh
+pg_ctl -D /usr/local/var/postgres -l /usr/local/var/postgres/server.log start
+
+# PostgreSQL
+# https://gorails.com/setup/osx/10.10-yosemite
+# You can install PostgreSQL server and client from Homebrew:
+
+# brew install postgresql
+# Once this command is finished, it gives you a couple commands to run. Follow the instructions and run them:
+
+# # To have launchd start postgresql at login:
+# ln -sfv /usr/local/opt/postgresql/*plist ~/Library/LaunchAgents
+
+# # Then to load postgresql now:
+# launchctl load ~/Library/LaunchAgents/homebrew.mxcl.postgresql.plist
+# By default the postgresql user is your current OS X username with no password. For example, my OS X user is named chris so I can login to postgresql with that username.
+
+
+# $ brew install postgresql
+# ==> Downloading https://homebrew.bintray.com/bottles/postgresql-9.5.0.yosemite.bottle.1.tar.gz
+# ######################################################################## 100.0%
+# ==> Pouring postgresql-9.5.0.yosemite.bottle.1.tar.gz
+# ==> /usr/local/Cellar/postgresql/9.5.0/bin/initdb /usr/local/var/postgres
+# ==> Caveats
+# If builds of PostgreSQL 9 are failing and you have version 8.x installed,
+# you may need to remove the previous version first. See:
+#   https://github.com/Homebrew/homebrew/issues/2510
+
+# To migrate existing data from a previous major version (pre-9.5) of PostgreSQL, see:
+#   https://www.postgresql.org/docs/9.5/static/upgrading.html
+
+# To have launchd start postgresql at login:
+#   ln -sfv /usr/local/opt/postgresql/*.plist ~/Library/LaunchAgents
+# Then to load postgresql now:
+#   launchctl load ~/Library/LaunchAgents/homebrew.mxcl.postgresql.plist
+# Or, if you don't want/need launchctl, you can just run:
+#   postgres -D /usr/local/var/postgres
+# ==> Summary
+# /usr/local/Cellar/postgresql/9.5.0: 3,113 files, 35.0M
+

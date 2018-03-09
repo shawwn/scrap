@@ -1,0 +1,3 @@
+#!/bin/bash
+exec system_profiler SPApplicationsDataType "$@"
+

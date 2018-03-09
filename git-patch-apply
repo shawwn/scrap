@@ -1,0 +1,17 @@
+#!/bin/bash
+
+patch="$1"
+if [ -z "$patch" ]; then
+  echo "git-patch-apply foo.patch"
+  exit 1
+fi
+
+# http://stackoverflow.com/a/6658352
+#
+# Applying the patch:
+# - show stats.
+# - check for error before applying.
+# - finally apply the patch.
+#
+git apply --stat "$patch" && git apply --check "$patch" && git am < "$patch" 
+

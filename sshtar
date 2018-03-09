@@ -1,0 +1,122 @@
+#!/usr/bin/env python
+
+#==============================================================================
+# Functionality
+#==============================================================================
+import pdb
+import sys
+import os
+import re
+
+# utility funcs, classes, etc go here.
+
+def asserting(cond):
+    if not cond:
+        pdb.set_trace()
+    assert(cond)
+
+def has_stdin():
+    return not sys.stdin.isatty()
+
+def reg(pat, flags=0):
+    return re.compile(pat, re.VERBOSE | flags)
+
+#==============================================================================
+# Cmdline
+#==============================================================================
+import argparse
+
+parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter, 
+    description="""
+TODO
+""")
+     
+parser.add_argument('-v', '--verbose',
+    action="store_true",
+    help="verbose output" )
+     
+parser.add_argument('--sudo',
+    action="store_true",
+    help="ssh commands will be prefixed with sudo, e.g. sudo tar ..." )
+     
+parser.add_argument('-o', '--output-dir',
+    default='.',
+    help="the destination directory where remote files will be copied to.  Defaults to cwd." )
+
+parser.add_argument('-r', '--remote-dir',
+        default="/",
+        help="before invoking the tar command on the server, will cd to this dir.")
+
+parser.add_argument('username',
+        help="username to use for the ssh command, e.g. ssh username@ip 'tar ...'")
+
+parser.add_argument('ip',
+        help="server ip to use for the ssh command, e.g. ssh username@ip 'tar ...'")
+
+args = None
+
+#==============================================================================
+# Main
+#==============================================================================
+from subprocess import Popen, PIPE
+from scrap import syscmd, pipecmds
+import scrap
+
+def ppremote(cmd):
+    if args.sudo:
+        cmd = ['sudo'] + cmd
+    #cmd = ['cd', scrap.shellquote(args.remote_dir), ';'] + cmd
+    return cmd
+
+# careful -- since remote is passed to ssh, this can result in
+# server-side shell injection.  Ensure variables interpolated into
+# remote are sanitized.
+def sshcmd(local, remote, swap=False):
+    lhs = scrap.ppcmd(local)
+    rhs = ['ssh', '%s@%s' % (args.username, args.ip), ' '.join(ppremote(scrap.ppcmd(remote)))]
+    if swap:
+        tmp = lhs
+        lhs = rhs
+        rhs = tmp
+    if args.verbose:
+        print ' '.join(lhs + ['|'] + rhs)
+    return scrap.pipecmds(lhs, rhs)
+
+def tar(filesdir, files):
+    return ['tar', '-c', '-C', scrap.shellquote(filesdir)] + [scrap.shellquote(x) for x in files]
+
+def untar(dstdir, quote=False):
+    return ['tar', '-x', '--no-same-owner', '-C', scrap.shellquote(dstdir) if quote else dstdir]
+
+def getfiles(remotedir, files, localdir):
+    remotecmd = tar(remotedir, files)
+    localcmd = untar(localdir)
+    #print sshcmd('echo', 'ls')
+    #pdb.set_trace()
+    print sshcmd(localcmd, remotecmd, True)
+
+def run():
+    if args.verbose:
+        print args
+    if len(args.args) <= 0 and not has_stdin():
+        # if there were no args and there was no input, prompt user.
+        print 'Enter input (press Ctrl-D when done):'
+    if len(args.args) <= 0 or has_stdin():
+        indata = sys.stdin.read()
+    # for arg in args.args:
+    #     print arg
+    # for lhs, rhs in scrap.group(2, args.args):
+    #     sys.stdout.write(pipecmds(lhs.scraplit(), rhs.scraplit()))
+    filenames = args.args
+    getfiles(args.remote_dir, filenames, args.output_dir)
+
+def main():
+    global args
+    if not args:
+        args, leftovers = parser.parse_known_args()
+        args.args = leftovers
+    return run()
+
+if __name__ == "__main__":
+    main()
+

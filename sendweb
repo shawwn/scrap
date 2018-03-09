@@ -1,0 +1,26 @@
+#!/usr/bin/env python
+
+import sys
+import fileinput
+import pdb
+
+lines = [line.rstrip() for line in fileinput.input()]
+#lines = [line.rstrip() for line in open('curl_haml_exploit2.raw').readlines()]
+
+splits = '\n'.join(lines).split('\n\n')
+headers = splits[0].split('\n')
+body = '\r\n'.join(splits[1:])
+if len(body) > 0:
+    body += '\r\n'
+
+for line in headers:
+    line = line.rstrip()
+    if line.startswith('Content-Length: '):
+        sys.stdout.write('Content-Length: %d\r\n' % len(body))
+    else:
+        sys.stdout.write(line + '\r\n')
+
+sys.stdout.write('\r\n')
+
+sys.stdout.write(body)
+

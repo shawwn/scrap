@@ -1,0 +1,29 @@
+#!/bin/bash
+
+read -r -d '' apps <<EOF
+`ls -1 /Applications           | grep '\.app/$' | print0 | xargs -0 -n 1 -I{} echo /Applications/{} | resub '/\n' '\n'`
+`ls -1 /Applications/Utilities | grep '\.app/$' | print0 | xargs -0 -n 1 -I{} echo /Applications/Utilities/{} | resub '/\n' '\n'`
+`l -1 3 /opt/homebrew-cask/Caskroom | grep '\.app$'`
+EOF
+#`find /opt/homebrew-cask/Caskroom`
+
+# cat << EOF | grep '\.app$' | grep -v '\.app/'
+# $apps
+# EOF
+if [ -z "$@" ]; then
+cat <<EOF
+$apps
+EOF
+else
+cat <<EOF | grep -i "$@" 
+$apps
+EOF
+fi
+
+
+# if [ -z "$@" ]; then
+#   l -n 1 /Applications/ /Applications/Utilities -1 
+# else
+#   l -n 1 /Applications/ /Applications/Utilities -1 | igrep "$@"
+# fi
+

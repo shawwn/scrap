@@ -1,0 +1,9 @@
+#!/bin/sh
+
+# from https://en.wikibooks.org/wiki/Clojure_Programming/Getting_Started
+breakchars="(){}[],^%$#@\"\";:''|\\"
+
+# export RLWRAP_EDITOR="mvim '+call cursor(%L,%C)'"
+
+exec rlwrap -q'"' --multi-line --multi-line-ext .l --remember -c -b "$breakchars" "$@"
+

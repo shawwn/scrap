@@ -1,0 +1,4 @@
+#!/bin/sh
+#netstat -tulp $*
+lsof -n -i4TCP $*
+

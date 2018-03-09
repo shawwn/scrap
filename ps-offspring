@@ -1,0 +1,5 @@
+#!/bin/bash
+
+# skip the first column in order to flatten the tree.
+llps "$@" | cols ,1: 
+

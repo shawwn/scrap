@@ -1,0 +1,5 @@
+#!/bin/sh
+
+HOST=10.75.77.90
+PORT=1234
+echo "tar cfzv - $@ | nc $HOST $PORT"

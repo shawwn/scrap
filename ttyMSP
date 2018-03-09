@@ -1,0 +1,4 @@
+#!/bin/bash
+
+printf "/dev/%s" `ll -1 /dev | igrep tty.uart`
+

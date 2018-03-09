@@ -1,0 +1,12 @@
+#!/bin/bash
+commit="${1:-$(pbpaste)}"
+shift
+
+if [ -z "$commit" ]
+then
+  echo "gd1 <commit>"
+  exit 1
+fi
+
+exec git diff "${commit}~1" "${commit}" "$@"
+

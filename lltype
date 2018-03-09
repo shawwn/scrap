@@ -1,0 +1,5 @@
+#!/bin/sh
+
+revlines | natsort "$@" | revlines | cols 0 ,1:3 ,3:
+
+

@@ -1,0 +1,336 @@
+#!/usr/bin/env pypy
+
+#==============================================================================
+# Functionality
+#==============================================================================
+import pdb
+import sys
+import os
+import re
+import scrap_common as scr
+
+# utility funcs, classes, etc go here.
+
+def asserting(cond):
+    if not cond:
+        pdb.set_trace()
+    assert(cond)
+
+def has_stdin():
+    return not sys.stdin.isatty()
+
+def pad(x):
+    asserting(is_str(x))
+    if not x.startswith(' '):
+        x = ' ' + x
+    if not x.endswith(' '):
+        x += ' '
+    return x
+
+def isreg(rx):
+    return isinstance(rx, type(re.compile('')))
+
+def reg(pat, flags=0):
+    if isreg(pat):
+        return pat
+    return re.compile(pat, re.VERBOSE | flags)
+
+def respec(spec):
+    if isinstance(spec, int):
+        val = r'\%d' % spec
+    elif spec.startswith('\\'):
+        val = spec
+    else:
+        asserting(False)
+    # if args.verbose:
+    #     print 'respec %s' % repr(spec), repr(val)
+    return val
+
+def regroups(rx, m, groups):
+    if m:
+        #pdb.set_trace()
+        if isinstance(groups, list):
+            return [m.expand(respec(name)) for name in groups]
+        else:
+            return m.expand(respec(groups))
+
+def parampat(rx):
+    if isreg(rx):
+        return rx
+    return reg(r'(?: \s+ ) %s (?: \s+)' % rx)
+
+def reget(rx, groups, data, attr):
+    rx = parampat(rx)
+    data = pad(data)
+    ret = getattr(rx, attr)(data)
+    return regroups(rx, ret, groups)
+
+def rematch(rx, groups, data):
+    return reget(rx, groups, data, attr='match')
+
+def research(rx, groups, data):
+    return reget(rx, groups, data, attr='search')
+
+# def okgroups(groups):
+#     for group in groups:
+#         if group and len(group) > 0:
+#             return group
+
+#==============================================================================
+# Cmdline
+#==============================================================================
+import argparse
+
+parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter, 
+    description="""
+TODO
+""")
+     
+parser.add_argument('-v', '--verbose',
+    action="store_true",
+    help="verbose output" )
+     
+parser.add_argument('-d', '--delim',
+    default=r',\s',
+    help="define the standard column separators.  Defaults to [,] and [\s] (comma or whitespace)" )
+     
+parser.add_argument('-s', '--sep',
+    action="append",
+    help="define additional column separators." )
+
+args = None
+
+#==============================================================================
+# Main
+#==============================================================================
+
+INT = r'([-]?\d+)'
+
+def getspec(spec):
+    unquot = False
+    rhs = False
+    if spec.find(',') >= 0:
+        spec = re.subn(r'[,]', '', spec, 1)[0]
+        unquot = True
+    if spec.find('r') >= 0:
+        spec = re.subn(r'[r]', '', spec, 1)[0]
+        rhs = True
+    flags = {'rhs': rhs, 'unquote': unquot}
+
+    x = rematch(r'%s [:] %s' % (INT, INT), [1, 2], spec)
+    if x:
+        return int(x[0]), ':', int(x[1]), flags
+
+    start = rematch(r'%s [:]' % INT, 1, spec)
+    if start:
+        return int(start), ':', None, flags
+
+    end = rematch(r'[:] %s' % INT, 1, spec)
+    if end:
+        return None, ':', int(end), flags
+
+    start = rematch(r'%s' % INT, 1, spec)
+    if start:
+        return int(start), None, None, flags
+
+    asserting(False)
+
+def get(cols, spec):
+    start, mid, end, flags = getspec(spec)
+    if args.verbose:
+        print [start, mid, end, flags]
+    if mid != ':':
+        asserting((start != None) and (end == None))
+        if start < len(cols) and start >= -len(cols):
+            val = cols[start]
+        else:
+            val = []
+    else:
+        val = cols[start:end]
+    val = process_col(val, flags)
+    if flags['unquote']:
+        val[0] = unquote(val[0])
+    return val
+
+
+def list2str (args):
+    if not args or len(args) <= 0:
+        return ''
+    return ', '.join(map(str, args))
+
+
+
+
+
+def process(line):
+    line = line.rstrip()
+    line = unquote(quote(line))
+
+    #
+    # see http://stackoverflow.com/questions/16710076/python-split-a-string-respect-and-preserve-quotes
+    #
+    # >>> s = r'a=foo, b=bar, c="foo, bar", d=false, e="false", f="foo\", bar"'
+    # >>> re.findall(r'(?:[^\s,"]|"(?:\\.|[^"])*")+', s)
+    # ['a=foo', 'b=bar', 'c="foo, bar"', 'd=false', 'e="false"', 'f="foo\\", bar"']
+    #
+    if args.verbose:
+        print 'line:', repr(line)
+    #cols = reg(r'(?: [^\s,"] | "(?: \\. | [^"] )*" )+').findall(line)
+    delims = list2str(args.sep or []) + (args.delim or [])
+    if args.verbose:
+        print 'delims:', repr(delims)
+    pat = r'(?: [^%s"] | "(?: \\. | [^"] )*" )+' % delims
+    if args.verbose:
+        print 'pat:', repr(pat)
+    #pdb.set_trace()
+    cols = reg(pat).findall(line)
+    if len(args.args) >= 1:
+        col = [get(cols, x) for x in args.args]
+    else:
+        # if no args were specified, then get everything.
+        col = [get(cols, str(i)) for i in xrange(len(cols))]
+    if args.verbose:
+        print 'col:', col
+    return col
+
+def is_str(x):
+    return (type(x) is str) or (type(x) is unicode)
+
+R1 = re.compile(r'\\(.)')
+R2 = re.compile(r'\\\\')
+
+def unq_bs(x):
+    val = ''.join(x.split('\\'))
+    val = x.replace('\\\\', '~TKTK!TK~')
+    val = val.replace('\\', '')
+    val = val.replace('~TKTK!TK~', '\\')
+    return val
+
+def unquote(x):
+    if not is_str(x):
+        return x
+    if len(x) < 2:
+        return x
+    if (x[0] == x[-1]) and (x[0] == '"'):
+        x = x[1:-1]
+    try:
+        bs = ''
+        while x.endswith('\\'):
+            bs += '\\'
+            x = x[0:-1]
+        #
+        x = x.decode("string_escape")
+        #
+        x += bs
+    except ValueError as e:
+        pdb.set_trace()
+        asserting(False)
+
+    x = R1.sub(r'\1', x) # unquote
+    #x = R2.sub('\\', x) # unquote backslashes
+
+    #x = x.replace(r'\\ \\', '\\') # unquote backslashes
+    #x = x.replace(r'\"', '"')
+
+    #x = unq_bs(x)
+
+    return x
+
+def quote(x):
+    if not is_str(x):
+        return x
+    if not reg(r' (?<! [\\] ) \s').search(x):
+        return x
+    val = '"%s"' % unquote(x).encode("string_escape").replace('"', r'\"')
+    return val
+
+NIL = {'rhs':False, 'unquote':False}
+
+def process_col(col, flags):
+    col = scr.listify(col)
+    if len(col) < 1:
+        return ['NIL', NIL]
+    asserting(len(col) >= 1)
+    col = list(col)
+    for i in xrange(len(col)):
+        col[i] = unquote(col[i])
+    return [quote(unquote(' '.join(col))), flags]
+
+def padstr(s, w, rhs):
+    spec = ('%d' % w)
+    if rhs:
+        spec = '%' + spec + 's'
+    else:
+        spec = '%-' + spec + 's'
+    return spec % s
+
+dumpstdin = False
+
+def stdinlines():
+    if dumpstdin:
+        with open(testfile(), "w") as f:
+            for line in sys.stdin:
+                f.write(line)
+                yield line
+    else:
+        for line in sys.stdin:
+            yield line
+    
+def run():
+    asserting(rematch(r'(\d+)', 1, " 123 ") == "123")
+    if args.verbose:
+        print args
+    gather = []
+    global dumpstdin
+    #dumpstdin = has_stdin()
+    dumpstdin = False
+    if not has_stdin():
+        if False:
+            gather += [process("foo bar baz wuf")]
+        elif True:
+            with open(testfile(), 'r') as f:
+                for line in f:
+                    gather += [process(line)]
+        else:
+            # if there was no input, prompt user.
+            print 'Enter input (press Ctrl-D when done):'
+            for line in stdinlines():
+                gather += [process(line)]
+    else:
+        for line in stdinlines():
+            gather += [process(line)]
+    # final.
+    sizes = []
+    for row in gather:
+        while len(row) > len(sizes):
+            sizes += [0]
+        for i in xrange(len(row)):
+            col = row[i]
+            if len(col[0]) > sizes[i]:
+                sizes[i] = len(col[0])
+    for row in gather:
+        cols = []
+        line = ''
+        for i in xrange(len(row)):
+            w = sizes[i]
+            col, flags = row[i][0], row[i][1]
+            col = padstr(col, w, rhs=flags['rhs'])
+            if i > 0:
+                line += '  '
+            line += col
+        sys.stdout.write(line.rstrip() + '\n')
+        sys.stdout.flush()
+
+def testfile():
+    return os.path.expanduser('~/bin/test.txt')
+
+def main():
+    global args
+    if not args:
+        args, leftovers = parser.parse_known_args()
+        args.args = leftovers
+    return run()
+
+if __name__ == "__main__":
+    main()
+

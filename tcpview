@@ -1,0 +1,4 @@
+#!/bin/bash
+#lsof -n -i4TCP | grep LISTEN $*
+lsof -P -i | grep LISTEN $*
+

@@ -1,0 +1,41 @@
+#!/usr/bin/env python
+
+import fileinput
+import os.path
+
+def num(ext):
+    return ext[1:].isdigit()
+
+def extfilter(inexts):
+    exts = inexts[:]
+
+    # if it's a shared library, allow it as-is.
+    for ext in exts:
+        if ext in ['.so', '.dylib']:
+            return exts
+
+    # find the first non-number component.
+    i = 0
+    for ext in exts:
+        if not num(ext):
+            break
+        i += 1
+
+    # if all parts are numbers, then allow it.
+    if i >= len(exts):
+        return exts
+
+    # else remove the leading number components.
+    return exts[i:]
+
+
+for line in fileinput.input():
+    file, ext = os.path.splitext(line.strip())
+    exts = [ext]
+    while ext:
+        file, ext = os.path.splitext(file.strip())
+        if ext:
+            exts.append(ext)
+    exts.reverse()
+    exts = extfilter(exts)
+    print ''.join(exts)

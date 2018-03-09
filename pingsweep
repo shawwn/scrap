@@ -1,0 +1,6 @@
+#!/bin/sh
+
+nmap -sP --reason -n "$@" \
+  #| resub -m '^Nmap [ ] scan [ ] report [ ] for [ ]' '' 
+  #| resub 'Nmap [ ] scan [ ] report [ ] for [ ] ([0-9.]+) .*? [\n]' '\1 ' 
+

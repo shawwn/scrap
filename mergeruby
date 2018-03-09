@@ -1,0 +1,4 @@
+#!/bin/sh
+#mergefiles "\\.\(erb\|haml\|rb\)$" $*
+mergefiles \\.erb \\.haml \\.rb '#!ruby' $*
+

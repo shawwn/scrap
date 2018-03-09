@@ -1,0 +1,15 @@
+#!/bin/bash
+
+size=$1
+
+if [[ -z "$size" ]]; then
+  read -p "How many GB is your sdcard? " -r
+  size=$REPLY
+fi
+
+size=`printf $size | trim | lowercase | replace  gb ""  gib ""`
+
+size="$(math $size - 1)\.[0-9]"
+
+lsdisk | lowercase | grep ".*$size\s\+gb" | sub1 ".*$size[[:space:]]+gb[[:space:]]+" "" | grep -v "[0-9]s[0-9]" | replace disk /dev/disk
+

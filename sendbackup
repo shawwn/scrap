@@ -1,0 +1,9 @@
+#!/bin/sh
+
+HOST=10.75.77.90
+PORT=1234
+
+#echo "tar cvzpf --directory=/ --exclude=proc --exclude=sys --exclude=dev/pts - $@ | nc $HOST $PORT"
+#echo "tar -cvzp --exclude=/dev --exclude=/proc --exclude=/sys / | nc $HOST $PORT"
+echo "sudo tar cvzf - --exclude=/dev --exclude=/proc --exclude=/sys / | nc 10.75.77.90 1237"
+

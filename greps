@@ -1,0 +1,92 @@
+#!/usr/bin/env python
+
+#==============================================================================
+# Functionality
+#==============================================================================
+import pdb
+import sys
+import os
+import re
+import scrap
+
+# utility funcs, classes, etc go here.
+
+def asserting(cond):
+    if not cond:
+        pdb.set_trace()
+    assert(cond)
+
+def has_stdin():
+    return not sys.stdin.isatty()
+
+def reg(pat, flags=0):
+    return re.compile(pat, re.VERBOSE | flags)
+
+#==============================================================================
+# Cmdline
+#==============================================================================
+import argparse
+
+parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter, 
+    description="""
+TODO
+""")
+     
+parser.add_argument('-v', '--verbose',
+    action="store_true",
+    help="verbose output" )
+     
+parser.add_argument('-i', '--ignore-case',
+    action="store_true",
+    help="ignore case" )
+     
+parser.add_argument('-a', '--match-all',
+    action="store_true",
+    help="each line must match all of the specified patterns")
+
+args = None
+
+#==============================================================================
+# Main
+#==============================================================================
+
+def match_any(*xs):
+    # ecape?
+    vals = xs
+    vals = [re.escape(x) for x in xs] # necessary?
+    pat  = r'\|'.join(vals)
+    pat = r'\(%s\)' % pat
+    if xs.ignore_case:
+        pat = '-i ' + pat
+    return pat
+
+def match_all(*xs):
+    # ecape?
+    vals = xs
+    vals = [re.escape(x) for x in xs] # necessary?
+    cmds = []
+    for val in vals:
+        pat = 'grep'
+        if args.ignore_case:
+            pat = ' -i' + pat
+        pat += ' ' + val
+        cmds += [pat]
+    greps = ' | '.join(cmds)
+    return "sh -c %s" % scrap.shellquote('cat | ' + greps)
+
+def run():
+    if args.verbose:
+        print args
+    pat = (match_all if args.match_all else match_any)(*args.args)
+    sys.stdout.write(pat + '\n')
+
+def main():
+    global args
+    if not args:
+        args, leftovers = parser.parse_known_args()
+        args.args = leftovers
+    return run()
+
+if __name__ == "__main__":
+    main()
+

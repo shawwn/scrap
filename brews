@@ -1,0 +1,3 @@
+#!/bin/bash
+exec brew list -1 "$@"
+

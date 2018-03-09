@@ -1,0 +1,117 @@
+#!/usr/bin/env python
+
+#==============================================================================
+# Functionality
+#==============================================================================
+
+def is_str(x):
+    return (type(x) is str) or (type(x) is unicode)
+
+def is_iterable(x):
+    try:
+        if is_str(x):
+            return False
+        xit = iter(x)
+        return True
+    except TypeError, te:
+        return False
+
+def listify(x):
+    if is_iterable(x):
+        return list(x)
+    if not x:
+        return list()
+    return [x]
+
+#==============================================================================
+# Cmdline
+#==============================================================================
+import argparse
+
+parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter, 
+    description="""
+TODO
+""")
+     
+parser.add_argument('-v', '--verbose',
+    action="store_true",
+    help="verbose output" )
+
+#==============================================================================
+# Main
+#==============================================================================
+import sys
+import os
+import subprocess
+import shutil
+import glob
+
+def endl(msg):
+    if not msg.endswith('\n'):
+        return msg + '\n'
+    return msg
+
+helptext="(must give a path to an installer.cfg or to a folder containing installer.cfg)"
+
+def panic(msg, exitcode=1):
+    for line in listify(msg):
+        sys.stderr.write(endl(line))
+    if helptext and len(helptext.strip()) > 0:
+        sys.stderr.write(endl(helptext))
+    sys.exit(exitcode)
+
+def isquote(c):
+    return c == '"' or c == "'"
+
+def isquoted(x):
+    return len(x) >= 2 and isquote(x[0]) and isquote(x[-1])
+
+def quote(x):
+    if isquoted(x):
+        return x
+    x = x.replace(r'\"', '"')
+    #x = x.replace(r"\'", "'")
+    x = x.replace('"', r'\"')
+    #x = x.replace("'", r"\'")
+    return '"' + x + '"'
+
+def ensure(cmd):
+    code = subprocess.call(cmd)
+    if code != 0:
+        panic('%s returned with error code %d' % (' '.join([cmd[0]] + [quote(x) for x in cmd[1:]]), code))
+
+def run_pynsist(path='.'):
+    if os.path.isdir(path):
+        path = os.path.join(path, 'installer.cfg')
+    if not os.path.exists(path):
+        panic("no such path: %s" % path)
+    if not os.path.isfile(path):
+        panic('no such file: %s' % path)
+    if not path.lower().endswith('.cfg'):
+        panic('not a .cfg file: %s' % path)
+    ensure(['pynsist', path])
+    dirpath = os.path.dirname(path)
+    buildpath = os.path.join(dirpath, 'build')
+    installpath = os.path.join(buildpath, 'install')
+    outpath = os.path.join(dirpath, 'build', 'nsis')
+    # nuke the install dir.
+    if os.path.isdir(installpath):
+        shutil.rmtree(installpath)
+    os.mkdir(installpath)
+    for installer in glob.glob(os.path.join(outpath, '*.exe')):
+        shutil.copy(installer, installpath)
+
+def main():
+    paths = listify(args.args)
+    # if no paths given, default to cwd.
+    if len(paths) <= 0:
+        paths += ['.']
+    for path in paths:
+        path = os.path.normpath(path)
+        run_pynsist(path)
+
+if __name__ == "__main__":
+    args, leftovers = parser.parse_known_args()
+    args.args = leftovers
+    main()
+

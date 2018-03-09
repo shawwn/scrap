@@ -1,0 +1,22 @@
+#!/bin/bash
+
+if [[ -z "$1" ]]; then
+  cat <<'EOF'
+whichapp <appname>
+Prints the absolute path to the installed .app
+
+$ whichapp firefox
+/opt/homebrew-cask/Caskroom/firefox/38.0.5/Firefox.app
+EOF
+exit 1
+fi
+
+
+app="$(apps | grep -i "/${1}.app" | resub '^ .*? [/]' '/')"
+
+if [[ -z "$app" ]]; then
+  exit 1
+fi
+
+echo $app
+

@@ -1,0 +1,23 @@
+#!/bin/bash
+
+#args="$args --system-dns"
+
+# UDP and TCP
+#args="$args -sU -sS"
+
+# serivce fingerprinting.
+#args="$args -sV"
+
+# echo nmap -p1-65535 -vv $args $*
+#      nmap -p1-65535 -vv $args $*
+
+# echo nmap -Pn -oX - -p1-65535 --initial-rtt-timeout=100ms --max-rtt-timeout=500ms --max-retries=2 --host-timeout=1m -v -sV -sT --version-light $args $*
+#      nmap -Pn -oX - -p1-65535 --initial-rtt-timeout=100ms --max-rtt-timeout=500ms --max-retries=2 --host-timeout=1m -v -sV -sT --version-light $args $*
+
+echo nmap -Pn -oG - --initial-rtt-timeout=100ms --max-rtt-timeout=500ms --max-retries=2 -vv -sV -sT --version-light $args "$@"
+     nmap -Pn -oG - --initial-rtt-timeout=100ms --max-rtt-timeout=500ms --max-retries=2 -vv -sV -sT --version-light $args "$@"
+# echo nmap -PS --initial-rtt-timeout=100ms --max-rtt-timeout=500ms --max-retries=2 -vv -sV -sT --version-light $args "$@"
+#      nmap -PS --initial-rtt-timeout=100ms --max-rtt-timeout=500ms --max-retries=2 -vv -sV -sT --version-light $args "$@"
+# echo nmap -PA --initial-rtt-timeout=100ms --max-rtt-timeout=500ms --max-retries=2 -vv -sV -sT --version-light $args "$@"
+#      nmap -PA --initial-rtt-timeout=100ms --max-rtt-timeout=500ms --max-retries=2 -vv -sV -sT --version-light $args "$@"
+

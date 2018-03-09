@@ -1,0 +1,9 @@
+#!/bin/sh
+
+name=${1:-VAR}
+shift 1
+
+cat <<END
+read -r -d '' $name <<'EOF'
+END
+

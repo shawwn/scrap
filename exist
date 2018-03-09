@@ -1,0 +1,38 @@
+#!/bin/sh
+EXISTS_PRINT_PATH="${EXISTS_PRINT_PATH:-1}"
+
+if [ -z "$*" ]
+then
+  exit 1
+fi
+
+if [ ! -z "${EXISTS_PRINT_PATH}" ]
+then
+  print_path=1
+fi
+
+ok()
+{
+  if [ ! -z "${print_path}" ]
+  then
+    echo $*
+  fi
+  exit 0
+}
+
+fail()
+{
+  1>&2 echo $*
+  exit 1
+}
+
+which "$@" >/dev/null 2>/dev/null && ok "$1"
+which $* >/dev/null 2>/dev/null && ok $*
+for x in $*
+do
+  which "${x}" >/dev/null 2>/dev/null && ok "${x}"
+  fail not found: $*
+done
+
+
+

@@ -1,0 +1,12 @@
+#!/usr/bin/env python
+
+import sys
+import fileinput
+import os
+import subprocess
+
+if __name__ == "__main__":
+    p = subprocess.Popen(["xxd", "-p"], stdout=subprocess.PIPE, stdin=sys.stdin)
+    out, err = p.communicate()
+    sys.stdout.write(out.replace('\n','').replace('\r','').strip())
+

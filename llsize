@@ -1,0 +1,4 @@
+#!/bin/bash
+
+human2bytes | natsort "$@" | bytes2human | cols 0 ,1:3 ,3:
+

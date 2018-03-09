@@ -1,0 +1,6 @@
+#!/bin/sh
+
+HOST=10.75.77.90
+PORT=${1:-1234}
+echo "nc $HOST $PORT"
+

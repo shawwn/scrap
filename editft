@@ -1,0 +1,21 @@
+#!/bin/bash
+
+ft="$1"
+shift 1
+
+if [ -z "$ft" ]; then
+    echo "editft filetype"
+    echo "example:"
+    echo "    cat code.rb | editft ruby -"
+    exit 1
+fi
+
+[ "$ft" = "rb" ] && ft=ruby
+[ "$ft" = "py" ] && ft=python
+[ "$ft" = "js" ] && ft=javascript
+
+cat <<EOS
+exec edit -c "set ft=$ft" "$@"
+EOS
+exec edit -c "set ft=$ft" "$@"
+

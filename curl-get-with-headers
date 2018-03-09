@@ -1,0 +1,26 @@
+#!/bin/bash
+
+#
+# e.g.:  curl -v -D -i http://git.io -F "url=$url" -F "code=$code"
+#
+
+scriptname=$(basename "$BASH_SOURCE")
+url=$1
+shift 1
+
+# usage.
+if [ -z "$url" ]; then
+  echo "$scriptname http://example.com name=bob day=wednesday"
+  exit 1
+fi
+
+# build the curl command.
+cmd="curl -i -s $url"
+# for each query parameter...
+for var in $@; do
+  cmd="$cmd -F \"$var\""
+done
+
+echo $cmd
+
+

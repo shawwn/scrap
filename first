@@ -1,0 +1,4 @@
+#!/bin/sh
+n=${1:-1}
+exec head -$n
+

@@ -1,0 +1,17 @@
+#!/usr/bin/env python
+import fileinput
+import sys
+
+args = [x.decode('unicode-escape') for x in sys.argv[1:]]
+
+#for line in fileinput.input():
+#for line in sys.stdin.readlines():
+data = sys.stdin.read()
+params = list(args)
+while len(params) > 0:
+    replacing = params[0] if len(params) >= 1 else ''
+    replacement = params[1] if len(params) >= 2 else ''
+    params = params[2:]
+    data = data.replace(replacing, replacement)
+sys.stdout.write(data)
+

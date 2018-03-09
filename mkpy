@@ -1,0 +1,616 @@
+#!/usr/bin/env python
+
+#===============================================================================
+
+HEAD = """
+#!/usr/bin/env python
+
+""".lstrip()
+
+
+TEMPLATES = {} # various python script templates.
+TUTORIAL = {} # various python tutorials.
+_default = 'basic'
+
+#
+# For operating on stdin / file input
+#
+TEMPLATES['input'] = {
+'desc': "'@key' @default is useful for processing stdin or files.",
+'body': """
+import fileinput
+import sys
+
+args = sys.argv[1:]
+if len(args) <= 0:
+    pass
+
+for line in fileinput.input():
+    sys.stdout.write(line)
+""".lstrip()
+}
+
+#
+# Basic script
+#
+TEMPLATES['basic'] = { 
+'desc': "'@key' @default is for general-purpose scripts with nice commandline args and helptext.",
+'body': """
+#==============================================================================
+# Functionality
+#==============================================================================
+import pdb
+import sys
+import os
+import re
+
+# utility funcs, classes, etc go here.
+
+def asserting(cond):
+    if not cond:
+        pdb.set_trace()
+    assert(cond)
+
+def has_stdin():
+    return not sys.stdin.isatty()
+
+def reg(pat, flags=0):
+    return re.compile(pat, re.VERBOSE | flags)
+
+#==============================================================================
+# Cmdline
+#==============================================================================
+import argparse
+
+parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter, 
+    description=\"\"\"@description\"\"\")
+     
+parser.add_argument('-v', '--verbose',
+    action="store_true",
+    help="verbose output" )
+
+args = None
+
+#==============================================================================
+# Main
+#==============================================================================
+
+def run():
+    if args.verbose:
+        print args
+    if len(args.args) <= 0 and not has_stdin():
+        # if there were no args and there was no input, prompt user.
+        print 'Enter input (press Ctrl-D when done):'
+    if len(args.args) <= 0 or has_stdin():
+        indata = sys.stdin.read()
+    # for each arg on cmdline...
+    for arg in args.args:
+        print arg
+
+def main():
+    global args
+    if not args:
+        args, leftovers = parser.parse_known_args()
+        args.args = leftovers
+    return run()
+
+if __name__ == "__main__":
+    main()
+""".lstrip()
+}
+
+#
+# Argparse tutorial
+#
+TUTORIAL['argparse'] = {
+'desc': "How to use argparse.",
+'body': """
+#==============================================================================
+# Argparse tutorial
+#==============================================================================
+\"\"\"
+The following comments are almost verbatim from this excellent
+resource on argparse:
+
+    https://mkaz.com/2014/07/26/python-argparse-cookbook/ 
+\"\"\"
+
+#--------------------------------------------------------------------
+# boolean arguments and multiple flags
+#--------------------------------------------------------------------
+\"\"\"
+You can specify multiple flags for one argument, typically this is
+down with short and long flags, such as --verbose and -v
+
+    parser.add_argument('--verbose', '-v',
+        action='store_true',
+        help='verbose flag')
+
+    if args.verbose:
+        print("~ Verbose!")
+    else:
+        print("~ Not so verbose")
+\"\"\"
+
+#--------------------------------------------------------------------
+# required flags
+#--------------------------------------------------------------------
+\"\"\"
+You can make a flag required by setting required=True.  This will
+cause an error if the flag is not specified.
+
+    parser.add_argument('--limit', required=True, type=int)
+\"\"\"
+
+#--------------------------------------------------------------------
+# positional arguments
+#--------------------------------------------------------------------
+\"\"\"
+The examples so far have been about flags, parameters starting with
+--, argparse also handles the positional args which are just
+specified without the flag. 
+
+    parser.add_argument('filename')
+
+    print("~ Filename: {}".format(args.filename))
+\"\"\"
+
+#--------------------------------------------------------------------
+# number of arguments
+#--------------------------------------------------------------------
+\"\"\"
+Argparse determines the number of argument based on the action
+specified, for our verbose example, the store_true action takes no
+arguments. By default, argparse will look for a single argument, shown
+above in the filename example.
+
+If you want your parameter to accept a list of items you can specify
+nargs=n for how many arguments to accept.
+
+    import argparse
+     
+    parser = argparse.ArgumentParser()
+    parser.add_argument('nums', nargs=2)
+    args = parser.parse_args()
+     
+    print("~ Nums: {}".format(args.nums))
+
+Output:
+
+    $ python test.py 5 2
+    ~ Nums: ['5', '2']
+\"\"\"
+
+
+#--------------------------------------------------------------------
+# variable number of parameters
+#--------------------------------------------------------------------
+\"\"\"
+If you want the argument to accept all of the parameters, you can use
+* which will return all parameters if present, or empty list if none.
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('nums', nargs='*')
+    args = parser.parse_args()
+     
+    print("~ Nums: {}".format(args.nums))
+
+Output:
+
+    $ python test.py 5 2 4
+    ~ Nums: ['5', '2', '4']
+
+If you want to require 1 or more parameters, use nargs='+'
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+To define a filename and a list of values to store:
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('filename')
+    parser.add_argument('nums', nargs='*')
+    args = parser.parse_args()
+     
+    print("~ Filename: {}".format(args.filename))
+    print("~ Nums: {}".format(args.nums))
+
+Output:
+
+    $ python test.py file.txt 5 2 4
+    ~ Fileanme: file.txt
+    ~ Nums: ['5', '2', '4']
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+To make a positional argument optional:
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('filename')
+    parser.add_argument('nums', nargs='?')
+    args = parser.parse_args()
+
+Output:
+
+    $ python test.py test.txt 3 
+    ~ Filename: test.txt
+    ~ Nums: 3
+ 
+    $ python test.py test.txt
+    ~ Filename: test.txt
+    ~ Nums: None
+
+However, using the nargs='?' first will give unexpected results when
+arguments are missing:
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('filename', nargs='?')
+    parser.add_argument('nums', nargs='*')
+    args = parser.parse_args()
+
+Output:
+
+    $ python test.py 3 2 1 
+    ~ Filename: 3
+    ~ Nums: ['2', '1']
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+You can use nargs with flag arguments as well:
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--geo', nargs=2)
+    parser.add_argument('--pos', nargs=2)
+    parser.add_argument('type')
+    args = parser.parse_args()
+
+Output:
+
+    $ python test.py --geo 5 10 --pos 100 50 square
+    ~ Geo: ['5', '10']
+    ~ Pos: ['100', '50']
+    ~ Type: square
+\"\"\"
+
+#--------------------------------------------------------------------
+# variable type (ints instead of strings, etc)
+#--------------------------------------------------------------------
+\"\"\"
+You might notice that the parameters passed in are parsed as strings
+and not numbers. You can specify the variable type by specifying
+type=int. By specifying the type, argparse will also fail if an
+invalid type is passed in.
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('nums', nargs=2, type=int)
+    args = parser.parse_args()
+     
+    print("~ Nums: {}".format(args.nums))
+
+Output:
+
+    $ python test.py 5 2
+    ~ Nums: [5, 2]
+\"\"\"
+
+#--------------------------------------------------------------------
+# file types
+#--------------------------------------------------------------------
+\"\"\"
+Argparse has some built in filetypes which makes it easier to open
+files specified on the command line. Here's an example reading a file,
+you can do the same writing a file.
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('f', type=argparse.FileType('r'))
+    args = parser.parse_args()
+ 
+    for line in args.f:
+        print( line.strip() )
+\"\"\"
+
+#--------------------------------------------------------------------
+# default value
+#--------------------------------------------------------------------
+\"\"\"
+You may specify a default value if the user does not pass one in.
+Here's an example using a flag.
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--limit', default=5, type=int)
+    args = parser.parse_args()
+     
+    print("~ Limit: {}".format(args.limit))
+
+Output:
+
+    $ python test.py
+    ~ Limit: 5
+\"\"\"
+
+#--------------------------------------------------------------------
+# remainder
+#--------------------------------------------------------------------
+\"\"\"
+If want to gather the extra arguments passed in, you can use remainder
+which gathers up all arguments not specified into a list
+
+    import argparse
+     
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--verbose',
+        action='store_true',
+        help='verbose flag' )
+    parser.add_argument('args', nargs=argparse.REMAINDER)
+    args = parser.parse_args()
+     
+    print(args.args)
+
+Specifying remainder will create a list of all remaining arguments:
+
+    $ python test.py --verbose foo bar
+    ['foo', 'bar']
+\"\"\"
+
+#--------------------------------------------------------------------
+# actions
+#--------------------------------------------------------------------
+\"\"\"
+The default action is to assign the variable specified, but there are
+a couple of other actions that can be specified.
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Booleans
+
+We have already seen the boolean flag action which is
+action='store_true' which also has a counter action for
+action='store_false'
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Count
+
+You can use the count action, which will return how many times a flag
+was called, this can be useful for verbosity or silent flags
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--verbose', '-v', action='count')
+    args = parser.parse_args()
+     
+    print("~ Verbose: {}".format(args.verbose))
+
+Output:
+
+    $ python test.py
+    ~ Verbose: None 
+     
+    $ python test.py --verbose
+    ~ Verbose: 1
+     
+    $ python test.py --verbose -v --verbose
+    ~ Verbose: 3
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Append
+
+You can also use the append action to create a list if multiple flags
+are passed in.
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-c', action='append')
+    args = parser.parse_args()
+     
+    print("~ C: {}".format(args.c))
+
+Output:
+
+    $ python test.py
+    ~ C: None
+     
+    $ python test.py -c hi
+    ~ C: ['hi']
+     
+    $ python test.py -c hi -c hello -c hey
+    ~ C: ['hi', 'hello', 'hey']
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Choices
+
+If you only want a set of allowed values to be used, you can set the
+choices list, which will display an error if invalid entry.
+
+    parser = argparse.ArgumentParser(prog='roshambo.py')
+    parser.add_argument('throw', choices=['rock', 'paper', 'scissors'])
+    args = parser.parse_args()
+ 
+    print("~ Throw: {}".format(args.throw))
+\"\"\"
+
+#--------------------------------------------------------------------
+# helptext
+#--------------------------------------------------------------------
+\"\"\"
+Also a great thing about using argparse is you get built-in help.
+You can try it out by passing in an unknown parameter, -h or --help
+
+    $ python test.py --help
+    usage: test.py [-h] [--verbose]
+     
+    Demo
+     
+    optional arguments:
+      -h, --help  show this help message and exit
+        --verbose   verbose output
+
+#--------------------------------------------------------------------
+# note:
+#--------------------------------------------------------------------
+A side effect of using argparse, you will get an error if a user
+passes in a command-line argument not expected, this includes flags or
+just an extra argument.
+
+    $ python test.py filename
+    usage: test.py [-h] [--verbose]
+    test.py: error: unrecognized arguments: filename
+\"\"\"
+
+#--------------------------------------------------------------------
+# example: copy script
+#--------------------------------------------------------------------
+\"\"\"
+    import argparse
+    import sys
+     
+    parser = argparse.ArgumentParser(description='script to copy one file to another')
+     
+    parser.add_argument('-v', '--verbose',
+        action="store_true",
+        help="verbose output" )
+     
+    parser.add_argument('-R',
+        action="store_false",
+        help="Copy all files and directories recursively")
+     
+    parser.add_argument('infile',
+        type=argparse.FileType('r'), 
+        help="file to be copied")
+     
+    parser.add_argument('outfile',
+        type=argparse.FileType('w'),
+        help="file to be created")
+     
+    args = parser.parse_args()
+    Bug Script Example
+\"\"\"
+#--------------------------------------------------------------------
+# example: script that closes a bug
+#--------------------------------------------------------------------
+\"\"\"
+    import argparse
+    import sys
+     
+    parser = argparse.ArgumentParser(description='close bug')
+     
+    parser.add_argument('-v', '--verbose',
+        action="store_true",
+        help="verbose output" )
+     
+    parser.add_argument('-s',
+        default="closed",
+        choices=['closed', 'wontfix', 'notabug'],
+        help="bug status")
+     
+    parser.add_argument('bugnum',
+        type=int,
+        help="Bug number to be closed")
+     
+    parser.add_argument('message',
+        nargs='*',
+        help="optional message")
+     
+    args = parser.parse_args()
+     
+    print("~ Bug Num: {}".format(args.bugnum))
+    print("~ Verbose: {}".format(args.verbose))
+    print("~ Status : {}".format(arg.s))
+    print("~ Message: {}".format(" ".join(args.message)))
+\"\"\"
+""" 
+}
+
+def show_tutorial(name):
+    assert(name in TUTORIAL)
+    tutorial = TUTORIAL[name]
+    import scrap
+    return scrap.edit(stdin=tutorial['body'])
+
+def wordwrap(text, width=55, fill='\n'):
+    import textwrap
+    return fill.join(textwrap.wrap(text, width=width))
+
+def helptext(key, value):
+    desc = value['desc'].strip() if 'desc' in value else ''
+    body = value['body']
+    text = desc
+
+
+def help_template():
+    out = ["Which type of python script you're generating."]
+    for key,v in TEMPLATES.iteritems():
+        desc = v['desc'].strip()
+        if len(desc) > 0:
+            text = desc
+            if text.find('@key') >= 0:
+                text = '- %s' % text
+            text = text.replace('@key', key)
+            #if _default != key:
+            if True:
+                text = text.replace('@default ', '')
+                text = text.replace('@default', '')
+            else:
+                default_text = '(the default)'
+                text = text.replace('@default ', '%s ' % default_text)
+                text = text.replace('@default',  '%s' % default_text)
+            text = wordwrap(text, fill='\n   ')
+            out += [text]
+    out += ["Defaults to '%s'." % _default]
+    return '\n'.join(out)
+
+def help_tutorial():
+    out = ['Shows a tutorial for the given topic.']
+    for key,v in TUTORIAL.iteritems():
+        desc = v['desc'] if 'desc' in v else ''
+
+#==============================================================================
+# Arguments
+#==============================================================================
+import argparse
+
+parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter,
+    description='Generate a python script.')
+
+parser.add_argument('filename', help="Name of the script")
+parser.add_argument('desc', nargs='?', help="Describe what the script does")
+parser.add_argument('--template', '-t', default=_default, choices=TEMPLATES.keys(), help=help_template())
+parser.add_argument('--tutorial', '-T',
+    action="append",
+    help="Shows a nice tutorial on how to use argparse." )
+
+args = parser.parse_args()
+
+#==============================================================================
+# Main
+#==============================================================================
+import scrap
+import os
+import sys
+
+_name = os.path.basename(os.path.splitext(args.filename)[0])
+_desc = ' '.join(args.desc or []).strip()
+if len(_desc) <= 0:
+    _desc = 'TODO'
+if _desc == '-':
+    _desc = sys.stdin.read()
+_desc = '\n' + _desc.strip() + '\n'
+
+def py_is_exec(fname):
+    root, ext = os.path.splitext(fname)
+    # if we have an extension, then we're not is_exec
+    return scrap.empty(ext)
+
+def py_gen(is_exec):
+    out = ''
+    if is_exec:
+        out += HEAD
+    script = TEMPLATES[args.template]['body']
+    script = script.replace('@name', _name)
+    script = script.replace('@description', _desc)
+    script += '\n'
+    out += script
+    return out
+
+if __name__ == "__main__":
+    # generate script.
+    if len(args.filename.strip()) > 0:
+        fpath = scrap.mkscript(is_exec=py_is_exec, gen=py_gen, name=args.filename)
+        if fpath:
+            scrap.edit(fpath, 'python')
+    

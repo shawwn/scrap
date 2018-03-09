@@ -1,0 +1,100 @@
+#!/usr/bin/env python
+
+#==============================================================================
+# Functionality
+#==============================================================================
+import pdb
+import sys
+import os
+import re
+from scrap import is_str
+
+# utility funcs, classes, etc go here.
+
+def asserting(cond):
+    if not cond:
+        pdb.set_trace()
+    assert(cond)
+
+def has_stdin():
+    return not sys.stdin.isatty()
+
+def reg(pat, flags=0):
+    return re.compile(pat, re.VERBOSE | flags)
+
+def is_str(x):
+    return (type(x) is str) or (type(x) is unicode)
+
+R1 = re.compile(r'\\(.)')
+R2 = re.compile(r'\\\\')
+
+def unquote(x):
+    if not is_str(x):
+        return x
+    if len(x) < 2:
+        return x
+    if (x[0] == x[-1]) and (x[0] == '"'):
+        x = x[1:-1]
+    try:
+        x = x.decode("string_escape")
+    except ValueError as e:
+        pdb.set_trace()
+        asserting(False)
+
+    x = R1.sub(r'\1', x) # unquote
+    #x = R2.sub('\\', x) # unquote backslashes
+
+    #x = x.replace(r'\\ \\', '\\') # unquote backslashes
+    #x = x.replace(r'\"', '"')
+
+    return x
+
+
+def quote(x):
+    if not is_str(x):
+        return x
+    if not reg(r' (?<! [\\] ) \s').search(x):
+        return x
+    val = '"%s"' % x.encode("string_escape").replace('"', r'\"')
+    return val
+
+#==============================================================================
+# Cmdline
+#==============================================================================
+import argparse
+
+parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter, 
+    description="""
+TODO
+""")
+     
+parser.add_argument('-v', '--verbose',
+    action="store_true",
+    help="verbose output" )
+
+args = None
+
+#==============================================================================
+# Main
+#==============================================================================
+
+def run():
+    if args.verbose:
+        print args
+    if len(args.args) <= 0 and not has_stdin():
+        # if there were no args and there was no input, prompt user.
+        print 'Enter input (press Ctrl-D when done):'
+    if len(args.args) <= 0 or has_stdin():
+        indata = sys.stdin.read()
+    sys.stdout.write(unquote(indata))
+
+def main():
+    global args
+    if not args:
+        args, leftovers = parser.parse_known_args()
+        args.args = leftovers
+    return run()
+
+if __name__ == "__main__":
+    main()
+

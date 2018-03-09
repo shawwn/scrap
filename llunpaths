@@ -1,0 +1,4 @@
+#!/bin/bash
+
+cols 0 1 2 ,3: | resub '/ \s' '/'
+

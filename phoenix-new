@@ -1,0 +1,7 @@
+#!/bin/sh
+
+cat << EOF
+mix phoenix.new "$@"
+EOF
+mix phoenix.new "$@"
+

@@ -1,0 +1,99 @@
+#!/usr/bin/env python
+
+#==============================================================================
+# Functionality
+#==============================================================================
+import CommonMark
+import itertools
+
+def parse_md_images(x):
+    parser = CommonMark.DocParser()
+    renderer = CommonMark.HTMLRenderer()
+    ast = parser.parse(x)
+    html = renderer.render(ast)
+    js = CommonMark.ASTtoJSON(ast)
+    #CommonMark.dumpAST(ast) # pretty print generated AST structure
+    #import json
+    #print json.dumps(json.loads(js), indent=4)
+    import pdb
+    import json
+    obj = json.loads(js)
+    for elem in obj['children'][0]['inline_content']:
+        if 'destination' in elem and 'label' in elem and 'c' in elem['label'][0]:
+            label = elem['label'][0]
+            tag = label['c']
+            url = elem['destination']
+            yield (tag, url)
+
+def grouper(n, iterable, fillvalue=None):
+    "grouper(3, 'ABCDEFG', 'x') --> ABC DEF Gxx"
+    args = [iter(iterable)] * n
+    return itertools.izip_longest(*args, fillvalue=fillvalue)
+
+
+import re
+import os
+WS = re.compile(r'\s+', re.MULTILINE)
+
+def shorten_img_url(tag, url):
+    assert(not WS.search(tag))
+    os.system("github-shorten-url %s %s" % (url, tag))
+
+
+def process_line(tag, url):
+    x = r'![git.io/%s](%s)' % (tag, url)
+    x += r' `![%s](https://git.io/%s)`' % (tag, tag)
+    x += r' <br> '
+    x += r' ![%s](https://git.io/%s)' % (tag, tag)
+    shorten_img_url(tag, url)
+    return x
+
+def process(lines):
+    for tag, camelcase, lowercase in grouper(3, lines):
+        assert(not tag.startswith('!'))
+        assert(camelcase.startswith('!'))
+        assert(lowercase.startswith('!'))
+
+        camelurl = [x[1] for x in parse_md_images(camelcase)]
+        assert(len(camelurl) == 1)
+        camelurl = camelurl[0]
+
+        lowerurl = [x[1] for x in parse_md_images(lowercase)]
+        assert(len(lowerurl) == 1)
+        lowerurl = lowerurl[0]
+
+        print process_line(tag, camelurl) + ' | ' + process_line(tag.lower(), lowerurl)
+
+#==============================================================================
+# Cmdline
+#==============================================================================
+import argparse
+
+parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter, 
+    description="""
+TODO
+""")
+     
+parser.add_argument('-v', '--verbose',
+    action="store_true",
+    help="verbose output" )
+
+parser.add_argument('args', nargs=argparse.REMAINDER)
+
+#==============================================================================
+# Main
+#==============================================================================
+import sys
+import os
+
+
+
+if __name__ == "__main__":
+    args = parser.parse_args()
+    lines = list(args.args)
+    if not sys.stdin.isatty() or len(args.args) == 0:
+        for line in [line.rstrip() for line in sys.stdin]:
+            if len(line) > 0:
+                lines.append(line)
+    process(lines)
+

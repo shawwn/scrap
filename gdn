@@ -1,0 +1,10 @@
+#!/bin/bash
+exec git diff --numstat "$@" | print0 | xargs -0 -n 1 -I {} sh -c "
+x=\$(printf '%s' '{}' | pos 0);
+y=\$(printf '%s' '-'; printf '%s' '{}' | pos 1);
+f=\$(printf '%s' '{}' | pos 2 3 4 5);
+n=\$(wc -l \$f)
+printf '%s' \"+\$x \$y = \$(math \$x \$y) \";
+printf '%s\n' \"=> \$n\"
+" | cols 3 ,6: 4 5 0 1
+

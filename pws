@@ -1,0 +1,22 @@
+#!/bin/bash
+
+len=${1:-12}
+count=${2:-500}
+shift 1;
+shift 1;
+
+#
+# try to open in macvim.  If not installed, print to stdout.
+#
+if [[ -z "`which mvim`" ]]; then
+  editor=cat
+else
+  editor="mvim -"
+fi
+
+cat <<EOF
+sf-pwgen --length $len --count $count $@ | $editor
+EOF
+sf-pwgen --length $len --count $count $@ | $editor
+
+

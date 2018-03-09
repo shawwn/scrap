@@ -1,0 +1,11 @@
+#!/bin/bash
+
+img="`ls ~/Downloads/software/images/kali-*-rpi2.img`"
+
+disk="`sdcard-detect-disk`"
+if [[ -z "$disk" ]] || [[ -z "`echo $disk | grep disk`" ]]; then
+  echo "No sdcard detected.  (try running \`lsdisk\` and try to find out which /dev/diskN it might be.)"
+  exit 1
+fi
+
+sdcard-dd "$img" "$disk"

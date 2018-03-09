@@ -1,0 +1,140 @@
+#!/usr/bin/env python
+
+#==============================================================================
+# Functionality
+#==============================================================================
+import pdb
+import sys
+import os
+import re
+
+# utility funcs, classes, etc go here.
+
+def asserting(cond):
+    if not cond:
+        pdb.set_trace()
+    assert(cond)
+
+def has_stdin():
+    return not sys.stdin.isatty()
+
+def reg(pat, flags=0):
+    return re.compile(pat, re.VERBOSE | flags)
+
+#==============================================================================
+# Cmdline
+#==============================================================================
+import argparse
+
+parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter, 
+    description="""
+TODO
+""")
+     
+parser.add_argument('-v', '--verbose',
+    action="store_true",
+    help="verbose output" )
+     
+parser.add_argument('-q', '--quick',
+    action="store_true",
+    help="don't query the remote server." )
+
+
+args = None
+
+#==============================================================================
+# Main
+#==============================================================================
+import scrap
+
+def process(url):
+    url = url.strip()
+    if not url.endswith('/'):
+        url = url + '/'
+    url = reg(r'.*[:][/][/](.*)').sub(r'\1', url)
+    url = reg(r'^(?: (?: ht|f)tp[s]? .*)?[/][/](.*)').sub(r'\1', url)
+    url = reg(r'(.*?)[/].*').sub(r'\1', url)
+    # default to .com
+    if not reg(r'[.][a-z]+').search(url):
+        url = url + '.com'
+    return url
+
+def whourl(url):
+    # use =foo.com to force whois to give info for all results.
+    return "=%s" % url
+
+def no(x):
+    return x is None
+
+def denil(x):
+    return list() if no(x) else x
+
+def astr(x):
+    return isinstance(x, str) or isinstance(x, unicode)
+
+def ablank(x):
+    if astr(x):
+        return len(x.strip()) <= 0
+
+def remblanks(lines, sep='\n\n', prev=None, acc=None):
+    lines = denil(lines)
+    acc = denil(acc)
+    if astr(lines):
+        lines = lines.splitlines()
+    if len(lines) <= 0:
+        return ''.join([(sep if ablank(x) else x) for x in acc])
+    cur = lines[0]
+    rest = lines[1:]
+    if ablank(prev) and ablank(cur):
+        return remblanks(rest, sep, cur, acc)
+    else:
+        return remblanks(rest, sep, cur, [cur] + acc)
+
+def whoresult(result):
+    # return only indented or blank lines.
+    # remove consecutive runs of blank lines.
+    return remblanks([line for line in result.splitlines() if (line.startswith('   ') or ablank(line))])
+
+def whois(url, quick=False):
+    if quick or args.quick:
+        cmd = ['whois', '-Q', whourl(url)]
+    else:
+        cmd = ['whois', whourl(url)]
+    if args.verbose:
+        params = ', '.join(['"%s"' % x for x in cmd])
+        print 'system(%s) => %s' % (params, result[0:10])
+    result = scrap.system(cmd[0], cmd[1:])
+    return '\n'.join(whoresult(result))
+
+def urlavail(url):
+    url = process(url)
+    result = whois(url)
+    if result.find('No match for "%s"' % url.upper()) >= 0:
+        return False
+    else:
+        print result
+    return True
+
+def run():
+    if args.verbose:
+        print args
+    if len(args.args) <= 0 and not has_stdin():
+        # if there were no args and there was no input, prompt user.
+        print 'Enter input (press Ctrl-D when done):'
+    if len(args.args) <= 0 or has_stdin():
+        indata = sys.stdin.read()
+    # for each arg on cmdline...
+    for arg in args.args:
+        print arg
+        urlavail(arg)
+
+def main():
+    global args
+    if not args:
+        args, leftovers = parser.parse_known_args()
+        args.args = leftovers
+    return run()
+
+if __name__ == "__main__":
+    main()
+

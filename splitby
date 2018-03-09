@@ -1,0 +1,38 @@
+#!/usr/bin/env python
+import fileinput
+import sys
+
+args = sys.argv[1:]
+if len(args) <= 0:
+    pass
+
+by = []
+if len(args) > 0:
+    by = [x.decode('unicode-escape') for x in args]
+
+data = sys.stdin.read()
+
+def dedup(s, x):
+    s1 = s.replace(x+x, x)
+    if len(s1) == len(s):
+        return s1
+    return dedup(s1, x)
+
+# this is completely awful, but...  ... Well, no, it's just completely
+# awful.
+MAGIC = '~~[-[~~[splitby]~~]-]~~'
+for x in by:
+    data = data.replace(x, MAGIC)
+data = dedup(data, MAGIC)
+
+# # strip newlines.
+# data = data.replace('\n', '').replace('\r','')
+
+# output = '\n'.join(data.split(MAGIC))
+# while output.find('\n\n') >= 0:
+#     output = output.replace('\n\n', '\n')
+# sys.stdout.write(output.lstrip())
+
+output = '\n'.join(data.split(MAGIC))
+sys.stdout.write(output)
+

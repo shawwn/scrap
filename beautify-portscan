@@ -1,0 +1,73 @@
+#!/usr/bin/env python
+import sys
+import re
+import pdb
+import scrap
+
+def isreg(rx):
+    return isinstance(rx, type(re.compile('')))
+
+def reg(pat, flags=0):
+    if isreg(pat):
+        return pat
+    return re.compile(pat, re.VERBOSE | flags)
+
+
+pat  = r'Host: [\s]+ (?P<host> [0-9.]+)'
+pat += r'[\s]+ [(].*?[)]'
+pat += r'[\s]+ (?P<key> [A-Za-z\s]+)[:]'
+pat += r'[\s]+ (?P<val> .+?)'
+pat += r'$'
+
+rx = reg(pat, re.VERBOSE | re.MULTILINE | re.DOTALL)
+
+output = []
+
+def prval(key, val, seps=['/']):
+    #print key, val
+    for sep in seps:
+        val = val.replace(sep, '\0')
+    global output
+    output += ['%s\0%s' % (key, val)]
+
+
+def main():
+    indata=sys.stdin.read()
+    for line in indata.splitlines():
+        # print ''
+        # print line
+        # print ''
+        m = rx.search(line)
+        if not m:
+            #print line
+            pass
+        else:
+            host = m.expand(r'\g<host>')
+            key = m.expand(r'\g<key>')
+            val = m.expand(r'\g<val>')
+            if key == 'Status' and val == 'Up':
+                continue
+            if key != 'Ports':
+                print host, key, val
+            else:
+                ports = [x.strip() for x in val.split(',')]
+                ports = [x for x in ports if len(x) > 0]
+                ignored_state = ''
+                if len(ports) > 0:
+                    if ports[-1].find('Ignored State:') >= 0:
+                        m = reg(r'(.*?) [\s]+ Ignored[ ]State: [\s]+ (.*)').search(ports[-1])
+                        assert(m)
+                        ports[-1] = m.expand(r'\1')
+                        ignored_state = m.expand(r'\2')
+                    ignored_state = ignored_state.strip()
+                    for port in ports:
+                        prval(host, port, seps=['/'])
+                    if len(ignored_state) > 0:
+                        prval(host, ignored_state, seps=[' '])
+
+
+        
+    print scrap.shell(r"cols -d '\0'", stdin='\n'.join(output))
+
+main()
+

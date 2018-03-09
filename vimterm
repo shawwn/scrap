@@ -1,0 +1,8 @@
+#!/bin/bash
+
+read -r -d '' cmd <<EOF
+$@
+EOF
+
+mvim -c ":ConqueTerm bash -c '$cmd'"
+

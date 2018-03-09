@@ -1,0 +1,36 @@
+#!/usr/bin/env python
+
+#==============================================================================
+# Functionality
+#==============================================================================
+
+# utility funcs, classes, etc go here.
+
+#==============================================================================
+# Cmdline
+#==============================================================================
+import argparse
+
+parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter, 
+    description="""
+TODO
+""")
+     
+parser.add_argument('-v', '--verbose',
+    action="store_true",
+    help="verbose output" )
+
+parser.add_argument('args', nargs=argparse.REMAINDER)
+
+#==============================================================================
+# Main
+#==============================================================================
+import sys
+
+def main():
+    print args
+
+if __name__ == "__main__":
+    args = parser.parse_args()
+    main()
+

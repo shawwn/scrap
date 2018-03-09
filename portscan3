@@ -1,0 +1,4 @@
+#!/bin/sh
+
+exec portscan2 -F "$@"
+

@@ -1,0 +1,5 @@
+#!/bin/sh
+cd "$1"         # change to directory specified by arg 1
+shift           # drop arg 1
+mvim "$@"       # expand remaining arguments, retaining original word separations
+

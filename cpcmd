@@ -1,0 +1,5 @@
+#!/bin/sh
+CMD=$($* | trim)
+printf "%s\n" "$CMD"
+printf "%s" "$CMD" | pbcopy
+

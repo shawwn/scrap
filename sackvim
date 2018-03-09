@@ -1,0 +1,17 @@
+#!/bin/sh
+
+# hack to get sack working properly.  Color codes are showing up in
+# the args to the editor, so strip the terminal color codes manually.
+
+echo not implemented yet. TODO.
+exit 1
+
+while [[ ! -z "$1" ]]; do
+
+unset ARG
+read -r -d '' ARG <<EOF
+$1
+EOF
+
+done
+

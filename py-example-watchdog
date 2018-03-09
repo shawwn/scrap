@@ -1,0 +1,5 @@
+#!/bin/sh
+cat <<'EOF'
+watchmedo shell-command --patterns="*.py;*.txt;*.sh" --ignore-directories --recursive --command='echo "${watch_event_type} ${watch_src_path} ${watch_dest_path}"' .
+EOF
+

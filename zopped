@@ -1,0 +1,184 @@
+#!/bin/bash
+
+# Zopfli information and source:
+#   https://code.google.com/p/zopfli/
+
+# Usage:
+#   zopped [URL] [file] ...
+
+dir="`pwd`"
+cd "$(dirname "$0")"
+home="`pwd`"
+cd "${dir}"
+
+declare dateCmd=""
+declare -a zopfliIterationValues=( "1" "5" "10" "20" "50" "100" "500" "1000" )
+
+diff() {
+    printf "%s %s" "$1 $2" | \
+        awk '{
+                x = $1 - $2;
+                if ( x > 0 ) { printf "+"; }
+                printf "%d", x;
+             }'
+}
+
+get_time() {
+    printf "%s" "$($dateCmd)"
+}
+
+percentage() {
+    printf "%s %s" "$1 $2" | \
+        awk '{
+                x = $2 * 100 / $1 - 100;
+                if ( x > 0 ) { printf "+"; }
+                printf "%.2f%%", x;
+             }'
+}
+
+print_header() {
+    printf "\n"
+    print_line
+    print_row "Method" "Size diff (b)" " Size ↑/↓" "Time diff (ns)" "  Time ↑/↓"
+    print_line
+}
+
+print_line() {
+    printf "%s\n" \
+        " ----------------------------------------------------------------------------- "
+}
+
+print_line_dotted() {
+    printf "%s\n" \
+        " | - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - | "
+}
+
+print_row() {
+    printf " | %-14s | %13s | %9s | %15s | %10s |\n" "$1" "$2" "$3" "$4" "$5"
+}
+
+print_stats() {
+
+    declare -i os=0   # original size
+    declare -i gs=0   # gzip size
+    declare -i gt=0   # gzip time
+
+    declare -i dzs=0  # default zopfli size
+    declare -i dzt=0  # declare zopfli time
+
+    declare -i zs=0   # zopfli size
+    declare -i zt=0   # zopfli time
+
+    declare -i st=0   # start time
+    declare -i et=0   # end time
+
+    if [ -f "$1" ]; then
+        if [ -s "$1" ]; then
+
+            # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+            print_header
+
+            os=$(
+                    stat -f%z "$1" 2> /dev/null;  # OS X `stat`
+                    stat -c%s "$1" 2> /dev/null;  # GNU `stat`
+                )
+            print_row "original" "$os"
+            print_line_dotted
+
+            st=$( get_time )
+            gs=$( gzip -c "$1" | wc -c )
+            et=$( get_time )
+            gt=$(( $et - $st ))
+            print_row "gzip" "$(diff $gs $os)" "$(percentage $os $gs)" "$gt"
+
+            st=$( get_time )
+            dzs=$( zopfli -c "$1" | wc -c )
+            et=$( get_time )
+            dzt=$(( $et - $st ))
+            print_row "zopfli | 15" "$(diff $dzs $os)" "$(percentage $os $dzs)" "$dzt"
+
+            print_line
+
+            # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+            print_header
+            print_row "zopfli | 15" "$dzs" "" "$dzt"
+            print_line_dotted
+
+            print_row \
+                "gzip" \
+                "$( diff $gs $dzs )" \
+                "$( percentage $dzs $gs)" \
+                "$( diff $gt $dzt )" \
+                "$( percentage $dzt $gt)"
+
+            for i in ${zopfliIterationValues[@]}; do
+                st=$( get_time )
+                zs=$( zopfli -c --i"$i" "$1" | wc -c )
+                et=$( get_time )
+                zt=$(( $et - $st ))
+                print_row \
+                    "zopfli | $(printf "%-5s" "$i")" \
+                    "$( diff $zs $dzs )" \
+                    "$( percentage $dzs $zs)" \
+                    "$( diff $zt $dzt )" \
+                    "$( percentage $dzt $zt)"
+            done
+
+            print_line
+            printf "\n"
+
+            # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+        else
+            printf "%s" "'$1' is empty."
+        fi
+    else
+        printf "%s" "'$1' is not a file."
+    fi
+
+}
+
+main() {
+
+    local tmpFile=""
+
+    # The GNU `date` command has the `%N` interpreted sequence while other
+    # implementations don't. On MAC OS X `gdate` can be used instead of the
+    # native `date` if the `coreutils` package was installed.
+
+    if [ "$(date +%N)" != "N" ] || [ ! -x "$(command -v 'gdate')" ]; then
+        dateCmd="date +%s%N"
+    else
+        dateCmd="gdate +%s%N"
+    fi
+
+    while [ $# -gt 0 ]; do
+
+        printf "\n\n %s:\n" "$1"
+
+        # local file
+        if [ -f "$1" ]; then
+            print_stats "$1"
+
+        # URL
+        else
+
+            # Create local (temporary copy) of the URL's content
+            tmpFile=$(mktemp "/tmp/XXXXX");
+            curl -A "Mozilla/5.0 Gecko" --connect-timeout 30 -m 60 \
+                 -LsS "$1" > "$tmpFile"
+
+            print_stats "$tmpFile"
+            rm -rf "$tmpFile"
+
+        fi
+
+        shift 1
+    done
+
+}
+
+main "$@"
+

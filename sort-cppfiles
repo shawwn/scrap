@@ -1,0 +1,117 @@
+#!/usr/bin/env python
+
+#==============================================================================
+# Functionality
+#==============================================================================
+import pdb
+import sys
+import os
+import re
+
+# utility funcs, classes, etc go here.
+
+def asserting(cond):
+    if not cond:
+        pdb.set_trace()
+    assert(cond)
+
+def has_stdin():
+    return not sys.stdin.isatty()
+
+def reg(pat, flags=0):
+    return re.compile(pat, re.VERBOSE | flags)
+
+CPP_SRC = ['.cpp', '.c']
+CPP_H = ['.hpp', '.h']
+
+def cpp_split(fname):
+    return os.path.splitext(os.path.normpath(fname).lower())
+
+
+def is_src(fname):
+    base, ext = cpp_split(fname)
+    return ext in CPP_SRC
+
+
+def is_header(fname):
+    base, ext = cpp_split(fname)
+    return ext in CPP_H
+
+
+def same_module(lhs, rhs):
+    lbase, lext = cpp_split(lhs)
+    rbase, rext = cpp_split(rhs)
+    if lbase == rbase:
+        if lext in CPP_SRC and rext in CPP_H:
+            return 0
+        if rext in CPP_SRC and lext in CPP_H:
+            return 1
+
+
+def rearrange(lst, src, dst):
+    assert(src >= 0 and src < len(lst))
+    assert(dst >= 0 and dst <= len(lst))
+    x = lst[src]
+    del lst[src]
+    if src < dst:
+        dst -= 1
+    lst.insert(dst, x)
+
+
+def sort_module(fnames, idx):
+    for i in xrange(idx + 1, len(fnames)):
+        offset = same_module(fnames[idx], fnames[i])
+        if offset is not None:
+            rearrange(fnames, i, idx + offset)
+            return True
+    
+
+def sort_by_cpp_module(fnames):
+    for i in xrange(len(fnames)):
+        sort_module(fnames, i)
+
+
+#==============================================================================
+# Cmdline
+#==============================================================================
+import argparse
+
+parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter, 
+    description="""
+TODO
+""")
+     
+parser.add_argument('-v', '--verbose',
+    action="store_true",
+    help="verbose output" )
+
+args = None
+
+#==============================================================================
+# Main
+#==============================================================================
+
+def run():
+    if args.verbose:
+        print args
+    if not has_stdin():
+        # if there were no args and there was no input, prompt user.
+        print 'Enter input (press Ctrl-D when done):'
+    filepaths = [line.strip() for line in sys.stdin]
+
+    # DISABLED -- SLOW!
+    #sort_by_cpp_module(filepaths)
+
+    for path in filepaths:
+        print path
+
+def main():
+    global args
+    if not args:
+        args, leftovers = parser.parse_known_args()
+        args.args = leftovers
+    return run()
+
+if __name__ == "__main__":
+    main()
+

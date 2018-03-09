@@ -1,0 +1,15 @@
+#!/bin/bash
+
+echoargs()
+{
+  # see http://stackoverflow.com/questions/6723426/looping-over-arrays-printing-both-index-and-value 
+  #   ... you would find the array keys with "${!foo[@]}" ... 
+  args=("$@")
+  for i in "${!args[@]}"; do
+    echo "\$$i=${args[$i]}"
+  done
+}
+
+echo "$0: \"\$@\" is:"
+echoargs "$@"
+

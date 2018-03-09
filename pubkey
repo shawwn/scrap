@@ -1,0 +1,3 @@
+#!/bin/bash
+cat `lsn ~/.ssh/id_*.pub | head -1`
+

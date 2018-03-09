@@ -1,0 +1,6 @@
+#!/bin/bash
+
+#rgrep $@ | nologs
+
+ag -C 5 "$@"
+

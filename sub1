@@ -1,0 +1,5 @@
+#!/bin/sh
+pattern="$1"
+replacement="$2"
+exec sed -E "s/$pattern/$replacement/"
+

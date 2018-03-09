@@ -1,0 +1,5 @@
+#!/bin/bash
+NC="nc -l ${1:-1234}"
+TAR="tar ${2:-xvz}"
+echo "$NC | $TAR"
+$NC | $TAR

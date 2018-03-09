@@ -1,0 +1,4 @@
+#!/bin/bash
+
+mergefiles '.h$' '.hpp$' '.cpp$' '.c$' "$@" 
+

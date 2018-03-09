@@ -1,0 +1,42 @@
+#!/bin/bash
+dir="`pwd`"
+cd "$(dirname "$0")"
+home="`pwd`"
+cd "${dir}"
+
+old="$1"
+new="$2"
+if [ -z "${old}" ]; then
+  echo "${home}"
+  exit 0
+fi
+
+found="$(echo "`llbin "${new}"`" | grep -i "^${new}$" | firstline)"
+script="`which "${found}"`"
+scriptdir="$(dirname "${script}")"
+if [ -e "${script}" ]; then
+  1>&2 echo "${new} already exists at ${script}"
+  if [ -z "${noedit}" ]; then
+    1>&2 echo "Opening it in an editor..."
+  fi
+else
+  found="$(echo "`llbin "${old}"`" | grep -i "^${old}$" | firstline)"
+  if [ -z "${found}" ]; then
+    1>&2 echo "No such scriptfile: ${old}"
+    exit 1
+  fi
+  script="`which "${found}"`"
+  scriptdir="$(dirname "${script}")"
+  cp "${script}" "${scriptdir}/${new}"
+
+  if [ ! -t 0 ]; then
+    cat > "${scriptdir}/${new}"
+  fi
+
+  echo "\"${script}\" => \"${scriptdir}/${new}\""
+fi
+
+if [ -z "${noedit}" ]; then
+  exec edit "${scriptdir}/${new}"
+fi
+

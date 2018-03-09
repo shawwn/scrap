@@ -1,0 +1,47 @@
+#!/bin/bash
+
+username=$1
+ip=$2
+#clientname=${3:-client1}
+clientname=${3}
+shift 1;
+shift 1;
+shift 1;
+
+keysdir=/etc/openvpn/easy-rsa/keys
+#destdir=.
+
+if [[ -z "$username" ]] || [[ -z "$ip" ]] || [[ -z "$clientname" ]]; then
+  echo ""
+  echo "usage:"
+  echo "  openvpn-fetch-client-files {server-username} {server-ip} {openvpn-client-name}"
+  echo ""
+  echo "the vars are incorporated into an scp invocation like:"
+  echo "  scp {server-username}@{server-ip}:${keysdir}/{openvpn-client-name}.key ${destdir:-$HOME/Downloads}"
+  echo ""
+  exit 1
+fi
+
+destdir=.
+
+keyfiles="${clientname}.key ${clientname}.crt client.ovpn ca.crt"
+
+# you may need to run this on your server manually, due to weirdness
+# with a remote server prompting a shell script to enter a password.
+cat <<EOF
+ssh ${username}@${ip} "sudo chmod 755 '${keysdir}' ; cd '${keysdir}' ; sudo chown ${username} ${keyfiles}"
+EOF
+#ssh ${username}@${ip} "sudo chmod 755 '${keysdir}' ; cd '${keysdir}' ; sudo chown ${username} ${keyfiles}"
+
+#
+# copy the files.
+#
+read -r -d '' cmd <<EOF
+sshtar ${username} ${ip} --remote-dir ${keysdir} -o ${destdir} $@
+EOF
+
+# cat <<EOF
+# $(echo $cmd " $keyfiles")
+# EOF
+$(echo $cmd " $keyfiles")
+

@@ -1,0 +1,3 @@
+#!/bin/sh
+#nc -l 1234 | gunzip
+nc -l 1234 

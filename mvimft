@@ -1,0 +1,29 @@
+#!/bin/bash
+
+# FILETYPE=$1
+# shift
+
+# INPUT="$@"
+# if [ -z "$INPUT" ]; then
+#   INPUT=-
+# fi
+
+
+# if [ -z $FILETYPE ]; then
+#     echo "mvimft filetype"
+#     echo "example:"
+#     echo "    cat code.rb | mvimft ruby -"
+#     exit 1
+# fi
+
+# [[ "$FILETYPE" == "rb" ]] && FILETYPE=ruby
+# [[ "$FILETYPE" == "py" ]] && FILETYPE=python
+# [[ "$FILETYPE" == "js" ]] && FILETYPE=javascript
+
+# cat <<EOF
+# eexc mvim -c "set ft=$FILETYPE" "$INPUT"
+# EOF
+# exec mvim -c "set ft=$FILETYPE" "$INPUT"
+
+exec editft "$@"
+

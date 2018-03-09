@@ -1,0 +1,58 @@
+#!/bin/bash
+
+files=(
+2011-09-04\ 21.43.02.jpg
+2011-09-05\ 10.23.14.jpg
+2011-09-09\ 12.31.16.jpg
+2011-09-11\ 08.43.12.jpg)
+
+echo
+echo loop over array:
+echo
+for elem in "${files[@]}"; do
+  echo $elem
+done
+
+
+#------------------------------------------------------------------------------
+# Provide `echovars`, a way to print a list of variables for testing
+# purposes.
+#------------------------------------------------------------------------------
+
+echovars()
+{
+  for var in $@; do
+    echo "$var=${!var}"
+  done
+}
+
+echo
+echo echovars:
+echo
+echovars USER HOME PATH
+
+#------------------------------------------------------------------------------
+# Provide `echoargs`, a way to print an array for testing purposes.
+#------------------------------------------------------------------------------
+
+echoargs()
+{
+  # see http://stackoverflow.com/questions/6723426/looping-over-arrays-printing-both-index-and-value 
+  #   ... you would find the array keys with "${!foo[@]}" ... 
+  args=("$@")
+  for i in "${!args[@]}"; do
+    echo "\$$i=${args[$i]}"
+  done
+}
+
+echo 
+echo "echoargs (also a demo of how to pass an array whose items contain spaces):"
+echo
+echoargs "${files[@]}"
+
+echo 
+echo "echoargs commandline params:"
+echo
+echoargs "$@"
+
+

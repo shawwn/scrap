@@ -1,0 +1,17 @@
+#!/bin/bash
+echo "undoing:"
+echo "------------------------------------------------------"
+git-commit-message-last
+echo "------------------------------------------------------"
+
+read -r -p "Reset this commit? [y/N] " response
+if [[ $response =~ ^([yY][eE][sS]|[yY])$ ]]; then
+  :
+else
+  exit 1
+fi
+
+git reset --soft HEAD~1 $*
+git status
+
+

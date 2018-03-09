@@ -1,0 +1,12 @@
+#!/bin/bash
+IFACE=${2:-en0}
+ADDR=$1
+if [ -z $ADDR ]; then
+    echo specify addrs. Example: 
+    echo "    netinfo-netdiscover 192.168.231.0/24"
+    exit 1;
+fi
+echo netdiscover -i $IFACE -r $ADDR
+     netdiscover -i $IFACE -r $ADDR
+
+

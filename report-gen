@@ -1,0 +1,22 @@
+#!/bin/bash
+
+OUTFILE=$1
+FRONT_MATTER=$2
+LITANY=$3
+APPENDICES=$4
+shift 1;
+shift 1;
+shift 1;
+shift 1;
+
+if [ -z "$OUTFILE" ] || [ -z "$FRONT_MATTER" ] || [ -z "$LITANY" ] || [ -z "$APPENDICES" ]; then
+  echo "report-gen {outfile} {front_matter} {litany} {appendices}"
+  exit 1
+fi
+
+cat << EOF
+pdfcat --output "$OUTFILE" —verbose "$FRONT_MATTER" "$LITANY" "$APPENDICES"
+EOF
+pdfcat --output "$OUTFILE" —verbose "$FRONT_MATTER" "$LITANY" "$APPENDICES"
+
+

@@ -1,0 +1,14 @@
+#!/bin/bash
+git checkout master
+git merge patch-integration
+git branch -d patch-integration
+git clean -f
+cat <<EOF
+
+
+now you should do:
+
+git push origin master
+EOF
+
+

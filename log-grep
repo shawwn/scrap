@@ -1,0 +1,6 @@
+#!/bin/sh
+x="$1"
+shift 1
+cat /var/log/syslog | exec grep "${x}" $*
+
+

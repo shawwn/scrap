@@ -1,0 +1,22 @@
+#!/usr/bin/env python
+import sys
+import argparse
+import hashlib
+
+parser = argparse.ArgumentParser()
+"""
+parser.add_argument('hashname')
+parser.add_argument('infile', nargs='?', type=argparse.FileType('r'),
+                    default=sys.stdin)
+                    """
+args = parser.parse_args()
+
+for i in xrange(1000 - 1):
+    for j in xrange(1000 - 1):
+        for k in xrange(10000 - 1):
+            num = '%03d-%03d-%04d' % (i+1, j+1, k+1)
+            m = hashlib.new('sha1')
+            m.update(num)
+            digest = m.hexdigest()
+            print num, digest
+

@@ -1,0 +1,12 @@
+#!/bin/bash
+
+read -r -d '' script <<'EOF'
+n = int(arg[0])
+if n < 0:
+  bash("lastfirst %d" % -n)
+else:
+  bash("firstlast %d" % (n + 1))
+
+EOF
+python -c "import sys; from scrap import bash; arg = sys.argv[1:]; $script" "$@"
+

@@ -1,0 +1,20 @@
+#!/bin/bash
+
+CMD='/bin/bash'
+
+if [[ "$1" == "sudo" ]]; then
+  CMD="sudo $CMD"
+  shift 1
+fi
+
+if [[ ! -z "$1" ]]; then
+  CMD="$CMD $*"
+fi
+
+cat <<ENDSCRIPT
+cat <<'ENDTEST' | $CMD
+$(netpen-getinfo)
+ENDTEST
+ENDSCRIPT
+
+

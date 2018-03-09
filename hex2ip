@@ -1,0 +1,42 @@
+#!/usr/bin/env python
+
+#==============================================================================
+# Functionality
+#==============================================================================
+
+# utility funcs, classes, etc go here.
+
+#==============================================================================
+# Cmdline
+#==============================================================================
+import argparse
+
+parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter, 
+    description="""
+TODO
+""")
+     
+parser.add_argument('-v', '--verbose',
+    action="store_true",
+    help="verbose output" )
+
+parser.add_argument('args', nargs=argparse.REMAINDER)
+
+#==============================================================================
+# Main
+#==============================================================================
+import sys
+import re
+import socket
+import struct
+import scrap_utils
+
+def main():
+    for line in sys.stdin:
+        sys.stdout.write(scrap_utils.hex2ip(line))
+
+
+if __name__ == "__main__":
+    args = parser.parse_args()
+    main()
+

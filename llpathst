@@ -1,0 +1,4 @@
+#!/bin/bash
+
+revlines | resub '^([^/]+)' '"\1" ' --multiline | revlines | cols r0 1 2 r3 4:
+

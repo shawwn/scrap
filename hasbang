@@ -1,0 +1,23 @@
+#!/bin/bash
+
+V=
+if [[ "$1" == "-v" ]]; then
+    V=-v
+    shift
+fi
+
+BANG=$1
+shift
+
+if [ -z $BANG ]; then
+    echo 'specify bang to match'
+    exit 1
+fi
+
+for filename in "$@"; do
+    if [ ! -z "`head -1 $filename | grep '#!' | grep $V -e $BANG`" ]; then
+        echo $filename
+    fi
+done
+
+

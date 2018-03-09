@@ -1,0 +1,12 @@
+#!/bin/bash
+
+DIR="$1"
+shift 1
+
+if [ -z "$DIR" ]; then
+  DIR="$PWD"
+fi
+
+find "$DIR" -type f \( -exec sha1sum {} \; \) 
+
+

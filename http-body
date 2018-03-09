@@ -1,0 +1,4 @@
+#!/bin/bash
+replace_n_rn | resub -m --first "^ [^\r\n]* HTTP/1.1 .*? \r\n\r\n" ""
+printf "\r\n"
+

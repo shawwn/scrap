@@ -1,0 +1,47 @@
+#!/bin/bash 
+
+scanner=portscan2
+nparallel=4
+verbose=$(echo "$*" | flags)
+
+read -r -d '' program <<EOF
+echo "scanning {}"
+ip="\$(echo "{}" | cols 0)"
+desc="{}"
+
+#
+# http://stackoverflow.com/questions/12451278/bash-capture-stdout-to-a-variable-but-still-display-it-in-the-console
+#
+exec 5>&1
+results=\$($scanner "\$ip" | tee >(cat - >&5))
+
+echo ""
+echo "======================================================================"
+echo " \$desc"
+echo "======================================================================"
+#echo "\$(echo "\$results" | beautify-portscan | replace "\$ip" "\$desc")"
+echo "\$(echo "\$results" | beautify-portscan)"
+echo "----------------------------------------------------------------------"
+echo ""
+echo ""
+echo ""
+echo ""
+echo ""
+
+EOF
+
+# echo "$program"
+
+read -r -d '' arpscan <<EOF
+`netinfo-arp-scan "$@"`
+EOF
+
+echo ""
+echo ""
+echo "$arpscan"
+echo ""
+echo ""
+echo ""
+echo "$arpscan" | match '^[0-9]+[.]' | print0 | xargs -0 parallel -j $nparallel -i bash -c "$program" -- | grep -v 'Ports scanned:'
+
+

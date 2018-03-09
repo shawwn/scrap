@@ -1,0 +1,4 @@
+#!/bin/bash
+
+parallel --gnu "wget {}"
+

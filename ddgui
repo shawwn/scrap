@@ -1,0 +1,3 @@
+#!/bin/bash
+sudo /Applications/dd-gui.app/Contents/MacOS/ddgui $*
+

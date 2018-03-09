@@ -1,0 +1,2 @@
+#!/bin/bash
+first "$@" | print0 | xargs -0 open

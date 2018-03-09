@@ -1,0 +1,3 @@
+#!/bin/bash
+gzip -c "$@" | wc -c
+

@@ -1,0 +1,3 @@
+#!/bin/bash
+xbuild /p:Configuration=Release "$@"
+

@@ -1,0 +1,13 @@
+#!/bin/sh
+cat << "EOF"
+#!/usr/bin/env python
+
+import fileinput
+import sys
+
+args = sys.argv[1:]
+
+for line in fileinput.input():
+  print(line)
+EOF
+  

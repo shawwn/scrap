@@ -1,0 +1,19 @@
+#!/bin/bash
+
+ifname=$1
+if [ -z "$ifname" ]; then
+  echo "$ decrypt <fname>.gpg"
+  echo "generates <fname> when decrypted."
+  exit 1
+fi
+ofname="$(echo $ifname | replace ".gpg" '')"
+if [ -z "$ofname" ]; then
+  echo "bad ofname"
+  exit 1
+fi
+
+gpg -d "$ifname" > "$ofname"
+
+echo ''
+echo $(realpath "$ofname")
+

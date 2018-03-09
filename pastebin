@@ -1,0 +1,3 @@
+#!/bin/bash
+cat | curl -s -F 'sprunge=<-' http://sprunge.us | ctrlctrim
+

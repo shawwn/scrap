@@ -1,0 +1,3 @@
+#!/bin/bash
+exec ssh-keygen -t rsa -b 4096 -C "" "$@" 
+

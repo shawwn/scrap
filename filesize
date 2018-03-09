@@ -1,0 +1,2 @@
+#!/bin/sh
+du -h $* | gsort -h

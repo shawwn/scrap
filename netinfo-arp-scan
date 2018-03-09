@@ -1,0 +1,23 @@
+#!/bin/bash
+
+#
+# http://unix.stackexchange.com/questions/103241/how-to-use-ifconfig-to-show-active-interface-only
+#
+default_iface="$(ifconfig | pcregrep -M -o '^[^\t:]+:([^\n]|\n\t)*status: active' | egrep -o -m 1 '^[^\t:]+')"
+default_addr="--localnet"
+
+#iface=${1:-en0}
+iface=${1:-$default_iface}
+addr=${2:-$default_addr}
+shift 1
+shift 1
+
+if [ -z "$iface" ]; then
+    echo Specify an interface.  Example:
+    echo "    netinfo-arp-scan en0"
+    exit 1
+fi
+
+echo arp-scan "--interface=$iface" "$addr" "$@"
+     arp-scan "--interface=$iface" "$addr" "$@"
+

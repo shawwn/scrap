@@ -1,0 +1,3 @@
+#!/bin/bash
+exec awk '{ print $1; }' $*
+

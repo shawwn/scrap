@@ -1,0 +1,19 @@
+#!/usr/bin/env python
+import fileinput
+import sys
+import urllib
+
+args = sys.argv[1:]
+if len(args) <= 0:
+    pass
+
+for line in fileinput.input():
+    whitesp = line[len(line.rstrip()):]
+    quoted = urllib.quote(line.rstrip())
+    if quoted.lower().startswith(r'https%3a//'):
+        quoted = quoted.replace(quoted[:len(r'https%3a//')], 'https://')
+    if quoted.lower().startswith(r'http%3a//'):
+        quoted = quoted.replace(quoted[:len(r'http%3a//')], 'http://')
+    sys.stdout.write(quoted)
+    sys.stdout.write(whitesp)
+

@@ -1,0 +1,34 @@
+#!/bin/bash
+
+#exec /bin/ls -1 -a "$@"
+
+# exec /bin/ls -1 -a -t -r \
+#   | lua -e 'while true do l = io.read("*line"); if l then print(l) else break end end'
+
+# exec find "${1:-.}" -maxdepth 1 -type f | lua -e '
+# sep = package.config:sub(1,1)
+# chomp = "." .. sep
+# while true do
+#   l = io.read("*line")
+#   if not l then break end
+#   if l:sub(1,3) == chomp then
+#     l = l:sub(3)
+#   end
+#   print(l)
+# end'
+
+exec find "${1:-.}" -maxdepth 1 -type f | sed 's/^.*\///g'
+# echo "foo" \
+  # | lua -e '
+# (function ()
+  # sep = package.config:sub(1,1)
+  # for s in io.lines() do
+  #   x = s:match("^.*" .. sep)
+  #   if x then
+  #     s:sub(#x + 1)
+  #   else
+  #     x
+  #   end
+  # end)()
+# '
+

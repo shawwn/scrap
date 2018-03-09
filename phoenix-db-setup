@@ -1,0 +1,8 @@
+#!/bin/sh
+
+cat <<EOF
+mix ecto.create && mix ecto.migrate
+EOF
+mix ecto.create && mix ecto.migrate
+
+

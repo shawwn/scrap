@@ -1,0 +1,26 @@
+#!/bin/bash
+
+#SYNC=ssh-sync
+SYNC="rsync -Pravdtze ssh --relative"
+HOMEDIR=/home/pi
+PI=$1
+#PI=`ssh-rpi`
+shift 1
+
+if [[ -z "$PI" ]]; then
+  echo "Cannot find rpi IP"
+  exit 1
+fi;
+
+echo $PI
+
+while [[ ! -z "$1" ]]; do
+  TARGET=$1
+  shift 1
+
+  #echo "USER=($USER) PWD=(`pwd`) PATH=($PATH)"
+
+  echo "$SYNC $TARGET $PI:$HOMEDIR"
+        $SYNC $TARGET $PI:$HOMEDIR
+done
+

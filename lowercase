@@ -1,0 +1,9 @@
+#!/usr/bin/env python
+import fileinput
+import sys
+
+args = [x.decode('unicode-escape') for x in sys.argv[1:]]
+
+data = sys.stdin.read()
+sys.stdout.write(data.lower())
+

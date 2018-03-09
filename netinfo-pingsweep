@@ -1,0 +1,10 @@
+#!/bin/bash
+
+flags=-oG
+
+if [[ ! -z "$2" ]]; then
+  nmap -sP -${flags} --reason -n $1 -oA $2
+else
+  nmap -sP -${flags} --reason -n $1 
+fi
+

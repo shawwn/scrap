@@ -1,0 +1,33 @@
+#!/bin/bash
+
+# psqlgetfield user_info adddress_1 userid=189127
+
+TABLE=$1
+COLUMN=${2:-*}
+WHERE=${3:-1=1}
+
+if [ -z "$TABLE" ];
+then
+  echo 'Table name not specified' >&2
+  exit 1
+fi
+
+if [ -z "$WHERE" ];
+then
+  echo 'WHERE clause not specified' >&2
+  exit 1
+fi
+
+if [[ ! $WHERE == *"="* ]]
+then
+  echo "WHERE clause must contain an = sign as a safeguard against wiping the db" >&2
+  exit 1
+fi
+
+
+echo "$(psqldata)"
+echo "SELECT $COLUMN FROM $TABLE WHERE $WHERE;"
+echo "UPDATE $TABLE SET $COLUMN=(:'hex') WHERE $WHERE;"
+echo "SELECT $COLUMN FROM $TABLE WHERE $WHERE;"
+
+

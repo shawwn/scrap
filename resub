@@ -1,0 +1,114 @@
+#!/usr/bin/env python
+
+#==============================================================================
+# Functionality
+#==============================================================================
+
+# utility funcs, classes, etc go here.
+
+#==============================================================================
+# Cmdline
+#==============================================================================
+import argparse
+
+parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter, 
+    description="""
+TODO
+""")
+     
+parser.add_argument('-v', '--verbose',
+    action="store_true",
+    help="re.VERBOSE (set by default)" )
+parser.add_argument('-nv', '--no-verbose', dest='verbose',
+    action="store_false",
+    help="disable re.VERBOSE" )
+parser.set_defaults(verbose=True)
+
+parser.add_argument('-g', '--global', dest='global_',
+    action="store_true",
+    help="match all instances of the pattern (default)" )
+parser.add_argument('-ng', '--no-global', '-1', '--first', '--one',
+    dest='global_',
+    action="store_false",
+    help="match only one instance of the pattern" )
+parser.set_defaults(global_=True)
+
+parser.add_argument('-m', '--multiline',
+    action="store_true",
+    help="re.MULTILINE | re.DOTALL" )
+     
+parser.add_argument('-f', '--find',
+    action="store_true",
+    help="print only the part of the string matched by pattern" )
+     
+parser.add_argument('-s', '--sep', '--separator', dest='separator',
+    default="\n",
+    help="the separator to be printed after every match in find mode" )
+
+parser.add_argument('pattern')
+parser.add_argument('replacement', nargs='?', default='\g<0>')
+
+#==============================================================================
+# Main
+#==============================================================================
+import sys
+import re
+import sre_constants
+
+def try_groups(m, repl):
+    if True:
+        return m.expand(repl)
+    else:
+        # Experimental...
+        try:
+            return m.expand(repl)
+        except sre_constants.error as e:
+            r = re.compile(r'  ( \\g < .*? > )  ', re.VERBOSE)
+            for g in r.finditer( repl ):
+                test = repl[:g.start(1)] + repl[g.end(1):]
+                #print "group: %s" % test
+                try:
+                    return m.expand(test)
+                except sre_constants.error as e:
+                    pass
+
+
+if __name__ == "__main__":
+    args = parser.parse_args()
+    # print args
+    sep = args.separator.decode('unicode-escape')
+
+    trim_newline = re.compile("\r?\n$")
+
+    indata = sys.stdin.read()
+    lines = [trim_newline.sub('', line) for line in indata]
+
+    flags = 0
+    if args.verbose:
+        flags |= re.VERBOSE
+    if args.multiline:
+        flags |= re.MULTILINE | re.DOTALL
+        lines = ['\n'.join(lines) + '\n']
+
+    rx = re.compile(args.pattern, flags)
+
+    if args.find:
+        for m in re.finditer(rx, indata):
+            sys.stdout.write(try_groups(m, args.replacement))
+            if len(sep) > 0:
+                sys.stdout.write(sep)
+            if not args.global_:
+                break
+        """
+        pos = 0
+        while True:
+            m = rx.search(line, pos=pos)
+            if not m:
+                break
+            sys.stdout.write(try_groups(m, args.replacement))
+            sys.stdout.write(sep)
+            pos = m.end(0)+1
+        """
+    else:
+        sys.stdout.write(re.sub(rx, args.replacement, indata, count=0 if args.global_ else 1))
+

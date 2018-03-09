@@ -1,0 +1,11 @@
+#!/bin/bash
+l=""
+while [ ! -z "$1" ]
+do
+  pos="${1:-0}"
+  pos="$(math "${pos} + 1")"
+  l="${l} \$${pos}"
+  shift 1
+done
+exec awk "{ print ${l}; }"
+

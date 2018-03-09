@@ -1,0 +1,21 @@
+#!/bin/sh
+
+if [[ "$1" == "sudo" ]]; then
+  FLAGS="sudo"
+  shift 1
+fi
+
+if [[ ! -z "$1" ]]; then
+  TAIL="| $*"
+fi
+
+cat <<EO3
+
+`bashnolog`
+
+mkdir -p "$(netpen-outdir)"
+`netpen-getinfo2 $FLAGS "> \"$(netpen-outdir)/info.txt\" 2>&1"`
+
+cat "$(netpen-outdir)/info.txt" $TAIL
+EO3
+

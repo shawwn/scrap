@@ -1,0 +1,34 @@
+#!/bin/bash
+
+kind=${1:-html}
+shift 1
+
+if [ "$kind" == "none" ]; then
+  cat
+  exit 0
+else
+
+
+  if [ "$kind" == "js" ]; then
+    kind="js-beautify"
+    params="--disable-preserve-newlines   \
+      --space-in-paren               \
+      --space-after-anon-function    \
+      --wrap-line-length=100         \
+      --end-with-newline             \
+      --eol=\r\n                     \
+      --stdin"
+    
+  else
+    kind="$kind-beautify.js"
+    params="-f -"
+  fi
+
+  # cat <<EOF
+  # $kind $params $*
+  # EOF
+
+  replace_n_rn | $kind $params $*
+
+
+fi

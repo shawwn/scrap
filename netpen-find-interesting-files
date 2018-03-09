@@ -1,0 +1,237 @@
+#!/usr/bin/env python
+import sys
+
+files = ''
+
+# logfiles? maybe?
+if True:
+    files += """
+    \.log[s]\?$
+    """.lstrip()
+
+# txt files? maybe? probably bad idea?
+if True:
+    files += """
+    \.txt$
+    """.lstrip()
+
+# installers.
+if True:
+    files += """
+    \.dmg$
+    \.pkg$
+    \.msi$
+    """.lstrip()
+
+# encrypted drives.
+if True:
+    files += """
+    \.tc$
+    /Knox$
+    \.msi$
+    """.lstrip()
+
+# virtualbox.
+if True:
+    files += """
+    virtualbox.*
+    vbox.*
+    \.hdd$
+    \.ova$
+    \.ovf$
+    \.qed$
+    \.qm$
+    \.r0$
+    \.raw$
+    \.vbox$
+    \.vbox-extpack$
+    \.vbox-prev$
+    \.vdi$
+    \.vhd$
+    \.vmdk$
+    \.xml-prev$
+    """.lstrip()
+
+# vmware.
+if True:
+    files += """
+    \.nvram$
+    \.vmdk$
+    \.vmem$
+    \.vmsd$
+    \.vmsn$
+    \.vmss$
+    \.vmtm$
+    \.vmx$
+    \.vmxf$
+    \.dsk$
+    """.lstrip()
+
+# docker, vagrant.
+if True:
+    files += """
+    Dockerfile$
+    \.docker.*$
+    Vagrantfile$
+    \.vagrant.*$
+    """.lstrip()
+
+# archives.
+if True:
+    files += """
+    \.zip$
+    \.rar$
+    \.7z$
+    \.tar[^/]*$
+    """.lstrip()
+
+# passwords
+if True:
+    files += """
+    /etc/shadow$
+    \.kdb$
+    \.1pass.*$
+    keychain.*
+    """.lstrip()
+
+# crypto
+if True:
+    files += """
+    \.gpg$
+    \.asc$
+    """.lstrip()
+
+# keyfiles
+if True:
+    files += """
+    \.crt$
+    \.key$
+    \.pem$
+    \.pub$
+    \.rsa$
+    _rsa$
+    """.lstrip()
+
+# why not.
+if True:
+    files += """
+    \.img$
+    \.prv$
+    \.priv$
+    \.bak$
+    """.lstrip()
+
+# interesting codefiles, repositories, etc
+if True:
+    files += """
+    \.svn$
+    \.svnignore$
+    \.git$
+    \.gitignore$
+    \.hg$
+    \.hgignore$
+    \.npm$
+    \.nvm$
+    \.rvm$
+    \.repo.*$
+    /README$
+    /README\.md$
+    /INSTALL$
+    \.sh$
+    """.lstrip()
+
+# interesting dotfiles, history files, config files, etc
+if True:
+    files += """
+    \.lesshst$
+    \.profile$
+    \.bash.*$
+    \.zsh.*$
+    \.gnupg*$
+    \.sh_*$
+    \.irb*$
+
+    \.sql.*$
+    \.vnc.*$
+
+    \.vim[^/]*$
+    history[^/]*$
+
+    \.[^/]\+rc$
+    """.lstrip()
+
+# data files
+if True:
+    files += """
+    \.tex$
+    \.latex$
+    \.pdf$
+    \.epub$
+    \.mobi$
+
+    \.csv$
+    \.doc$
+    \.docx$
+    \.xls$
+    \.xlsx$
+    \.ppt$
+    \.pptx$
+
+    \.pages$
+    \.numbers$
+
+    \.mp4$
+    \.mov$
+    \.mkv$
+    \.flv$
+    \.avi$
+
+    \.mp3$
+    \.ogg$
+    \.wav$
+    \.ram$
+
+    \.xml$
+    \.json$
+    """.lstrip()
+
+# images
+if True:
+    files += """
+    \.bmp$
+    \.jpg$
+    \.jpeg$
+    \.png$
+    \.gif$
+    \.tga$
+    \.exif$
+    \.psd$
+    """.lstrip()
+
+# Permission denied errors, because it tells us interesting places to
+# look if we acquire root.
+if True:
+    files += """
+    Permission denied.*$
+    """.lstrip()
+
+args = sys.argv[1:]
+
+dst = '/'
+if len(args) >= 1:
+    dst = args[0]
+    args = args[1:]
+
+# add any arguments.
+files += '\n'
+for arg in args:
+    files += arg + '\n'
+
+#output = """find %s | grep -i '\(%s\)'
+#""".strip() % (dst, r'\|'.join([x.strip() for x in files.strip().split('\n') if len(x.strip()) > 0]))
+
+output = """find %s 2>&1 | grep -i %s
+""".strip() % (dst, ' '.join([("-e '%s'" % x.strip()) for x in files.strip().split('\n') if len(x.strip()) > 0]))
+
+print output
+

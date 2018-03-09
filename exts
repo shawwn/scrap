@@ -1,0 +1,8 @@
+#!/bin/bash
+
+if [ -z "$*" ]; then
+  splitext | sort | uniq -c
+else
+  l lltype -1 "$@" | splitext | sort | uniq -c
+fi
+

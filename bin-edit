@@ -1,0 +1,25 @@
+#!/bin/bash
+dir="`pwd`"
+cd "$(dirname "$0")"
+home="`pwd`"
+cd "${dir}"
+
+old="$1"
+if [ -z "$old" ]; then
+  echo "  bin-edit <existing-script-name>"
+  exit 1
+fi
+
+found="$(echo "`llbin "$old"`" | grep -i "^$old$" | firstline)"
+script="`which "$found"`"
+scriptdir="$(dirname "$script")"
+if [ -e "$script" ]; then
+  echo "$old exists at $script"
+  echo "Opening it in an editor..."
+else
+  1>&2 echo "No such script $old"
+  exit 1
+fi
+
+exec edit "$script"
+

@@ -1,0 +1,39 @@
+#!/usr/bin/env python
+import fileinput
+import sys
+
+args = sys.argv[1:]
+if len(args) <= 0:
+    pass
+
+# def ch (s n):
+#     if n >= len(s):
+#         return ''
+#     if n < -len(s):
+#         return ''
+#     return s[n]
+
+# def parse_esc(s):
+#     i = 0
+#     while True:
+#         if i >= len(s):
+#             break
+#         if ch(s, i) != 0x1B:
+#             yield ch(s i)
+#         else:
+#             v = [ch(s i+1),
+#                     ch(s i+2),
+#                     ch(s i+3),
+#                     ch(s i+4),
+#                     ch(s i+5)]
+#             if v[0] == 7:
+#                 yield ["sc"]
+#             if v[0] == 8: yield ["sc"]
+
+#                 yield ["esc" "sc" v[0]]
+
+
+
+for line in sys.stdin:
+    sys.stdout.write(line.rstrip()[::-1] + '\n')
+

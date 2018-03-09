@@ -1,0 +1,22 @@
+#!/bin/bash
+pushd . > /dev/null
+cd /usr/libexec
+echo "Comment out this block, as follows: "
+sudo mvim ./locate.updatedb
+cat << 'EOF'
+# if [ "$(id -u)" = "0" ]; then
+# 	rc=0
+# 	export FCODES=`mktemp -t updatedb`
+# 	chown nobody $FCODES
+# 	tmpdb=`su -fm nobody -c "$0"` || rc=1
+# 	if [ $rc = 0 ]; then
+# 		install -m 0444 -o nobody -g wheel $FCODES /var/db/locate.database
+# 	fi
+# 	rm $FCODES
+# 	exit $rc
+# fi
+EOF
+echo "Updating locate database..."
+sudo ./locate.updatedb
+echo "Updating complete!"
+popd > /dev/null

@@ -1,0 +1,8 @@
+#!/bin/bash
+old="$1"
+new="$2"
+pattern="${3:-*}"
+
+find . | ag -Q "$old" | xargs -n 1 -I {} sh -c "mv {} \$(echo {} | replace "$old" "$new")"
+
+

@@ -1,0 +1,5 @@
+#!/bin/bash
+
+# http://codybonney.com/increase-the-max-number-of-ptys-on-os-x-10-8-3/
+sudo sysctl -w kern.tty.ptmx_max=999
+

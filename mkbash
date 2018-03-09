@@ -1,0 +1,10 @@
+#!/bin/bash
+
+filename="$HOME/.bash_profile"
+
+if [ -z "$EDITOR" ]; then
+  vi "$filename"
+else
+  $EDITOR "$filename"
+fi
+

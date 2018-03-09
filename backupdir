@@ -1,0 +1,38 @@
+#!/bin/bash
+
+# usage examples:
+#
+#   backup the ~/bin folder minus large binary files:
+#     $ backupbin
+#
+#   backup the entire ~/bin folder
+#     $ backupbin all 
+#
+
+#=====================================================================
+# main
+#=====================================================================
+
+BAK="$1"
+DST="${2:-.}"
+DST="$(canonicalize_path "$(resolve_symlinks "$DST")")"
+shift 1
+shift 1
+NAME="$(basename "$BAK")"
+NAME="$NAME-`utcstamp`";
+if [ ! -z "$LABEL" ]; then
+  NAME="$NAME-$LABEL"
+fi
+
+BAK_DIR="$(dirname "$BAK")"
+BAK_SUBDIR="$(basename "$BAK")"
+
+# use $@ to pass in e.g. --exclude=path/some_subfolder
+[ ! -d "$DST" ] && mkdir -p "$DST"
+cat <<.
+\$(cd "$BAK_DIR" ; tar $@ -czvf "$DST/$NAME.tar.gz" "$BAK_SUBDIR/")
+.
+$(cd "$BAK_DIR" ; tar $@ -czvf "$DST/$NAME.tar.gz" "$BAK_SUBDIR/")
+
+echo "$NAME.tar.gz saved to $(dirname "$DST/$NAME.tar.gz")"
+

@@ -1,0 +1,36 @@
+#!/bin/bash
+
+cur="`git status | firstline | splitby ' ' | lastline`"
+
+if [ -z "$2" ]; then
+  1>&2 echo ""
+  1>&2 echo "rename a branch:"
+  1>&2 echo "  mvbranch <oldname> <newname>"
+  1>&2 echo ""
+  1>&2 echo "rename the current branch ($cur):"
+  1>&2 echo "  mvbranch - <newname>"
+  1>&2 echo ""
+  exit 1
+fi
+old="$1"
+new="$2"
+if [ "$old" = "-" ]; then
+  old="$cur"
+fi
+
+#
+# https://gist.github.com/lttlrck/9628955
+#
+cat <<EOF
+# To move branch $old to $new, copy-paste:
+
+# Rename branch locally
+git branch -m $old $new
+
+# Delete the old branch
+git push origin :$old
+
+# Push the new branch, set local branch to track the new
+git push --set-upstream origin $new
+EOF
+

@@ -1,0 +1,29 @@
+#!/bin/sh
+
+set -x
+
+src="$1"
+name="$2"
+if [ -z "$src" ] && [ -z "$name" ] 
+then
+  echo "binlink <src> <name>"
+  exit 1
+fi
+
+check() {
+  exists "$1"
+  if [ $? -gt 0 ]
+  then
+    echo "$1 not found"
+    exit 1
+  fi
+}
+
+check "${src}"
+src="$(realpath "${src}")"
+check "${src}"
+dst="$HOME/bin/${name}"
+exists "${dst}" && echo "~/bin/${name} already exists" && exit 1
+cd "${HOME}/bin"
+echo ln -s "${src}" "${name}"
+

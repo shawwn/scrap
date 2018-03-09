@@ -1,0 +1,5 @@
+#!/bin/bash
+IFACE=${1:-en0}
+echo arp -l -x -n -i $IFACE -a
+     arp -l -x -n -i $IFACE -a
+

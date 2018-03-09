@@ -1,0 +1,25 @@
+#!/bin/bash
+
+if [ ! -t 0 ]; then
+  # stdin is a pipe, so read from it.
+  args=-
+fi
+
+force="$(echo "$args" | grep -o '\b-f\b')"
+if [ -z "$force" ]; then
+  unset force
+fi
+
+# remove the force (-f) option. let it be passed as an arg instead.
+editor="$(echo $EDITOR | replace '-f' '')"
+if [ -z "`which $editor`" ]; then editor="gvim"; fi
+if [ -z "`which $editor`" ]; then editor="mvim"; fi
+if [ -z "`which $editor`" ]; then editor="vim"; fi
+if [ -z "`which $editor`" ]; then editor="vi"; fi
+if [ -z "`which $editor`" ]; then exit 1; fi
+
+# cat <<EOF
+# $editor $force "$@"
+# EOF
+exec $editor $force "$@" $args
+

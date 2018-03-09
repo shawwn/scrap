@@ -1,0 +1,6 @@
+#!/bin/sh
+x=; [ ! -z "$*" ] || x=*
+2>&1 1>/dev/null which shasum && (shasum -a 256 "$@" $x | grep -v SHA256SUMS) && exit 0
+2>&1 1>/dev/null which sha256sum && (shasum -a 256 "$@" $x | grep -v SHA256SUMS) && exit 0
+echo "no sha256sum found" && exit 1
+

@@ -1,0 +1,31 @@
+#!/usr/bin/env python
+#===============================================================================
+
+HEAD = """
+#!/bin/bash
+""".lstrip()
+
+BODY = """
+"""
+
+#===============================================================================
+
+import scrap
+import os
+
+def sh_is_exec(fname):
+    # if we don't have an extension or our extension is .sh then we're
+    # executable.
+    return scrap.isext(fname, None) or scrap.isext(fname, '.sh')
+
+def sh_gen(is_exec):
+    out = ''
+    if is_exec:
+        out += HEAD
+    out += BODY
+    return out
+
+fpath = scrap.mkscript(is_exec=sh_is_exec, gen=sh_gen)
+if fpath:
+    scrap.edit(fpath, 'sh')
+

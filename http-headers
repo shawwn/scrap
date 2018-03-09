@@ -1,0 +1,3 @@
+#!/bin/bash
+replace_n_rn | resub -m --first "\r\n\r\n .*" "\r\n\r\n"
+

@@ -1,0 +1,16 @@
+#!/bin/bash
+
+# psqlgetfield user_info adddress_1 userid=189127
+
+TABLE=$1
+COLUMN=${2:-*}
+WHERE=${3:-1=1}
+
+if [ -z "$TABLE" ];
+then
+  echo 'Table name not specified' >&2
+  exit 1
+fi
+
+echo "SELECT $COLUMN FROM $TABLE WHERE $WHERE;";
+

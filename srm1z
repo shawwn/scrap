@@ -1,0 +1,11 @@
+#!/bin/bash
+
+if [ -z "$*" ]; then
+  echo "wipes files with a single pass of random data, then a single pass of zeroes"
+  exit 1
+fi
+
+srm -v --simple --zero "$@"
+
+
+

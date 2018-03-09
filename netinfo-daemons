@@ -1,0 +1,6 @@
+#!/bin/sh
+cat <<EOF
+ps -eo 'tty,pid,comm' | grep ^?
+EOF
+ps -eo 'tty,pid,comm' | grep ^?
+

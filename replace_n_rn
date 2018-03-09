@@ -1,0 +1,6 @@
+#!/bin/bash
+
+# replace \n with \r\n without matching the \n in existing \r\n
+# strings.
+resub '\r\n' '\n' | resub '\n' '\r\n'
+

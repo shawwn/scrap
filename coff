@@ -1,0 +1,7 @@
+#!/bin/bash
+FILE=$1
+coffee -c "${FILE}.coffee"
+mvim "${FILE}.js"
+
+
+

@@ -1,0 +1,7 @@
+#!/bin/bash
+
+opts='--all'
+[ -n "$*" ] && opts=$*
+
+git branch $opts
+

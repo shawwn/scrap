@@ -1,0 +1,84 @@
+#!/usr/bin/env python
+
+#==============================================================================
+# Functionality
+#==============================================================================
+import pdb
+import sys
+import os
+import re
+import scrap
+
+# utility funcs, classes, etc go here.
+
+def asserting(cond):
+    if not cond:
+        pdb.set_trace()
+    assert(cond)
+
+def has_stdin():
+    return not sys.stdin.isatty()
+
+def reg(pat, flags=0):
+    return re.compile(pat, re.VERBOSE | flags)
+
+#==============================================================================
+# Cmdline
+#==============================================================================
+import argparse
+
+parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter, 
+    description="""
+TODO
+""")
+     
+parser.add_argument('-v', '--verbose',
+    action="store_true",
+    help="verbose output" )
+     
+parser.add_argument('-n', '--no-unescape-newlines',
+    action="store_true",
+    help="don't unescape newlines." )
+     
+parser.add_argument('-t', '--no-unescape-tabs',
+    action="store_true",
+    help="don't unescape tabs." )
+
+parser.add_argument('url')
+
+args = None
+
+#==============================================================================
+# Main
+#==============================================================================
+
+def cmd(name, args, stdin=None):
+    out, err = scrap._system(name, args, stdin=stdin)
+    if err:
+        sys.stderr.write(err)
+        sys.exit(1)
+    else:
+        return out
+
+def run():
+    if args.verbose:
+        print args
+    out = cmd('curl', [args.url])
+    out = cmd('quote', [], out)
+    if not args.no_unescape_newlines:
+        out = out.replace(r'\n', '\n')
+    if not args.no_unescape_tabs:
+        out = out.replace(r'\t', '\t')
+    sys.stdout.write(out)
+
+
+def main():
+    global args
+    if not args:
+        args, leftovers = parser.parse_known_args()
+        args.args = leftovers
+    return run()
+
+if __name__ == "__main__":
+    main()
+

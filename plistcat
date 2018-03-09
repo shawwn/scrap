@@ -1,0 +1,9 @@
+#!/bin/bash
+
+# default to reading from stdin.
+file=${1:--}
+shift 1
+
+# read stdin as plist file, convert to xml, print to stdout.
+exec plutil -convert xml1 -o - "$file" $*
+

@@ -1,0 +1,2 @@
+#!/bin/bash
+recgrep --color=always $@

@@ -1,0 +1,18 @@
+#!/bin/bash
+dir="`pwd`"
+cd "$(dirname "$0")"
+home="`pwd`"
+cd "${dir}"
+
+echopath () {
+  if [ -d "$1" ]; then
+    echo "$1"
+  fi
+}
+
+echopath "${home}"
+
+if [ "${home}" != "${HOME}/bin" ]; then
+  echopath "${HOME}/bin"
+fi
+

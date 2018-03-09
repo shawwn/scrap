@@ -1,0 +1,203 @@
+#!/usr/bin/env python
+
+KEYFILE_PATHS = r"""
+    ./tarsnap.key
+    ./{current_folder_name}.key
+    ../{current_folder_name}.key
+    ../keys/{current_folder_name}.key
+"""
+
+def get_keyfile_paths():
+    return KEYFILE_PATHS.replace('{current_folder_name}', current_folder_name())
+
+#==============================================================================
+# Common Utilities
+#==============================================================================
+import pdb
+import re
+import select
+
+def asserting(cond):
+    if not cond:
+        pdb.set_trace()
+    assert(cond)
+
+import psutil
+def kill(proc_pid):
+    process = psutil.Process(proc_pid)
+    for proc in process.get_children(recursive=True):
+        proc.kill()
+    process.kill()
+
+def execute(cmd, fnEachLine):
+    from subprocess import Popen, PIPE
+    if args.verbose:
+        print cmd
+    proc = Popen(cmd, stdout=PIPE)
+    for line in iter(proc.stdout.readline, ''):
+        if not fnEachLine:
+            sys.stdout.write(line)
+            sys.stdout.flush()
+        else:
+            ret = fnEachLine(line)
+            if ret:
+                kill(proc.pid)
+                return ret, proc.returncode or 0
+    proc.wait()
+    return None, proc.returncode
+
+#==============================================================================
+# Script-specific Functionality
+#==============================================================================
+
+class TSnapException(Exception):
+    pass
+
+class TS(object):
+    def __init__(self):
+        self.keyfile = find_keyfile()
+        self.head = args.head
+
+    def cmd(self, op, params):
+        op = op.lower()
+        if op in ['ll', 'ls']:
+            self.ls(archives=params)
+            return
+        if op in ['get', 'fetch', 'x']:
+            for archive in params:
+                self.fetch(archive, outdir=args.outdir)
+            return
+        return "unknown command: %s" % op
+
+    def ls(self, archives=None):
+        if not archives or len(archives) <= 0:
+            return self.shell(['--list-archives'], self.ls_stdout)
+        else:
+            for archive in archives:
+                return self.shell(['-tv', '-f', archive], self.ls_stdout)
+
+    def fetch(self, archive, outdir=None):
+        if not outdir:
+            outdir = archive
+        if os.path.exists(outdir):
+            val = raw_input("%s exists. Overwrite? [y/N]: " % os.path.abspath(outdir))
+            if not val.lower().startswith('y'):
+                return
+        prevdir = os.getcwd()
+        try:
+            if not os.path.isdir(outdir):
+                os.mkdir(outdir)
+            os.chdir(outdir)
+            retcode = self.shell(['-vx', '-f', archive, '*'])
+            if retcode != 0:
+                try:
+                    os.rmdir(outdir)
+                except OSError:
+                    pass
+            return retcode
+        finally:
+            os.chdir(prevdir)
+
+    def ls_stdout(self, line):
+        sys.stdout.write(line)
+        sys.stdout.flush()
+        if self.head:
+            self.head -= 1
+            return self.head <= 0
+
+    def shell(self, params, fnEachLine=None):
+        if not self.keyfile:
+            raise TSnapException("No keyfile found.  Run -h to see where the keyfile should be placed.")
+
+        return execute(['tarsnap', '--keyfile', self.keyfile] + list(params), fnEachLine)
+
+def current_folder_name():
+    import os
+    return os.path.basename(os.getcwd())
+
+def find_keyfile():
+    if args.keyfile:
+        return args.keyfile
+    for path in get_keyfile_paths().splitlines():
+        path = path.strip()
+        if len(path) > 0:
+            path = os.path.normpath(path)
+            if os.path.isfile(path):
+                return os.path.abspath(path)
+
+
+#==============================================================================
+# Cmdline
+#==============================================================================
+import argparse
+
+parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter, 
+    description="""
+TODO
+""")
+     
+parser.add_argument('-v', '--verbose',
+    action="store_true",
+    help="verbose output" )
+
+parser.add_argument('--keyfile',
+        help=""""specify a keyfile manually.
+If no keyfile is specified, will try to use any of the following: %s""" % get_keyfile_paths())
+
+parser.add_argument('--head',
+        default=None,
+        type=int,
+        help="`tsnap ll --head=2` will print only the first two archives." )
+
+parser.add_argument('-o', '--outdir',
+        help="the directory to download archives to (or the directory to download the contents of a single archive into)." )
+     
+parser.add_argument('cmd',
+        help="""command to be run:
+tsnap ls # list all archives.
+tsnap ls <archive> [<archive> ...]  # list the contents of the specified archives.
+tsnap x <archive> [<archive> ...]   # fetch archives to ./<archive>
+tsnap x <archive> [<archive> ...] -o <path>  # fetch archives to <path>/<archive>
+tsnap x <archive> -o <path>  # fetch archive to <path>
+""")
+
+args = None
+
+def _startup():
+    global args
+    if not args:
+        args, leftovers = parser.parse_known_args()
+        params = []
+        for param in leftovers:
+            m = re.match(r'[-] ([\d]+)', param, re.VERBOSE)
+            if m:
+                args.head = int(m.group(1))
+            else:
+                params.append(param)
+        args.args = params
+    return args
+
+#==============================================================================
+# Main
+#==============================================================================
+import sys
+import os
+
+def run():
+    ts = TS()
+    cmd = args.cmd.lower()
+    params = args.args
+    errmsg = ts.cmd(cmd, params)
+    if errmsg:
+        sys.stderr.write(errmsg + '\n')
+        sys.stderr.flush()
+        asserting(False)
+        sys.exit(1)
+
+def main():
+    _startup()
+    return run()
+
+if __name__ == "__main__":
+    main()
+

@@ -1,0 +1,14 @@
+#!/bin/sh
+
+if [ -e "package.json" ]; then
+cat <<EOF
+npm install
+EOF
+npm install
+fi
+
+cat <<EOF
+mix deps.get
+EOF
+mix deps.get
+

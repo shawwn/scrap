@@ -1,0 +1,14 @@
+#!/bin/bash
+
+searching="$@"
+input="$(cat)"
+
+if [ -z "$(printf "%s" "$searching" | trim)" ]; then
+  searching='-[^\s]+'
+fi
+
+# cat <<EOF
+# printf "%s" "$input" | re $searching
+# EOF
+printf "%s" "$input" | re $searching
+

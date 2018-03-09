@@ -1,0 +1,8 @@
+#!/bin/bash
+
+top=${1:-0}
+bot=${2:-0}
+
+skip-first-n-lines $top | skip-last-n-lines $bot
+
+

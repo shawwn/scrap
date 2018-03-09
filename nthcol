@@ -1,0 +1,27 @@
+#!/bin/bash
+
+col=$1
+
+if [[ -z "$col" ]]; then
+  echo "nthcol <num>"
+  exit 1
+fi
+
+
+spec=""
+
+while [[ ! -z "$col" ]]; do
+  spec="$spec \$$col \" \""
+  shift 1
+  col=$1
+done
+
+read -r -d '' cmd <<FOO
+`cat <<EOF | trim
+{ print $spec }
+EOF`
+FOO
+
+awk "$cmd"
+
+

@@ -1,0 +1,68 @@
+#!/bin/bash
+
+repo="$(           echo "$1" | python -c 'import sys; x=sys.stdin.read(); y=x.split("/"); print(y[1] if len(y) >= 2 else x)')"
+github_username="$(echo "$1" | python -c 'import sys; x=sys.stdin.read(); y=x.split("/"); print(y[0] if len(y) >= 2 else "")')"
+branch="${2:-master}"
+subfolder="$3"
+
+if [[ -z "$subfolder" ]]; then
+  subfolder="$repo"
+fi
+
+if [[ -z "$github_username" ]] || [[ -z "$repo" ]] || [[ -z "$branch" ]] || [[ -z "$subfolder" ]]; then
+  echo "github-subtree-pull <github_username>/<repo_name> <branch> <subfolder>"
+  echo ""
+  echo " Updates the subtree in <repo_name>/"
+  echo ""
+  echo " Branch defaults to master"
+  echo " Subfolder defaults to <repo_name>"
+  echo ""
+  echo "Examples:"
+  echo ""
+  echo "    github-subtree-update foouser/bar"
+  echo "    github-subtree-update foouser/bar devbranch"
+  echo "    github-subtree-update foouser/bar devbranch bar_goes_here/"
+  echo ""
+  exit 1
+fi
+
+if [ ! -d "${subfolder}" ]; then
+  echo "Subfolder ${subfolder}/ does not exist."
+  exit 1
+fi
+echo ""
+cat <<EOF
+cd "${subfolder}"
+EOF
+cd "${subfolder}"
+
+remote="${github_username}/${repo}"
+echo ""
+cat <<EOF
+git remote add -f "${remote}" "https://github.com/${github_username}/${repo}"
+EOF
+git remote add -f "${remote}" "https://github.com/${github_username}/${repo}"
+
+echo ""
+cat <<EOF
+git read-tree --prefix="${subfolder}/" -u "${remote}"
+EOF
+git read-tree --prefix="${subfolder}/" -u "${remote}"
+
+# echo ""
+# cat <<EOF
+# git pull -s subtree "${remote}" "${branch}"
+# EOF
+# git pull -s subtree "${remote}" "${branch}"
+
+# http://stackoverflow.com/questions/5904256/git-subtree-merge-into-a-deeply-nested-subdirectory
+echo ""
+cat <<EOF
+git pull -X subtree="${subfolder}" "${remote}" "${branch}"
+EOF
+git pull -X subtree="${subfolder}" "${remote}" "${branch}"
+
+echo ""
+echo "Updated subtree ${subfolder}/ from ${remote}/${branch}"
+echo ""
+

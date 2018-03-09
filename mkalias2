@@ -1,0 +1,24 @@
+#!/bin/sh
+dir="`pwd`"
+cd "$(dirname "$0")"
+home="`pwd`"
+cd "${dir}"
+
+old="$1"
+new="$2"
+if [ -z "$new" ]; then
+  echo "  mkalias <existing-script-name> <new-name>"
+  echo "  (aborts if <new-name> already exists)"
+  exit 1
+fi
+
+if [ -e "$new" ]; then
+  1>&2 echo "Exists, aborting: $new"
+  exit 1
+fi
+
+cat <<EOF | mkmod -q "$old" "$new"
+#!/bin/sh
+exec "$old" "\$@"
+EOF
+

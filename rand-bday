@@ -1,0 +1,3 @@
+#!/bin/bash
+echo `randint 1971 1980`-$(printf "%02d" `randint 1 12`)-$(printf "%02d" `randint 1 31`)
+

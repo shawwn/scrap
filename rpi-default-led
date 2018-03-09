@@ -1,0 +1,8 @@
+#!/bin/sh
+
+cat <<'EOF'
+see http://www.raspberrypi.org/forums/viewtopic.php?p=136266#p136266
+pi@raspberrypi ~ $ cat /sys/class/leds/led0/trigger 
+none [mmc0] timer oneshot heartbeat backlight gpio cpu0 default-on input 
+EOF
+

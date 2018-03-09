@@ -1,0 +1,4 @@
+#!/bin/sh
+CMD=`sendsh $* | trim`
+echo $CMD
+printf "%s" "$CMD" | urlencode | pbcopy

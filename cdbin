@@ -1,0 +1,4 @@
+#!/bin/bash
+path="$(dirname $(which "$@"))"
+echo $path
+echo $path | ctrlctrim

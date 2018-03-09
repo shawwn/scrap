@@ -1,0 +1,13 @@
+#!/bin/bash
+git branch -D $* 
+if [ $? -ne 0 ]; then
+  read -r -p "Try remote branch deletion anyway? [y/N] " response
+  if [[ $response =~ ^([yY][eE][sS]|[yY])$ ]]; then
+    :
+  else
+    exit 1
+  fi
+fi
+git push origin --delete $*
+
+

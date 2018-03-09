@@ -1,0 +1,17 @@
+#!/bin/bash
+echo "------------------------------------------------------"
+git clean -f -d -n -e ".*"
+echo "------------------------------------------------------"
+
+echo "Warning: about to delete files or folders."
+read -r -p "Continue? [y/N] " response
+if [[ $response =~ ^([yY][eE][sS]|[yY])$ ]]; then
+  :
+else
+  exit 1
+fi
+
+git clean -f -d -e ".*" $*
+git status
+
+

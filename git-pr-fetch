@@ -1,0 +1,25 @@
+#!/bin/bash
+
+#
+# `git checkout pr/$id` syntax requires adding this to the bottom of
+# your global .gitconfig file:
+#
+# [remote "origin"]
+# 	fetch = +refs/pull/*/head:refs/remotes/origin/pr/*
+#
+
+id=$1
+
+if [[ -z "$id" ]]; then
+  echo "git-pr-fetch 42"
+  exit 1
+fi
+
+# acquire all Pull Request branches as local remote branches by
+# refspec.
+git-pr-fetchall
+
+# checkout a remote branch representing the pull request and create a
+# local branch from it.
+git checkout pr/$id
+

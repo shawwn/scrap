@@ -1,0 +1,4 @@
+#!/bin/sh
+echo "rsync -Pravdtze ssh $1"
+      rsync -Pravdtze ssh $1
+

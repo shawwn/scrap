@@ -1,0 +1,18 @@
+#!/bin/bash
+
+if [[ -z "$1" ]] || [[ -z "$2" ]]; then
+  echo "reminder <seconds> <alertmsg>"
+  exit 1
+fi
+
+seconds="$(math "$1")"
+
+hours="$(math "scale=0; $seconds / 3600")"
+mins="$(math "scale=0; ($seconds % 3600) / 60")"
+secs="$(math "scale=0; ($seconds % 60)")"
+
+echo "Current time: $(date)"
+echo "${hours}h ${mins}m ${secs}s from now, I will open a Finder popup displaying the message \"$2\""
+sleep $seconds
+osascript -e "tell app \"SystemUIServer\" to display dialog \"$2\""
+

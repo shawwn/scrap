@@ -1,0 +1,19 @@
+#!/bin/bash
+x="${1:-0}"
+shift
+y="${1:-1}"
+shift
+
+while [ ! -z "${1}" ]
+do
+  y="${y} + ${1}"
+  shift
+done
+# exec math "(${x}) / (${x} + ${y})"
+z="$(math "scale=2; 100 * (${x}) / (${y})")"
+if [ ! $(echo $z | nbytes 1) = "-" ]
+then
+  z="+${z}"
+fi
+printf "%s%s\n" "${z}" "%"
+

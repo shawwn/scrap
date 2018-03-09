@@ -1,0 +1,17 @@
+#!/bin/bash
+
+size=$1
+shift 1
+
+if [ -z "$size" ]; then echo "ramdisk-create <size in MB>"; exit 1; fi
+
+# Calculate this number by multiplying your desired size of disk in megabytes by 2048. 
+finalsize="`math "$size * 2048"`"
+echo $finalsize
+if [ $? -ne 0 ] || [ -z "$finalsize" ]; then echo "failed"; exit 1; fi
+
+# 4GB ramdisk:
+# diskutil erasevolume HFS+ 'RAM Disk' `hdiutil attach -nomount ram://8388608`
+
+diskutil erasevolume HFS+ 'RAM Disk' `hdiutil attach -nomount ram://$finalsize`
+

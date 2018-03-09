@@ -1,0 +1,51 @@
+#!/bin/bash
+
+IF=$1
+OF=$2
+BS=${3:-4m}
+shift 1
+shift 1
+shift 1
+
+if [ -z "$IF" ] || [ -z "$OF" ]; then
+  echo "sdcard-dd <infile> <disk> [blocksize]"
+  exit 1
+fi
+
+# writing to /dev/rdiskN is 20x faster than writing to /dev/diskN on
+# OS X.  See http://daoyuan.li/solution-dd-too-slow-on-mac-os-x/
+DISK=$OF
+RDISK=$(echo "$OF" | replace /disk /rdisk | trim)
+
+
+lsdisk
+echo 
+
+color='\033[1;33;41m'
+NC='\033[0m' # No Color
+echo "WARNING: About to obliterate \"$DISK\" by writing the contents of \"$IF\" to it."
+printf "${color}CHOOSING THE WRONG DISK WILL WIPE YOUR HD -- TRIPLE CHECK THAT \"$DISK\" IS CORRECT!${NC}\n"
+echo
+echo "To proceed, type the following (without quotes):  \"$DISK is correct\""
+echo
+read -p "" -r
+echo 
+if [[ "$REPLY" == "$DISK is correct" ]]; then
+  # do dangerous stuff
+  echo "proceeding: \"$DISK\" \"$RDISK\""
+
+cat <<EOF
+  #sudo diskutil unmountDisk "$DISK"
+EOF
+  #sudo diskutil unmountDisk "$DISK"
+
+cat <<EOF
+  sudo ddpv "$IF" "$RDISK" $BS
+EOF
+  sudo ddpv "$IF" "$RDISK" $BS
+
+else
+  echo "aborting."
+fi
+
+

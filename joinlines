@@ -1,0 +1,3 @@
+#!/bin/bash
+replace '\r\n' '\n' '\n' ' '
+

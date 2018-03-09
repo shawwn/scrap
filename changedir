@@ -1,0 +1,6 @@
+#!/bin/sh
+cd "$1"         # change to directory specified by arg 1
+shift           # drop arg 1
+cmd="$1"        # grab command from next argument
+shift           # drop next argument
+"$cmd" "$@"     # expand remaining arguments, retaining original word separations

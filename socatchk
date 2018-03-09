@@ -1,0 +1,6 @@
+#!/bin/sh
+# ./socatchk remote-host remote-port
+# crudely shutsdown socat (if running) and then restarts it for new host/port
+orport=9050
+orlisadr=localhost
+[ "$(pidof socat >/dev/null 2>&1 && echo $?)" = 0 ] && kill $(pidof socat); [ "$(pidof socat && echo $?)" != 0 ] && socat TCP4-LISTEN:4242,fork SOCKS4A:$orlisadr:$1:$2,socksport=$orport &

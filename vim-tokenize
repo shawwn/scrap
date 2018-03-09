@@ -1,0 +1,8 @@
+#!/bin/sh
+if [ -z "$*" ]; then
+  exec grep --extended-regexp --only-matching --regexp="[a-z]+" 
+else
+  exec grep --extended-regexp --only-matching --regexp="$*" 
+fi
+
+

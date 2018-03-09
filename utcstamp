@@ -1,0 +1,6 @@
+#!/bin/sh
+
+TIME=${1:-`utcnow`}
+
+date -ur $TIME "+%Y%m%d-%H%M%S"
+

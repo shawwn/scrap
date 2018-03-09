@@ -1,0 +1,6 @@
+#!/bin/bash
+
+# acquire all Pull Request branches as local remote branches by
+# refspec.
+git fetch origin '+refs/pull/*/head:refs/remotes/origin/pr/*'
+

@@ -1,0 +1,3 @@
+#!/bin/sh
+initdb /usr/local/var/postgres $*
+

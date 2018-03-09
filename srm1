@@ -1,0 +1,10 @@
+#!/bin/bash
+
+if [ -z "$@" ]; then
+  echo "wipes files with a single pass of random data"
+  exit 1
+fi
+
+srm -v --simple "$@"
+
+

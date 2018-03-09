@@ -1,0 +1,66 @@
+#!/usr/bin/env python
+
+#==============================================================================
+# Functionality
+#==============================================================================
+
+import re
+WS = re.compile(r'\s+', re.MULTILINE)
+
+def contains_whitespace(x):
+    return WS.search(x)
+
+def quot(x):
+    #return ("%s" % x) if contains_whitespace(x) else x
+    return WS.sub('\\ ', x) if contains_whitespace(x) else x
+
+
+#==============================================================================
+# Cmdline
+#==============================================================================
+import argparse
+
+parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter, 
+    description="""
+Links the specified library to the specified directories.
+""")
+
+parser.add_argument('-l', '--lib',
+        default="/System/Library/Frameworks/OpenCL.framework/Versions/A/OpenCL",
+        help="the absolute path of the library being linked to.  Defaults to OpenCL.")
+
+parser.add_argument('-n', '--name',
+        default="libOpenCL",
+        help="the name of the resulting linkfile.  Defaults to 'libOpenCL'")
+
+parser.add_argument('paths',
+        nargs=argparse.REMAINDER,
+        help="each directory you want to create a link in.  (If empty, creates a link in the current folder.)")
+
+
+#==============================================================================
+# Main
+#==============================================================================
+import sys
+import os
+
+def linklib(dstpath):
+    srcpath = args.lib
+    print quot(srcpath), '->', quot(dstpath)
+    os.system('ln -s %s %s' % (quot(srcpath), quot(dstpath)))
+
+def main():
+    paths = list(args.paths)
+
+    # if no paths, then create a link in the current dir.
+    if len(paths) <= 0:
+        paths += ['.']
+
+    for path in paths:
+        dst = os.path.join(path, args.name)
+        linklib(dst)
+
+if __name__ == "__main__":
+    args = parser.parse_args()
+    main()
+

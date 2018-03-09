@@ -1,0 +1,7 @@
+#!/bin/bash
+
+count=${1:-1}
+count=$(math "$count + 1")
+
+tail -n +$count
+
