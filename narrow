@@ -1,0 +1,119 @@
+#!/usr/bin/env python
+
+#==============================================================================
+# Functionality
+#==============================================================================
+import pdb
+import sys
+import os
+import re
+
+# utility funcs, classes, etc go here.
+
+def asserting(cond):
+    if not cond:
+        pdb.set_trace()
+    assert(cond)
+
+def has_stdin():
+    return not sys.stdin.isatty()
+
+def reg(pat, flags=0):
+    return re.compile(pat, re.VERBOSE | flags)
+
+#==============================================================================
+# Cmdline
+#==============================================================================
+import argparse
+
+parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter, 
+    description="""
+TODO
+""")
+     
+parser.add_argument('-v', '--verbose',
+    action="store_true",
+    help="verbose output" )
+     
+parser.add_argument('-i', '--ignore-case',
+    dest='case', action="store_const", const='off',
+    help="Match case insensitively" )
+     
+parser.add_argument('-s', '--case-sensitive',
+    dest='case', action="store_const", const='on',
+    help="Match case sensitively" )
+     
+parser.add_argument('-S', '--smart-case',
+    dest='case', action="store_const", const='smart',
+    help="Match case insensitively unless PATTERN contains uppercase characters" )
+
+args = None
+
+#==============================================================================
+# Main
+#==============================================================================
+
+def matches(s, pat):
+    inverted = True
+    if len(pat) > 0 and pat[0] == "!":
+        inverted = False
+        pat = pat[1:]
+    flags = 0
+    if args.case == 'off':
+        if args.verbose: print('case==of')
+        flags = re.IGNORECASE
+    elif args.case == 'on':
+        if args.verbose: print('case==on')
+        pass
+    elif args.case == 'smart': # smart case
+        if args.verbose: print('case==smart')
+        if not any(x.isupper() for x in pat):
+            if args.verbose: print('smartcase-ignore')
+            flags = re.IGNORECASE
+    else:
+        print('unknown case specification %s' % args.case)
+    x = reg('(?:.*)' + pat, flags).match(s)
+    return inverted == (not (not x))
+
+def narrow(strings, search):
+    return [s for s in strings if matches(s, search)]
+
+def run():
+    if args.verbose:
+        print args
+    if len(args.args) <= 0 and not has_stdin():
+        # if there were no args and there was no input, prompt user.
+        print 'Enter input (press Ctrl-D when done):'
+    # if len(args.args) <= 0 or has_stdin():
+    #     indata = sys.stdin.read()
+
+    for line in sys.stdin:
+        lines = [line]
+        for arg in args.args:
+            lines = narrow(lines, arg)
+        for line in lines:
+            sys.stdout.write(line)
+
+def main():
+    try:
+        global args
+        if not args:
+            args, leftovers = parser.parse_known_args()
+            args.args = leftovers
+            if args.case == None:
+                args.case = 'smart'
+        return run()
+    except IOError:
+        # http://stackoverflow.com/questions/15793886/how-to-avoid-a-broken-pipe-error-when-printing-a-large-amount-of-formatted-data
+        try:
+            sys.stdout.close()
+        except IOError:
+            pass
+        try:
+            sys.stderr.close()
+        except IOError:
+            pass
+
+if __name__ == "__main__":
+    main()
+
