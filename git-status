@@ -1,0 +1,4 @@
+#!/bin/sh
+git status "$@"
+echo --------------------
+llcommit1

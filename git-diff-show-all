@@ -1,0 +1,7 @@
+#!/bin/sh
+# http://stackoverflow.com/questions/13627598/how-to-get-git-diff-with-full-context
+
+exec git diff --no-prefix -U1000 "$@"
+# http://stackoverflow.com/questions/855767/can-i-use-git-diff-on-untracked-files
+# git ls-files --others --exclude-standard | while read -r i; do git diff "$@" -- /dev/null "$i"; done
+

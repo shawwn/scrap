@@ -1,13 +1,16 @@
-#!/bin/bash
+#!/bin/sh
+
+set -x
 
 repo="$1"
-shift 1
+repo="$(echo "$repo" | replace 'https://' '' 'github.com/' '')"
+shift
 dstdir="$1"
-shift 1
-upstream="$1"
-shift 1
+shift
 branch="$1"
-shift 1
+shift
+# upstream="$1"
+# shift
 
 if [ -z "$repo" ]; then
   1>&2 echo "  ghclone foo/bar"
@@ -17,17 +20,17 @@ if [ -z "$repo" ]; then
   1>&2 echo "to clone to a different directory:"
   1>&2 echo "  ghclone foo/bar dstdir"
   1>&2 echo ""
-  1>&2 echo "to also add an 'upstream' remote whose url is 'https://github.com/original/bar':"
-  1>&2 echo "  ghclone foo/bar dstdir original/bar"
-  1>&2 echo ""
-  1>&2 echo "to do all of the above and then 'git pull upstream master':"
-  1>&2 echo "  ghclone foo/bar dstdir original/bar master"
-  1>&2 echo ""
+  # 1>&2 echo "to also add an 'upstream' remote whose url is 'https://github.com/original/bar':"
+  # 1>&2 echo "  ghclone foo/bar dstdir master original/bar"
+  # 1>&2 echo ""
+  # 1>&2 echo "to do all of the above and then 'git pull upstream master':"
+  # 1>&2 echo "  ghclone foo/bar dstdir original/bar master"
+  # 1>&2 echo ""
   exit 1
 fi
 
 if [ -z "${dstdir}" ]; then
-  exec git clone "https://github.com/${repo}"
+  exec git clone --recursive "https://github.com/${repo}"
 fi
 
 if [ -e "${dstdir}" ]; then
@@ -35,16 +38,22 @@ if [ -e "${dstdir}" ]; then
   exit 1
 fi
 
-git clone "https://github.com/${repo}" "${dstdir}"
-cd "${dstdir}"
-
-if [ ! -z "${upstream}" ]; then
-  git remote add upstream "https://github.com/${upstream}"
-
-  if [ ! -z "${branch}" ]; then
-    git pull upstream "${branch}"
-  fi
+if [ -z "${branch}" ]; then
+  git clone --recursive "https://github.com/${repo}" "${dstdir}"
+  cd "${dstdir}"
+else
+  git clone --recursive "https://github.com/${repo}" "${dstdir}" -b "${branch}"
+  cd "${dstdir}"
+  cdbranch "${branch}"
 fi
+
+# if [ ! -z "${upstream}" ]; then
+#   git remote add upstream "https://github.com/${upstream}"
+
+#   if [ ! -z "${branch}" ]; then
+#     git pull upstream "${branch}"
+#   fi
+# fi
   
 
 

@@ -1,12 +1,25 @@
 #!/bin/bash
 
-read -r -p "Delete local branch '$*'? [y/N] " response
-if [[ $response =~ ^([yY][eE][sS]|[yY])$ ]]; then
-  git branch -D $*
-fi
+isnt $* && exit 1
 
-read -r -p "Delete *REMOTE* branch '$*'? [y/N] " response
-if [[ $response =~ ^([yY][eE][sS]|[yY])$ ]]; then
+branch="$1"
+
+yesno "Delete local branch '$branch'?" n && \
+  git branch -D $*
+
+yesno "Delete *REMOTE* branch '$branch'?" n && \
   git push origin --delete $*
-fi
+
+
+# pure bash version:
+
+# read -r -p "Delete local branch '$*'? [y/N] " response
+# if [[ $response =~ ^([yY][eE][sS]|[yY])$ ]]; then
+#   git branch -D $*
+# fi
+
+# read -r -p "Delete *REMOTE* branch '$*'? [y/N] " response
+# if [[ $response =~ ^([yY][eE][sS]|[yY])$ ]]; then
+#   git push origin --delete $*
+# fi
 

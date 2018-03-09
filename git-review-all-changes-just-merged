@@ -1,0 +1,15 @@
+#!/bin/sh
+
+# https://www.derekgourlay.com/blog/git-when-to-merge-vs-when-to-rebase/
+
+# ORIG_HEAD can be quite handy for multiple scenarios (If you want to
+# review all changes you’ve just merged: git log -p –reverse ORIG_HEAD).
+# Unfortunately, git rebase -p sets ORIG_HEAD for each commit being
+# rebased.
+
+# (Check out this google+ conversation for more tips RE: how to use
+# ORIG_HEAD)
+# https://plus.google.com/111049168280159033135/posts/Xmycxn7VwHV
+# git diff --stat --summary ORIG_HEAD
+
+exec git log -p –reverse ORIG_HEAD "$@"

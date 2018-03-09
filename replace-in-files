@@ -1,7 +1,8 @@
 #!/bin/bash
+set -x
 a="$1"
 b="$2"
 shift 1
 shift 1
-for x in "$@"; do cat "$x" | replace "$a" "$b" | sponge | tee "$x"; done
+for x in "$@"; do cat "$x" | replace "$a" "$b" | sponge "$x"; done
 

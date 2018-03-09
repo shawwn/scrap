@@ -10,9 +10,14 @@ if [ -z "$ft" ]; then
     exit 1
 fi
 
-[ "$ft" = "rb" ] && ft=ruby
-[ "$ft" = "py" ] && ft=python
-[ "$ft" = "js" ] && ft=javascript
+[ "$ft" == "rb" ] && ft=ruby
+[ "$ft" == "erb" ] && ft=erb
+[ "$ft" == "py" ] && ft=python
+[ "$ft" == "js" ] && ft=javascript
+[ "$ft" == "l" ] && ft=lumen
+[ "$ft" == "ls" ] && ft=elf
+[ "$ft" == "ts" ] && ft=typescript
+[ "$ft" == "clj" ] && ft=clojure
 
 cat <<EOS
 exec edit -c "set ft=$ft" "$@"

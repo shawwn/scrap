@@ -1,3 +1,5 @@
 #!/bin/bash
-git-commit-message-last
-
+git-commit-message-last "$@"
+echo ""
+echo Branch: `git-branch-current`
+echo ""

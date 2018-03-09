@@ -1,0 +1,23 @@
+#!/bin/sh
+
+branch="$(git-branch-current)"
+if [ -z "${branch}" ]
+then
+    echo "can't find current git branch using \`git-branch-current\`"
+    exit 2
+fi
+
+echo "------------------------------------------------------"
+echo git reset --hard "origin/${branch}"
+echo "------------------------------------------------------"
+
+echo "Warning: about to throw away local commits."
+read -r -p "Continue? [y/N] " response
+if [[ $response =~ ^([yY][eE][sS]|[yY])$ ]]; then
+  :
+else
+  exit 1
+fi
+
+git reset --hard "origin/${branch}"
+git-status

@@ -1,8 +1,4 @@
 #!/bin/bash
 
-if [ -z "$@" ]; then
-  find .
-else
-  find . | igrep "$@"
-fi
+find . -type f | narrow "$@"
 

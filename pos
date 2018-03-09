@@ -1,4 +1,5 @@
 #!/bin/bash
+# set -x
 l=""
 while [ ! -z "$1" ]
 do

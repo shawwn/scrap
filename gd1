@@ -1,5 +1,6 @@
 #!/bin/bash
-commit="${1:-$(pbpaste)}"
+# commit="${1:-$(pbpaste)}"
+commit="${1:-HEAD}"
 shift
 
 if [ -z "$commit" ]

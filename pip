@@ -1,3 +1,0 @@
-#!/bin/bash
-sudo -H "/usr/local/bin/pip" $@
-

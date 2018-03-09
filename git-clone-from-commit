@@ -1,9 +1,6 @@
 #!/bin/sh
 # set -x
 
-# `shift 3` apparently doesn't work. Not sure why.
-# Instead, use multiple `shift` commands.
-
 url="$1"
 shift
 commit="$1"

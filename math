@@ -1,6 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
-scale=4 # results will print to the 2nd decimal, e.g. 0.16
+scale=4 # results will print to the 4th decimal
 echo "scale=$scale; $@" | bc -l
-
-

@@ -1,0 +1,13 @@
+#!/bin/sh
+commit="${1:-$(pbpaste)}"
+shift
+
+if [ -z "$commit" ]
+then
+  echo "git-diff-show-all-single-commit <commit>"
+  exit 1
+fi
+
+exec git diff --no-prefix -U1000 "${commit}~1" "${commit}" "$@"
+
+

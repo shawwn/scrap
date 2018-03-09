@@ -17,6 +17,7 @@ for filename in args:
         continue
 
     with open(filename) as f:
-        sys.stdout.write('%s\n' % filename)
+        sys.stdout.write('"%%file: %s"\n' % filename)
         sys.stdout.write('%s\n' % f.read())
+        sys.stdout.flush()
 

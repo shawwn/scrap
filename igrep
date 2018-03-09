@@ -1,3 +1,8 @@
 #!/bin/bash
-exec grep -i "$@"
+if [ -z "$*" ]
+then
+  exec cat
+else
+  exec grep -i "$@"
+fi
 

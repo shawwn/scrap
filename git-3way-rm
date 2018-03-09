@@ -1,0 +1,14 @@
+#!/bin/sh
+
+file="${1}"
+
+if [ -z "${file}" ]
+then
+    echo "usage:"
+    echo "  ${0} <file> [<option>]"
+    exit 1
+fi
+
+rm -f "${file}.common"
+rm -f "${file}.ours"
+rm -f "${file}.theirs"

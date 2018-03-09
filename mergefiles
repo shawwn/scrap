@@ -16,5 +16,5 @@ set -x
 
 set -x
 
-matchfiles $recurse "$@" -v \\.swp$ -v \\.DS_Store$ -v \\.jar$ -v \\.pyc$ | print0 | xargs -0 merge
+code "$@" | print0 | xargs -0 merge
 

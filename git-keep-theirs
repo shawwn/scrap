@@ -1,0 +1,15 @@
+#!/bin/sh
+
+file="${1}"
+shift 1
+
+if [ -z "${file}" ]
+then
+    echo "usage:"
+    echo "  ${0} <fiel> [<option>]"
+    exit 1
+fi
+
+git show ":3:${file}" > "${file}"
+
+

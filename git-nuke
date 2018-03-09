@@ -1,9 +1,9 @@
-#!/bin/bash
+#!/bin/sh
 echo "------------------------------------------------------"
-git clean -f -d -n -e ".*"
+echo "git clean -f -d -n -e .*"
 echo "------------------------------------------------------"
 
-echo "Warning: about to delete files or folders."
+echo "Warning: about to delete untracked files/folders and uncommitted changes."
 read -r -p "Continue? [y/N] " response
 if [[ $response =~ ^([yY][eE][sS]|[yY])$ ]]; then
   :
@@ -11,7 +11,9 @@ else
   exit 1
 fi
 
-git clean -f -d -e ".*" $*
+git reset HEAD
+git checkout -- .
+git clean -f -d -e ".*" "$@"
 git status
 
 

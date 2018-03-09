@@ -1,0 +1,2 @@
+#!/bin/sh
+git commit --allow-empty -m "Minor" && git push

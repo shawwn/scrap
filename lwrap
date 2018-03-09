@@ -5,5 +5,6 @@ breakchars="(){}[],^%$#@\"\";:''|\\"
 
 # export RLWRAP_EDITOR="mvim '+call cursor(%L,%C)'"
 
-exec rlwrap -q'"' --multi-line --multi-line-ext .l --remember -c -b "$breakchars" "$@"
+#exec rlwrap -q'"' --multi-line --multi-line-ext .l --remember -c -b "$breakchars" "$@"
+exec rlwrap -q'"' --histsize=99999999 --multi-line=' \\ ' --multi-line-ext .l -b "$breakchars" "$@"
 

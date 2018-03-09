@@ -101,6 +101,7 @@ def run():
 
     # DISABLED -- SLOW!
     #sort_by_cpp_module(filepaths)
+    sort_by_cpp_module(filepaths)
 
     for path in filepaths:
         print path

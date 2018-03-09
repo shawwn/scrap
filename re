@@ -102,6 +102,8 @@ def run():
     if args.verbose:
         print 'stdin:', data.rstrip()
     pats = terms()
+    if args.verbose:
+        print 'pats:', str(pats)
     # if no terms provided, just print everything.
     if len(pats) <= 0:
         if args.verbose:

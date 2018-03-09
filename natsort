@@ -16,9 +16,19 @@ parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter,
 TODO
 """)
      
+parser.add_argument('-v', '--verbose',
+    action="store_true",
+    help="verbose output" )
+     
 parser.add_argument('-r', '--reverse',
     action="store_true",
     help="reverse sort order" )
+     
+# parser.add_argument('--ignore-sign',
+    # action="store_false",
+    # help="by default, sort args as signed numbers" )
+
+args = None
 
 #==============================================================================
 # Main
@@ -27,13 +37,44 @@ import sys
 import pdb
 import natsort
 
-def main():
+# def main():
+#     lines = [line for line in sys.stdin]
+#     for line in natsort.natsorted(lines, reverse=args.reverse, alg=natsort.ns.REAL):
+#         sys.stdout.write(line)
+
+# if __name__ == "__main__":
+#     args = parser.parse_args()
+#     main()
+
+def run():
+    if args.verbose:
+        print args
+    # if len(args.args) <= 0 and not has_stdin():
+    #     # if there were no args and there was no input, prompt user.
+    #     print 'Enter input (press Ctrl-D when done):'
+    # if len(args.args) <= 0 or has_stdin():
+    #     indata = sys.stdin.read()
     lines = [line for line in sys.stdin]
-    for line in natsort.natsorted(lines, reverse=args.reverse):
+    for line in natsort.natsorted(lines, reverse=args.reverse):#, alg=natsort.ns.REAL): # caused problems with lltime
         sys.stdout.write(line)
 
+def main():
+    try:
+        global args
+        if not args:
+            args, leftovers = parser.parse_known_args()
+            args.args = leftovers
+        return run()
+    except IOError:
+        # http://stackoverflow.com/questions/15793886/how-to-avoid-a-broken-pipe-error-when-printing-a-large-amount-of-formatted-data
+        try:
+            sys.stdout.close()
+        except IOError:
+            pass
+        try:
+            sys.stderr.close()
+        except IOError:
+            pass
+
 if __name__ == "__main__":
-    args = parser.parse_args()
     main()
-
-

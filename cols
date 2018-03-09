@@ -43,7 +43,7 @@ def respec(spec):
     else:
         asserting(False)
     # if args.verbose:
-    #     print 'respec %s' % repr(spec), repr(val)
+    #     print('respec %s' % repr(spec), repr(val))
     return val
 
 def regroups(rx, m, groups):
@@ -138,7 +138,7 @@ def getspec(spec):
 def get(cols, spec):
     start, mid, end, flags = getspec(spec)
     if args.verbose:
-        print [start, mid, end, flags]
+        print([start, mid, end, flags])
     if mid != ':':
         asserting((start != None) and (end == None))
         if start < len(cols) and start >= -len(cols):
@@ -174,14 +174,14 @@ def process(line):
     # ['a=foo', 'b=bar', 'c="foo, bar"', 'd=false', 'e="false"', 'f="foo\\", bar"']
     #
     if args.verbose:
-        print 'line:', repr(line)
+        print('line:', repr(line))
     #cols = reg(r'(?: [^\s,"] | "(?: \\. | [^"] )*" )+').findall(line)
     delims = list2str(args.sep or []) + (args.delim or [])
     if args.verbose:
-        print 'delims:', repr(delims)
+        print('delims:', repr(delims))
     pat = r'(?: [^%s"] | "(?: \\. | [^"] )*" )+' % delims
     if args.verbose:
-        print 'pat:', repr(pat)
+        print('pat:', repr(pat))
     #pdb.set_trace()
     cols = reg(pat).findall(line)
     if len(args.args) >= 1:
@@ -190,7 +190,7 @@ def process(line):
         # if no args were specified, then get everything.
         col = [get(cols, str(i)) for i in xrange(len(cols))]
     if args.verbose:
-        print 'col:', col
+        print('col:', col)
     return col
 
 def is_str(x):
@@ -279,7 +279,7 @@ def stdinlines():
 def run():
     asserting(rematch(r'(\d+)', 1, " 123 ") == "123")
     if args.verbose:
-        print args
+        print(args)
     gather = []
     global dumpstdin
     #dumpstdin = has_stdin()
@@ -293,7 +293,7 @@ def run():
                     gather += [process(line)]
         else:
             # if there was no input, prompt user.
-            print 'Enter input (press Ctrl-D when done):'
+            print('Enter input (press Ctrl-D when done):')
             for line in stdinlines():
                 gather += [process(line)]
     else:

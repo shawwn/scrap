@@ -12,5 +12,9 @@ n = 1024 * 1024
 if len(args) > 0:
     n = int(args[0])
 
-sys.stdout.write(sys.stdin.read(n))
+if n >= 0:
+    sys.stdout.write(sys.stdin.read(n))
+else:
+    data = sys.stdin.read()
+    sys.stdout.write(data[0:n])
 

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import fileinput
 import sys
 
@@ -8,7 +8,9 @@ if len(args) <= 0:
 
 by = []
 if len(args) > 0:
-    by = [x.decode('unicode-escape') for x in args]
+    # by = [x.decode('unicode-escape') for x in args]
+    by = [str.encode(x).decode('unicode-escape') for x in args]
+    # by = args
 
 data = sys.stdin.read()
 
@@ -23,16 +25,16 @@ def dedup(s, x):
 MAGIC = '~~[-[~~[splitby]~~]-]~~'
 for x in by:
     data = data.replace(x, MAGIC)
-data = dedup(data, MAGIC)
+    data = dedup(data, MAGIC)
 
-# # strip newlines.
-# data = data.replace('\n', '').replace('\r','')
+    # # strip newlines.
+    # data = data.replace('\n', '').replace('\r','')
 
-# output = '\n'.join(data.split(MAGIC))
-# while output.find('\n\n') >= 0:
-#     output = output.replace('\n\n', '\n')
-# sys.stdout.write(output.lstrip())
+    # output = '\n'.join(data.split(MAGIC))
+    # while output.find('\n\n') >= 0:
+    #     output = output.replace('\n\n', '\n')
+    # sys.stdout.write(output.lstrip())
 
-output = '\n'.join(data.split(MAGIC))
-sys.stdout.write(output)
+    data = '\n'.join(data.split(MAGIC))
+sys.stdout.write(data)
 

@@ -1,10 +1,27 @@
 #!/bin/bash
-exec git diff --numstat "$@" | print0 | xargs -0 -n 1 -I {} sh -c "
-x=\$(printf '%s' '{}' | pos 0);
-y=\$(printf '%s' '-'; printf '%s' '{}' | pos 1);
-f=\$(printf '%s' '{}' | pos 2 3 4 5);
-n=\$(wc -l \$f)
-printf '%s' \"+\$x \$y = \$(math \$x \$y) \";
-printf '%s\n' \"=> \$n\"
-" | cols 3 ,6: 4 5 0 1
+# set -x
+
+git diff --numstat "$@" | print0 | xargs -0 -n 1 -I {} sh -c '
+s="`echo {}`"
+x=`echo $s | pos 0`
+y=`echo $s | pos 1`
+f=`echo $s | pos 2`
+n=`wc -l $f`
+printf "%s\n" "+$x -$y = +$(math $x - $y) => $n" | replace "+-" "-";
+' | cols 3 ,6: 4 5 0 1 | natsort | ( [ -t 1 ] && colorize || cat )
+
+git diff --shortstat "$@"
+#| colorize -c green,green,green,green,purple,purple,red,red
+
+# #!/bin/bash
+# git diff --numstat "$@" | print0 | xargs -0 -n 1 -I {} sh -c "
+# x=\$(printf '%s' '{}' | pos 0);
+# y=\$(printf '%s' '-'; printf '%s' '{}' | pos 1);
+# f=\$(printf '%s' '{}' | pos 2);
+# n=\$(wc -l \$f)
+# printf '%s' \"+\$x \$y = \$(math \$x \$y) \";
+# printf '%s\n' \"=> \$n\"
+# " | cols 3 ,6: 4 5 0 1 | natsort -r #| colorize
+
+# git diff --shortstat "$@" #| colorize -c green,green,green,green,purple,purple,red,red
 

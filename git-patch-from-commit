@@ -1,0 +1,7 @@
+#!/bin/bash
+commit="$1"
+if [ -z "$commit" ]; then
+  commit="HEAD"
+fi
+exec git format-patch -1 "$commit"
+

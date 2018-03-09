@@ -1,0 +1,16 @@
+#!/bin/sh
+
+commit="${1}"
+branch="$(git-branch-current)"
+
+if [ -z "${commit}" ]
+then
+    echo "usage:"
+    echo "  ${0} <last-good-commit> [<options>]"
+    exit 1
+fi
+
+git push -f origin "${commit}":"${branch}"
+  # git reset --hard "${commit}"
+
+

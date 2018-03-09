@@ -1,5 +1,2 @@
 #!/bin/bash
-name=$1
-shift 1
-l "$@" | grep -i "$name"
-
+find . -type f | egrep -i "${@:-.}"

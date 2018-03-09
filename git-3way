@@ -1,0 +1,15 @@
+#!/bin/sh
+
+file="${1}"
+
+if [ -z "${file}" ]
+then
+    echo "usage:"
+    echo "  ${0} <file> [<option>]"
+    exit 1
+fi
+
+git show ":1:${file}" > "${file}.common"
+git show ":2:${file}" > "${file}.ours"
+git show ":3:${file}" > "${file}.theirs"
+exec bcomp "${file}.ours" "${file}.theirs" "${file}.common" "${file}"

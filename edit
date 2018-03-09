@@ -1,4 +1,5 @@
 #!/bin/bash
+set -x
 
 if [ ! -t 0 ]; then
   # stdin is a pipe, so read from it.

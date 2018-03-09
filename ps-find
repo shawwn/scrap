@@ -1,4 +1,4 @@
 #!/bin/bash
 
-ps aux | exec grep -i "$@"
+ps aux | exec narrow "$@"
 

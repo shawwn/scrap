@@ -1,8 +1,18 @@
 #!/bin/bash
 
+getexts () {
+  #splitext | sort | uniq -c
+  grep -E ".*\.[a-zA-Z0-9]*$" | sed -e 's/.*\(\.[a-zA-Z0-9]*\)$/\1/' | sort | uniq -c | sort -n
+}
+
+listfiles () {
+  #l lltype -1
+  find "$@" -type f
+}
+
 if [ -z "$*" ]; then
-  splitext | sort | uniq -c
+  cat | getexts
 else
-  l lltype -1 "$@" | splitext | sort | uniq -c
+  listfiles "$@" | getexts
 fi
 

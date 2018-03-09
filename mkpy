@@ -88,11 +88,22 @@ def run():
         print arg
 
 def main():
-    global args
-    if not args:
-        args, leftovers = parser.parse_known_args()
-        args.args = leftovers
-    return run()
+    try:
+        global args
+        if not args:
+            args, leftovers = parser.parse_known_args()
+            args.args = leftovers
+        return run()
+    except IOError:
+        # http://stackoverflow.com/questions/15793886/how-to-avoid-a-broken-pipe-error-when-printing-a-large-amount-of-formatted-data
+        try:
+            sys.stdout.close()
+        except IOError:
+            pass
+        try:
+            sys.stderr.close()
+        except IOError:
+            pass
 
 if __name__ == "__main__":
     main()

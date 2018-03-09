@@ -1,0 +1,27 @@
+#!/bin/bash
+# branch="$(git-branch-current)"
+# cdbranch master
+# git merge "$branch"
+
+# read -r -p "Push the merge? [y/N] " response
+# if [[ $response =~ ^([yY][eE][sS]|[yY])$ ]]; then
+#   git push
+#   cdbranch "$branch"
+# fi
+
+# http://kristopherwilson.com/2015/02/12/stop-merging-master/
+branch="$(git-branch-current)"
+target="${1}"
+
+if [ -z "$target" ]
+then
+  echo "Usage: git-merge-to <target branch>"
+  exit 1
+fi
+set -x
+# git rebase "$target" || exit 1
+git checkout "$target" || exit 1
+git merge --ff-only "${branch}" || ( git checkout "$branch" && exit 1 )
+set +x
+# git checkout "$branch"
+git-status

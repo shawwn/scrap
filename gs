@@ -1,3 +1,4 @@
 #!/bin/bash
-git status $*
+# git status $*
+exec git-status "$@"
 

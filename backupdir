@@ -15,7 +15,8 @@
 
 BAK="$1"
 DST="${2:-.}"
-DST="$(canonicalize_path "$(resolve_symlinks "$DST")")"
+# DST="$(canonicalize_path "$(resolve_symlinks "$DST")")"
+DST="$(realpath "$(realpath "$DST")")"
 shift 1
 shift 1
 NAME="$(basename "$BAK")"

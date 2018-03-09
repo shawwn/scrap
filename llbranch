@@ -1,7 +1,4 @@
 #!/bin/bash
 
-opts='--all'
-[ -n "$*" ] && opts=$*
-
-git branch $opts
+exec git branch -rv --all "$@"
 

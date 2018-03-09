@@ -26,7 +26,7 @@ fi
 # EOF
 
 read -r -d '' output <<EOF
-`tree -l -D -h -i -f --ignore-case --noreport --dirsfirst --timefmt "%Y-%m-%d %T" $opts "$@"`
+`tree -a -l -D -h -i -f --ignore-case --noreport --dirsfirst --timefmt "%Y-%m-%d %T" $opts "$@"`
 EOF
 
 # WARNING: HAX.

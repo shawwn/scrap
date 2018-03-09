@@ -1,3 +1,3 @@
-#!/bin/bash
-exec git diff $*
+#!/bin/sh
+exec git diff "$@"
 
