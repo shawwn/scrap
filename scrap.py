@@ -106,6 +106,7 @@ def edit(fname=None, filetype=None, stdin=None):
         args += ['-c "set filetype=%s"' % filetype]
     args += ['"%s"' % fname]
     """
+    """
     args = ['mvimft']
     if filetype:
         args += [filetype]
@@ -119,6 +120,9 @@ def edit(fname=None, filetype=None, stdin=None):
     cmd = ' '.join(args)
     #print(cmd)
     return _system(args[0], args[1:], stdin=stdin)
+    """
+    import spawn_editor
+    return spawn_editor.edit_file(fname, filetype=filetype)
 
 def mkscriptpath(scriptdir, fname=None):
     fname = fname or arg(0)
