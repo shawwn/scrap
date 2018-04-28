@@ -125,7 +125,13 @@ def edit(fname=None, filetype=None, stdin=None):
     return _system(args[0], args[1:], stdin=stdin)
     """
     import spawn_editor
-    return spawn_editor.edit_file(fname, filetype=filetype)
+    output = spawn_editor.edit_file(fname, filetype=filetype)
+    if output is None or output == '':
+        print("Deleting empty file %s" % fname)
+        if os.path.isfile(fname):
+            os.unlink(fname)
+    else:
+        return output
 
 def mkscriptpath(scriptdir, fname=None):
     fname = fname or arg(0)
