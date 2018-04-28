@@ -52,12 +52,13 @@ def run():
         print 'Enter input (press Ctrl-D when done):'
     if len(args.args) <= 0 or has_stdin():
         indata = sys.stdin.read()
+    separator = str.encode(args.sep).decode('unicode-escape')
     sep = None
     for line in indata.splitlines():
         if sep is not None:
-            print(sep)
-        print(line)
-        sep=args.sep
+            sys.stdout.write(sep)
+        sys.stdout.write(line)
+        sep=separator
 
 def main():
     try:
