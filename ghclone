@@ -4,11 +4,8 @@ set -x
 
 repo="$1"
 repo="$(echo "$repo" | replace 'https://' '' 'github.com/' '')"
-shift
-dstdir="$1"
-shift
-branch="$1"
-shift
+dstdir="$2"
+branch="$3"
 # upstream="$1"
 # shift
 
