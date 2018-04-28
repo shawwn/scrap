@@ -1,3 +1,2 @@
-#!/bin/bash
-replace '\r\n' '\n' '\n' ' '
-
+#!/bin/sh
+replace '\r\n' '\n' '\n' ''
