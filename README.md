@@ -14,17 +14,17 @@ echo 'export PATH="${HOME}/scrap:${PATH}"' >> ~/.zshrc
 
 ## examples
 
-## mkbin <name>
+## `mkbin <name>`
 Make a new scrap script with a predefined bash template.
 If `<name>` already exists, the script is edited instead.
 If you save an empty file, the script is deleted.
 
-## mkpy <name>
+## `mkpy <name>`
 Make a new scrap script with a predefined python template.
 If `<name>` already exists, the script is edited instead.
 If you save an empty file, the script is deleted.
 
-### math
+### `math <expr>`
 
 Evaluate math.
 ```
@@ -36,7 +36,7 @@ $ math '2^64/2^(60+1)'
 8.0000
 ```
 
-### narrow [filter1] [filter2] ....
+### `narrow [filter1] [filter2] ....`
 
 Filter lines by each filter.
 
@@ -97,7 +97,7 @@ $ ls -1 / | narrow 'bin|lib|tmp' 'ib|bi' "\!lib"
 bin
 ```
 
-### llbin
+### llbin [filter1] [filter2] ...
 List all scrap scripts.
 
 ```
