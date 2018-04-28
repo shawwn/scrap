@@ -1,4 +1,6 @@
 #!/bin/sh
-#set -x
-dirname "$(realpath "$(which "$*")")"
 
+# quit unless it's an executable.
+which "$1" 1>/dev/null || exit 1
+
+exec dirname "$(whereis "$1")"
