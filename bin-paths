@@ -1,8 +1,21 @@
 #!/bin/bash
-dir="`pwd`"
-cd "$(dirname "$0")"
-home="`pwd`"
+
+dir="$(pwd)"
+bin="$0"
+while [ -L "${bin}" ]
+do
+	x="$(readlink "${bin}")"
+	cd "$(dirname "${bin}")"
+	bin="${x}"
+done
+cd "$(dirname "${bin}")" || exit 1
+home="$(pwd)"
 cd "${dir}"
+
+#dir="`pwd`"
+#cd "$(dirname "$0")"
+#home="`pwd`"
+#cd "${dir}"
 
 echopath () {
   if [ -d "$1" ]; then
@@ -12,7 +25,7 @@ echopath () {
 
 echopath "${home}"
 
-if [ "${home}" != "${HOME}/bin" ]; then
-  echopath "${HOME}/bin"
-fi
+#if [ "${home}" != "${HOME}/bin" ]; then
+  #echopath "${HOME}/bin"
+#fi
 
