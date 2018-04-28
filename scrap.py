@@ -17,9 +17,12 @@ def scriptpath():
     #     path = shell("sosbin").strip()
     # else:
     #     path = "~/bin"
+    """
     path = os.path.expanduser("~/bin")
     asserting(len(path) >= 0)
     return path
+    """
+    return os.path.dirname(os.path.abspath(__file__))
 
 def trace():
     pdb.set_trace()
