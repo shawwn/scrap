@@ -1,0 +1,11 @@
+#!/bin/sh
+
+set -ex
+
+in="${1}"
+shift 1
+out="${1}"
+shift 1
+
+# http://pimentoso.blogspot.com/2016/01/convert-videos-for-twitter-using-ffmpeg.html
+exec ffmpeg -i "${in}" -r 40 -c:v libx264 -b:v 1M -vf scale=640:-1 "${out}" "$@"
