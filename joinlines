@@ -1,2 +1,2 @@
 #!/bin/sh
-replace '\r\n' '\n' '\n' ''
+exec replace '\r\n' '\n' '\n' "${1}"

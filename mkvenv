@@ -1,0 +1,8 @@
+#!/bin/sh
+set -e
+set -x
+dir="${1:-env}"
+shift 1
+python3 -m venv "$dir" "$@"
+echo now run:
+echo source env/bin/activate

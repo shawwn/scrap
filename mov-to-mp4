@@ -1,0 +1,13 @@
+#!/bin/sh
+
+dir="${1}"
+
+if [ -z "${dir}" ]
+then
+    echo "usage:"
+    echo "  ${0} <video> [<option>]"
+    exit 1
+fi
+
+set -x
+exec ffmpeg -i "${dir}" -vcodec h264 -acodec mp2 "${dir}.mp4"

@@ -1,0 +1,21 @@
+#!/bin/sh
+
+## The following algorithm is equivalent to `realpath $(which $1)`.
+
+# quit unless it's an executable.
+which "$1" 1>/dev/null || exit 1
+
+# traverse symlink chains.
+bin="$(which "$1")"
+while [ -L "${bin}" ]
+do
+    x="$(readlink "${bin}")"
+    cd "$(dirname "${bin}")"
+    bin="${x}"
+done
+
+# switch to the directory of the executable, then print the pwd
+# followed by the bin name. (this ensures we get the realpath.)
+cd "$(dirname "${bin}")"
+echo "$(pwd)/$(basename "${bin}")"
+
