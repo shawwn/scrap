@@ -42,6 +42,7 @@ args = None
 #==============================================================================
 
 import requests
+import html
 
 def run():
     if args.verbose:
@@ -57,7 +58,7 @@ def run():
     for arg in args.args:
         urls.append(arg)
     for tweet_url in urls:
-      print(requests.get(tweet_url).text.split('<title>')[1].split('</title>')[0])
+      print(html.unescape(requests.get(tweet_url).text.split('<title>')[1].split('</title>')[0]))
 
 def main():
     try:
