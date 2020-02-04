@@ -1,0 +1,8 @@
+#!/bin/sh
+
+column="${1:-0}"
+shift 1
+
+set -x
+cols "$column" "$@" | summing
+
