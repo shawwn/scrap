@@ -1,9 +1,15 @@
 #!/bin/bash
 
-pattern=$1
-replacement=$2
+pattern="$1"
+replacement="$2"
 shift 2;
-
-perl -p -e "s/$pattern/$replacement/g" $*
+if [ ! -z "${pattern}${replacement}" ]
+then
+  # input="$(cat)"
+  # x="$(echo "$input" | perl -p -e "s/$pattern/$replacement/g")"
+  cat | resub -m "$pattern" "$replacement" | replace2 "$@"
+else
+  cat
+fi
 
 
