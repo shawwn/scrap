@@ -1,4 +1,4 @@
 #!/bin/bash
-paste -s -d+ - | bc
+grep -v NIL | paste -s -d+ - | bc
 
 
