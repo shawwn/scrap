@@ -1,0 +1,5 @@
+#!/bin/bash
+port="${1:-8000}"
+shift
+set -x
+exec http-server -p "${port}" -c-1 "$@"
