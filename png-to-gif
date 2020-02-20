@@ -9,6 +9,7 @@ import os
 import re
 import natsort
 
+from moviepy.editor import *
 from PIL import Image
 import glob
 
@@ -57,8 +58,6 @@ args = None
 #==============================================================================
 
 def run():
-    if args.verbose:
-        print(args)
     if len(args.args) <= 0 and not has_stdin():
         # if there were no args and there was no input, prompt user.
         print('Enter input (press Ctrl-D when done):')
@@ -67,6 +66,14 @@ def run():
         paths = indata.splitlines()
     else:
         paths = args.args
+    if args.verbose:
+        from pprint import pprint as pp
+        pp(args)
+        pp(paths)
+
+    def get(i):
+      return Image.open(i)
+      return Image.open(i).resize([128,128])
 
     # Create the frames
     frames = []
@@ -74,24 +81,39 @@ def run():
     for path in paths:
       for f in natsort.natsorted(glob.glob(path)):
         imgs.append(f)
-    for i in imgs:
-      new_frame = Image.open(i)
-      frames.append(new_frame)
-    if args.mirror:
-      fs = imgs[::-1]
-      for i in range(10):
-        frames.append(Image.open(fs[0]).copy())
-      for img in fs:
-        frames.append(Image.open(img))
-      for i in range(10):
-        frames.append(Image.open(fs[-1]).copy())
-     
-    # Save into a GIF file that loops forever
-    duration = 24 * len(frames) / args.fps
-    frames[0].save(args.outfile, format='GIF',
-                   append_images=frames[1:],
-                   save_all=True,
-                   duration=duration, loop=1 if args.no_loop else 0)
+    if args.outfile.endswith('mp4'):
+      for i in imgs:
+        new_frame = i
+        frames.append(new_frame)
+      if args.mirror:
+        fs = imgs[::-1]
+        for i in range(10):
+          frames.append(fs[0])
+        for img in fs:
+          frames.append(img)
+        for i in range(10):
+          frames.append(fs[-1])
+      clip = ImageSequenceClip(frames, fps=args.fps)
+      clip.write_videofile(args.outfile)
+    else:
+      for i in imgs:
+        new_frame = get(i)
+        frames.append(new_frame)
+      if args.mirror:
+        fs = imgs[::-1]
+        for i in range(10):
+          frames.append(get(fs[0]).copy())
+        for img in fs:
+          frames.append(get(img))
+        for i in range(10):
+          frames.append(get(fs[-1]).copy())
+       
+      # Save into a GIF file that loops forever
+      duration = 24 * len(frames) / args.fps
+      frames[0].save(args.outfile, format='GIF',
+                     append_images=frames[1:],
+                     save_all=True,
+                     duration=duration, loop=1 if args.no_loop else 0)
 
 def main():
     try:
