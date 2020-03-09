@@ -24,6 +24,11 @@ parser.add_argument('-r', '--reverse',
     action="store_true",
     help="reverse sort order" )
      
+parser.add_argument('-i', '--ignore-case',
+    action="store_true",
+    help="ignore case sensitivity" )
+     
+     
 # parser.add_argument('--ignore-sign',
     # action="store_false",
     # help="by default, sort args as signed numbers" )
@@ -48,14 +53,17 @@ import natsort
 
 def run():
     if args.verbose:
-        print args
+        print(args)
     # if len(args.args) <= 0 and not has_stdin():
     #     # if there were no args and there was no input, prompt user.
     #     print 'Enter input (press Ctrl-D when done):'
     # if len(args.args) <= 0 or has_stdin():
     #     indata = sys.stdin.read()
     lines = [line for line in sys.stdin]
-    for line in natsort.natsorted(lines, reverse=args.reverse):#, alg=natsort.ns.REAL): # caused problems with lltime
+    alg = 0
+    if args.ignore_case:
+        alg = natsort.ns.IGNORECASE
+    for line in natsort.natsorted(lines, reverse=args.reverse, alg=alg):#, alg=natsort.ns.REAL): # caused problems with lltime
         sys.stdout.write(line)
 
 def main():
