@@ -1,0 +1,172 @@
+#!/usr/bin/env python3
+
+#==============================================================================
+# Functionality
+#==============================================================================
+import pdb
+import sys
+import os
+import re
+
+# utility funcs, classes, etc go here.
+
+def asserting(cond):
+    if not cond:
+        pdb.set_trace()
+    assert(cond)
+
+def has_stdin():
+    return not sys.stdin.isatty()
+
+def reg(pat, flags=0):
+    return re.compile(pat, re.VERBOSE | flags)
+
+#==============================================================================
+# Cmdline
+#==============================================================================
+import argparse
+
+parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter, 
+    description="""
+TODO
+""")
+     
+parser.add_argument('-v', '--verbose',
+    action="store_true",
+    help="verbose output" )
+     
+parser.add_argument('-o', '--outfile',
+    default="-",
+    help="Destination file" )
+
+args = None
+
+#==============================================================================
+# Main
+#==============================================================================
+
+import json
+import os
+import csv
+import tqdm
+
+#DATA_DIR = "path/to/metadata/2019"
+
+def danbooru_write_csv_header(out=sys.stdout):
+    if out == "-":
+        out = sys.stdout
+    if isinstance(out, str):
+        with open(out, "a", newline='', encoding='utf-8') as f:
+          return danbooru_write_csv_header(out)
+    cf = csv.writer(out)
+    cf.writerow(["id",
+                "tags",
+                "created_at",
+                "uploader_id",
+                "source",
+                "score",
+                "up_score",
+                "down_score",
+                "favs",
+                "md5",
+                "file_size",
+    #            "file_url",
+                "file_ext",
+                "rating",
+                "is_status_locked",
+                "is_pending",
+                "is_flagged",
+                "is_deleted",
+                "width",
+                "height",
+                "has_children",
+                "parent_id",
+                "pools"
+                #"artist",
+                #"sources"
+               ])
+
+def danbooru_write_csv_body(json_path, out=sys.stdout):
+    if out == "-":
+        out = sys.stdout
+    if isinstance(out, str):
+        with open(out, "a", newline='', encoding='utf-8') as f:
+            return danbooru_to_csv(json_path, out=f)
+
+    cf = csv.writer(out)
+
+    assert isinstance(json_path, str)
+    with open(json_path, "r", encoding="UTF-8") as f:
+        raw_json_lines = f.readlines()
+
+    for raw_json_line in tqdm.tqdm(raw_json_lines):
+        try:
+            json_line = json.loads(raw_json_line)
+        except json.decoder.JSONDecodeError:
+            continue
+        image_id = json_line["id"]
+
+        tags_values = " ".join(list(tag["category"] + ":" + tag["name"]
+                       for tag in json_line["tags"]))
+
+        favs_values = " ".join(list(faver_id for faver_id in json_line["favs"]))
+        pools_values = " ".join(list(pool_id for pool_id in json_line["pools"]))
+        cf.writerow([json_line["id"],
+                    tags_values,
+                    json_line["created_at"],
+                    json_line["uploader_id"],
+                    json_line["source"],
+                    json_line["score"],
+                    json_line["up_score"],
+                    json_line["down_score"],
+                    favs_values,
+                    json_line["md5"],
+                    json_line["file_size"],
+                    json_line["file_ext"],
+                    json_line["rating"],
+                    json_line["is_status_locked"],
+                    json_line["is_pending"],
+                    json_line["is_flagged"],
+                    json_line["is_deleted"],
+                    json_line["image_width"],
+                    json_line["image_height"],
+                    json_line["has_children"],
+                    json_line["parent_id"],
+                    pools_values
+                   ])
+
+def run():
+    if args.verbose:
+        print(args)
+    if len(args.args) <= 0 and not has_stdin():
+        # if there were no args and there was no input, prompt user.
+        print('Enter input (press Ctrl-D when done):')
+    indata = ''
+    if len(args.args) <= 0 or has_stdin():
+        indata = sys.stdin.read()
+    danbooru_write_csv_header(args.outfile)
+    # for each arg on cmdline...
+    for arg in tqdm.tqdm(args.args + indata.splitlines()):
+        danbooru_write_csv_body(arg, args.outfile)
+
+def main():
+    try:
+        global args
+        if not args:
+            args, leftovers = parser.parse_known_args()
+            args.args = leftovers
+        return run()
+    except IOError:
+        # http://stackoverflow.com/questions/15793886/how-to-avoid-a-broken-pipe-error-when-printing-a-large-amount-of-formatted-data
+        try:
+            sys.stdout.close()
+        except IOError:
+            pass
+        try:
+            sys.stderr.close()
+        except IOError:
+            pass
+
+if __name__ == "__main__":
+    main()
+
