@@ -21,6 +21,20 @@ def has_stdin():
 def reg(pat, flags=0):
     return re.compile(pat, re.VERBOSE | flags)
 
+def getlines(path):
+  if path.startswith('http'):
+    r = requests.get(path, stream=True)
+    if r.status_code == 200:
+      return r.raw.readlines()
+    else:
+      raise Exception("Couldn't open URL: %s" % path)
+  if os.path.isfile(path):
+    with open(path) as f:
+      return f.readlines()
+  import tensorflow as tf
+  with tf.compat.v1.gfile.FastGFile(path, 'rb') as f:
+    return f.readlines()
+
 #==============================================================================
 # Cmdline
 #==============================================================================
@@ -96,8 +110,7 @@ def danbooru_write_csv_body(json_path, out=sys.stdout):
     cf = csv.writer(out)
 
     assert isinstance(json_path, str)
-    with open(json_path, "r", encoding="UTF-8") as f:
-        raw_json_lines = f.readlines()
+    raw_json_lines = getlines(json_path)
 
     for raw_json_line in tqdm.tqdm(raw_json_lines):
         try:
