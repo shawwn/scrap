@@ -1,0 +1,11 @@
+#!/bin/sh
+set -ex
+
+model_dir="${1}"
+shift 1
+output_dir="${1}"
+shift 1
+
+gsutil cp "${model_dir}/checkpoint" "${output_dir}"
+gsutil ls "${model_dir}/model.ckpt-*" | natsort | last 3 | xargs -I {} gsutil cp {} "${output_dir}"
+
