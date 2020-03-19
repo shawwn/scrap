@@ -4,5 +4,5 @@ set -ex
 model_dir="${1}"
 shift 1
 
-gsutil ls "${model_dir}/model.ckpt-*" | natsort | grep data | resub '[.]data.*' ''
+gsutil ls "${model_dir}/model.ckpt-*" | natsort | grep data | resub '[.]data.*' '' | uniq
 
