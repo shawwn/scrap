@@ -1,0 +1,67 @@
+#!/bin/bash
+
+app="${1}"
+dst="${2}"
+src="${3}"
+shift 1
+shift 1
+shift 1
+
+if [ -z "${app}" ]
+then
+    echo "usage:"
+    echo "  ${0} <app-name> [<option>]"
+    exit 1
+fi
+
+indent() {
+  printf "%s" "$*" | replace '\\n' '\n   '
+}
+
+setwindow() {
+  app="${1}"
+  app="application \"${app}\""
+  dst="${2:-bounds of first %WIN%}"
+  src="${3:-${dst}}"
+  code="${4}"
+  script="
+tell application \"System Events\"
+  tell ${app}
+    set dst to ${dst}
+    set src to ${src}
+    set _ to src
+    set r to _
+    $(printf "%s" "${code}" | replace '\\n' '\n    ')
+    set ${dst} to _
+    r
+  end tell
+end tell"
+  script="$(printf "%s" "${script}" | replace '%WIN%' "window of %APP%")"
+  script="$(printf "%s" "${script}" | replace '%APP%' "${app}")"
+  if [ ! -z "${VERBOSE}" ]
+  then
+    set -x
+  fi
+  osascript -e "${script}"
+  set +x
+}
+
+setwindow "${app}" "${dst}" "${src}" "$(indent $*)"
+
+# if [ -z "${x}" ]
+# then
+#   osascript -e "
+
+# fi
+
+# # setwindow() {
+# #   osascript -e "tell app \"Terminal\" to tell window 1
+# # set b to bounds
+# # set item 3 of b to (item 1 of b) + $1
+# # set bounds to b
+# # end";
+# # }
+
+# # tell application "System Events"
+# #     set position of first window of application process "Preview" to {100, 100}
+# # end tell  

@@ -1,0 +1,53 @@
+#!/bin/sh
+
+path="${1}"
+
+if [ -z "${path}" ]
+then
+    echo "usage:"
+    echo "  ${0} <file>"
+    exit 1
+fi
+
+if [ ! -f "${path}" ]
+then
+  echo "No such file" 1>&2
+  exit 1
+fi
+
+if [ ! -z "${VERBOSE}" ]
+then
+  set -x
+fi
+
+file="$(basename "${path}")" || exit 1
+dir="$(dirname "${path}")" || exit 1
+pushd "${dir}" 2>&1 1>/dev/null || exit 1
+
+if [ ! -z "${FORCE}" ]
+then
+  rm -f "${file}.png"
+fi
+
+if [ ! -f "${file}.png" ]
+then
+  spectrogram "${file}" || rm -f "${file}.png"
+fi
+
+if [ -z "${NOFOCUS}" ]
+then
+  if [ -f "${file}.png" ]
+  then
+    # imgpos="{171, 210, 1354, 942}"
+    # #vlcpos="{-1, 22, 1425, 547}"
+    # vlcpos="{-1, 22, 1425, 597}"
+    imgpos="{171, 389, 1354, 1089}"
+    vlcpos="{-1, 22, 1425, 747}"
+    osx-window VLC "" "${vlcpos}" "activate"
+    open "${file}.png" # && sleep 1 # is this necessary?
+    osx-window Preview "" "${imgpos}" "activate"
+    # osx-window Preview "bounds of first window of it" "bounds of second window of it"
+    osx-window VLC "" "" "activate"
+  fi
+fi
+popd 2>&1 1>/dev/null

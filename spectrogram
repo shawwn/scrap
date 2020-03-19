@@ -1,0 +1,28 @@
+#!/usr/bin/env python
+#coding: utf-8
+""" This work is licensed under a Creative Commons Attribution 3.0 Unported License.
+    Frank Zalkow, 2012-2013 """
+
+from speclib import *
+import os
+
+if __name__ == '__main__':
+    # for infile in sys.argv[1:]:
+    #     outfile='%s.png' % infile
+    #     print '%s -> %s' % (infile, outfile)
+    #     ext=os.path.splitext(infile)[1]
+    #     if ext == 'm4a':
+    #         wavfile=infile
+    #     elif ext == 'wav':
+    #         wavfile=infile
+    #     else:
+    #         wavfile='specpy-input.wav'
+    #         os.system("faad '%s' -o '%s'" % (infile, wavfile))
+    #     plotstft(wavfile, plotpath=outfile)
+    #     os.system("rm -f specpy-input.wav")
+
+    for infile in sys.argv[1:]:
+        outfile = '%s.png' % infile
+        print '%s -> %s' % (infile, outfile)
+        if not os.path.isfile(outfile):
+            plotstft(infile, plotpath=outfile)
