@@ -84,24 +84,27 @@ def process(entries):
         ids.append(tag)
       with open(path, "a") as f:
         f.write('%d %f %f %f %f\n' % (seen[tag], x, y, w, h))
-    with open(os.path.join('data', 'features.names'), 'w') as f:
+    trainpath = os.path.abspath(os.path.join('data', 'train.txt'))
+    validpath = os.path.abspath(os.path.join('data', 'valid.txt'))
+    namespath = os.path.abspath(os.path.join('data', 'features.names'))
+    with open(namespath, 'w') as f:
       for x in ids:
         f.write('%s\n' % x)
     np.random.shuffle(imgs)
     train = imgs[0:len(imgs)*9//10]
     valid = imgs[len(imgs)*9//10:]
-    with open(os.path.join('data', 'train.txt'), 'w') as f:
+    with open(trainpath, 'w') as f:
       for x in train:
         f.write('%s\n' % x)
-    with open(os.path.join('data', 'valid.txt'), 'w') as f:
+    with open(validpath, 'w') as f:
       for x in valid:
         f.write('%s\n' % x)
     with open(os.path.join('data', 'features.data'), 'w') as f:
       f.write("""classes= %d
-train  = data/train.txt
-valid  = data/valid.txt
-names = data/features.names
-backup = backup/""" % len(ids))
+train  = %s
+valid  = %s
+names = %s
+backup = backup/""" % (len(ids), trainpath, validpath, namespath))
 
 def main():
     try:
