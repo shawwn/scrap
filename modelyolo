@@ -76,7 +76,7 @@ def process(entries):
       name, ext = os.path.splitext(fname)
       path = os.path.join('data', name+'.txt')
       imgpath = os.path.join('data', fname)
-      #imgpath = os.path.abspath(imgpath)
+      imgpath = os.path.abspath(imgpath)
       if imgpath not in imgs:
         imgs.append(imgpath)
       if tag not in seen:
