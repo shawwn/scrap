@@ -76,6 +76,7 @@ def process(entries):
       name, ext = os.path.splitext(fname)
       path = os.path.join('data', name+'.txt')
       imgpath = os.path.join('data', fname)
+      #imgpath = os.path.abspath(imgpath)
       if imgpath not in imgs:
         imgs.append(imgpath)
       if tag not in seen:
@@ -95,6 +96,12 @@ def process(entries):
     with open(os.path.join('data', 'valid.txt'), 'w') as f:
       for x in valid:
         f.write('%s\n' % x)
+    with open(os.path.join('data', 'features.data'), 'w') as f:
+      f.write("""classes= %d
+train  = data/train.txt
+valid  = data/valid.txt
+names = data/features.names
+backup = backup/""" % len(ids))
 
 def main():
     try:
