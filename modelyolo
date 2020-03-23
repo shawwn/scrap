@@ -75,6 +75,13 @@ def process(entries):
       fname = os.path.basename(url)
       name, ext = os.path.splitext(fname)
       path = os.path.join('data', name+'.txt')
+      with open(path, "w") as f:
+        pass
+    for entry in entries:
+      url, user, tag, x, y, w, h = entry
+      fname = os.path.basename(url)
+      name, ext = os.path.splitext(fname)
+      path = os.path.join('data', name+'.txt')
       imgpath = os.path.join('data', fname)
       imgpath = os.path.abspath(imgpath)
       if imgpath not in imgs:
