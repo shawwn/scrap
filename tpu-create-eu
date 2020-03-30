@@ -1,0 +1,14 @@
+#!/bin/sh
+
+i="${1}"
+shift 1
+
+if [ -z "${i}" ]
+then
+    echo "usage:"
+    echo "  ${0} <i> [<option>]"
+    exit 1
+fi
+
+set -x
+exec gcloud compute tpus create tpu-euw4a-${i} --zone europe-west4-a --network "${network:-tpu-euw4a}" --range 10.48.${i}.0/29 --version 1.15 --accelerator-type "v3-8" --preemptible "$@"

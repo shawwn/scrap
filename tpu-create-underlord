@@ -1,0 +1,14 @@
+#!/bin/sh
+
+i="${1}"
+shift 1
+
+if [ -z "${i}" ]
+then
+    echo "usage:"
+    echo "  ${0} <i> [<option>]"
+    exit 1
+fi
+
+set -x
+exec gcloud compute tpus create tpunderlord${i} --zone us-central1-f --network default --range 10.28.${i}.16/29 --version 1.15 --preemptible "$@"

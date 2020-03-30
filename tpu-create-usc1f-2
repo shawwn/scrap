@@ -1,0 +1,14 @@
+#!/bin/sh
+
+i="${1}"
+shift 1
+
+if [ -z "${i}" ]
+then
+    echo "usage:"
+    echo "  ${0} <i> [<option>]"
+    exit 1
+fi
+
+set -x
+exec gcloud compute tpus create tpusc1f${i}-2 --zone us-central1-f --network tpu-usc1f --range 10.103.${i}.0/29 --version 1.15 --accelerator-type "v2-8" --preemptible "$@"

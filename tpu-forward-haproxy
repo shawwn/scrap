@@ -1,0 +1,101 @@
+#!/usr/bin/env python3
+
+#==============================================================================
+# Functionality
+#==============================================================================
+import pdb
+import sys
+import os
+import re
+from natsort import natsorted
+
+# utility funcs, classes, etc go here.
+
+def asserting(cond):
+    if not cond:
+        pdb.set_trace()
+    assert(cond)
+
+def has_stdin():
+    return not sys.stdin.isatty()
+
+def reg(pat, flags=0):
+    return re.compile(pat, re.VERBOSE | flags)
+
+#==============================================================================
+# Cmdline
+#==============================================================================
+import argparse
+
+parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter, 
+    description="""
+TODO
+""")
+     
+parser.add_argument('-v', '--verbose',
+    action="store_true",
+    help="verbose output" )
+
+args = None
+
+spec = """
+listen {name}
+    bind 0.0.0.0:{port}
+    mode tcp
+    timeout connect  4000
+    timeout client   180000
+    timeout server   180000
+    server {name} {addr}
+"""
+
+#==============================================================================
+# Main
+#==============================================================================
+
+def run():
+    if args.verbose:
+        print(args)
+    if len(args.args) <= 0 and not has_stdin():
+        # if there were no args and there was no input, prompt user.
+        print('Enter input (press Ctrl-D when done):')
+    values = args.args[:]
+    if len(args.args) <= 0 or has_stdin():
+        indata = sys.stdin.read()
+        values.extend(re.findall('[0-9]+[.][0-9]+[.][0-9]+[.][0-9]+[:]8470', indata))
+    values = natsorted([_ for _ in set(values)])
+    #from pprint import pprint
+    #pprint(values)
+    for i, arg in enumerate(values):
+      name = 'tpu'+arg.replace('.', '_').replace(':', '_')
+      a, b, c, d = [int(x) for x in arg.split(':')[0].split('.')]
+      if a == 10 and b in [48, 49]:
+        assert(d == 2)
+        port = b * 1000 + c
+      elif a == 10 and b in range(50, 60):
+        assert(c == 0)
+        port = b * 1000 + d
+      else:
+        continue
+      print(spec.format(name=name, port=port, addr=arg))
+
+def main():
+    try:
+        global args
+        if not args:
+            args, leftovers = parser.parse_known_args()
+            args.args = leftovers
+        return run()
+    except IOError:
+        # http://stackoverflow.com/questions/15793886/how-to-avoid-a-broken-pipe-error-when-printing-a-large-amount-of-formatted-data
+        try:
+            sys.stdout.close()
+        except IOError:
+            pass
+        try:
+            sys.stderr.close()
+        except IOError:
+            pass
+
+if __name__ == "__main__":
+    main()
+

@@ -1,0 +1,15 @@
+#!/bin/sh
+set -ex
+i="$1"
+shift 1
+type="$1"
+shift 1
+cidr="$1"
+shift 1
+sleep_secs="$1"
+shift 1
+
+tpu-delete-quiet tpu-${type}-euw4a-${i}
+sleep $sleep_secs
+exec tpu-create-eu-pod ${i} ${type} ${cidr} "$@"
+

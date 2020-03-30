@@ -1,0 +1,2 @@
+set -x
+gcloud compute tpus list --zone us-central1-a "$@" | natsort

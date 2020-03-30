@@ -1,0 +1,2 @@
+set -x
+exec tpu-status europe-west4-a "$@"

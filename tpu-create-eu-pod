@@ -1,0 +1,18 @@
+#!/bin/bash
+
+set -ex
+i="${1}"
+shift 1
+accelerator=${1}
+shift 1
+cidr=${1} # 27 for v3-128, 26 for v3-256, 24 for v3-1024
+shift 1
+
+TPU_VERSION="${TPU_VERSION:-1.15}" 
+#TPU_VERSION="${TPU_VERSION:-1.12}" # version 1.15 is significantly slower for bfloat16 benchmarks!
+
+preemptible="${preemptible:---preemptible}"
+
+#exec gcloud compute tpus create tpewpew${i} --zone europe-west4-a --network default --range 10.50.${i}.0/${cidr} --version 1.15 --accelerator-type "${accelerator}" --preemptible "$@"
+#exec gcloud compute tpus create tpu-${accelerator}-euw4a-${i} --zone europe-west4-a --network ${network:-tpu-euw4a} --range 10.$((50 + ${i})).0.0/${cidr} --version "$TPU_VERSION" --accelerator-type "${accelerator}" ${preemptible} "$@"
+exec gcloud compute tpus create tpu-${accelerator}-euw4a-${i} --zone europe-west4-a --network ${network:-tpu-euw4a} --range 10.$((2 + ${i})).0.0/${cidr} --version "$TPU_VERSION" --accelerator-type "${accelerator}" ${preemptible} "$@"

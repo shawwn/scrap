@@ -1,0 +1,2 @@
+#!/bin/sh
+exec gcloud compute tpus describe "$@"

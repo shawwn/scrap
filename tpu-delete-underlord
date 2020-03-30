@@ -1,0 +1,13 @@
+#!/bin/sh
+
+dir="${1}"
+shift 1
+
+if [ -z "${dir}" ]
+then
+    echo "usage:"
+    echo "  ${0} <directory> [<option>]"
+    exit 1
+fi
+
+exec gcloud compute tpus delete --zone us-central1-f tpunderlord${dir} "$@"

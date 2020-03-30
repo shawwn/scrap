@@ -1,0 +1,20 @@
+#!/bin/sh
+
+i="${1}"
+shift 1
+
+if [ -z "${i}" ]
+then
+    echo "usage:"
+    echo "  ${0} <i> [<option>]"
+    exit 1
+fi
+
+set -x
+exec gcloud compute tpus create tpundying0${i} --zone us-central1-f --network default --range 10.28.1${i}.0/29 --version 1.15 --preemptible "$@"
+#while true
+#do
+#  gcloud compute tpus create tpundying0${i} --zone us-central1-f --network default --range 10.28.1${i}.0/29 --version 1.15 --preemptible "$@" && exit 0
+#  echo "trying again..."
+#  sleep 1
+#done

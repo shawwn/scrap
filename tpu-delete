@@ -1,0 +1,14 @@
+#!/bin/sh
+
+name="${1}"
+shift 1
+
+if [ -z "${name}" ]
+then
+    echo "usage:"
+    echo "  ${0} [<option>]"
+    exit 1
+fi
+
+set -x
+exec gcloud compute tpus delete "${name}" "$@"

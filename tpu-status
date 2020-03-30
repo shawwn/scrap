@@ -1,0 +1,4 @@
+set -x
+zone="${1:-europe-west4-a}"
+shift 1
+gcloud compute tpus list --zone "$zone" "$@" | natsort | replace '        ' ' ' | replace '          ' ''

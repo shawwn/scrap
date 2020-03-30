@@ -1,0 +1,5 @@
+#!/bin/sh
+set -x
+gcloud compute tpus stop --zone us-central1-f "$@"
+sleep 0.05
+gcloud compute tpus start --zone us-central1-f "$@"

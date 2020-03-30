@@ -1,0 +1,5 @@
+#!/bin/sh
+set -ex
+idx="$1"
+shift 1
+exec tpu-create-eu-pod "$idx" v3-32 29 "$@"

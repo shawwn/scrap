@@ -1,0 +1,2 @@
+set -x
+while true; do gcloud compute tpus list --zone us-central1-f | grep PREEMPTED | cols 0 | xargs -n 1 -I {} gcloud compute tpus start {} --zone us-central1-f --async ; done

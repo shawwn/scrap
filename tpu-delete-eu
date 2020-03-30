@@ -1,0 +1,7 @@
+#!/bin/sh
+
+set -ex
+i="${1}"
+shift 1
+
+exec gcloud compute tpus delete --zone europe-west4-a tpeu${i} "$@"
