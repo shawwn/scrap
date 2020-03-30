@@ -1,3 +1,4 @@
+#!/bin/bash
 set -x
 zone="${1:-europe-west4-a}"
 shift 1
