@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 for i in {0..49}; do tpu-delete-quiet tpu-euw4a-$i ; done
 sleep 180;
 for i in {0..49}; do tpu-create-eu $i --async ; done
