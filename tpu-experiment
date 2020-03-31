@@ -1,0 +1,7 @@
+#!/bin/sh
+set -ex
+
+bucket="$1"
+shift 1
+
+curl -fsSL battle.shawwn.com/experiments-dynamic.txt | narrow "$bucket" | rg -o 'tpu-[^ ]+' #-o | rg 'v[23]-[0-9]+' -o | rg '[-][0-9]+' -o | rg '[0-9]+' -o
