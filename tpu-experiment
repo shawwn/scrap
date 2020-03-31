@@ -1,5 +1,5 @@
 #!/bin/sh
-set -ex
+set -e
 
 bucket="$1"
 shift 1

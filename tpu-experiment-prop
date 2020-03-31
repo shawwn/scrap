@@ -1,10 +1,10 @@
 #!/bin/sh
-set -ex
+set -e
 
 bucket="$1"
 shift 1
 prop="$1"
 shift 1
 
-curl -fsSL battle.shawwn.com/experiments-dynamic.txt | narrow "$bucket" | rg -o '[{].*' | jq -c -r "$prop"
+curl -fsSL battle.shawwn.com/experiments-dynamic.txt | narrow "$bucket" | first | rg -o '[{].*' | jq -c -r "$prop"
 
