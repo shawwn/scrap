@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+set -eu
+
+pids=$1
+
+my_pid=$$
+subtree_pids() {
+    local pid=$1 level=${2:-0}
+    if [ "$pid" = "$my_pid" ]; then
+        return
+    fi
+    echo "$pid"
+    ps --ppid "$pid" -o pid= | while read -r pid; do
+        subtree_pids "$pid" $((level + 1))
+    done
+}
+
+# server_pid=$(tmux display-message -p '#{pid}')
+underline=$(tput smul)
+# reset=$(tput sgr0)   # produces extra symbols in less (^O), TERM=screen-256color (under tmux)
+reset=$(echo -e '\033[m')
+re=$(echo "$pids" | paste -sd'|')
+tmux list-panes -aF '#{session_name} #{window_index} #{window_name} #{pane_pid}' \
+| while read -r session_name window_index window_name pane_pid; do
+    echo "-- $session_name $window_index $window_name"
+    ps -p "$(subtree_pids "$pane_pid" | paste -sd,)" -Ho pid=,ppid=,comm=,args= \
+        | sed -E 's/^/        /' \
+        | awk \
+        -v re="$re" -v underline="$underline" -v reset="$reset" '
+            $1 ~ re {print underline $0 reset}
+            $1 !~ re {print $0}
+        '
+done | {
+    [ -t 1 ] && less -S || cat
+}
