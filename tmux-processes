@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -eu
 
-pids=$1
+pids="${1:-""}"
 
 my_pid=$$
 subtree_pids() {
