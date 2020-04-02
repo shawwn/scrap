@@ -1,5 +1,5 @@
 #!/bin/sh
-set -ex
+set -x
 i="$1"
 shift 1
 type="$1"
@@ -10,7 +10,7 @@ sleep_secs="${1:-1}"
 
 #tpu-delete-quiet tpu-${type}-euw4a-${i}
 #sleep $sleep_secs
-tpu-delete tpu-${type}-euw4a-${i}
+tpu-delete tpu-${type}-euw4a-${i} --quiet
 sleep 1
 exec tpu-create-eu-pod ${i} ${type} ${cidr} "$@"
 
