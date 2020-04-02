@@ -10,7 +10,7 @@ sleep_secs="${1:-1}"
 
 #tpu-delete-quiet tpu-${type}-euw4a-${i}
 #sleep $sleep_secs
-tpu-delete tpu-${type}-euw4a-${i} --quiet
+tpu-delete tpu-${type}-euw4a-${i}
 sleep 1
 exec tpu-create-eu-pod ${i} ${type} ${cidr} "$@"
 
