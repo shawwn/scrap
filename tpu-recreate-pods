@@ -1,13 +1,18 @@
 #!/bin/sh
 set -x
 
+tpu-delete-quiet tpu-v3-32-euw4a-0
+tpu-delete-quiet tpu-v3-32-euw4a-1
+tpu-delete-quiet tpu-v3-32-euw4a-2
+tpu-delete-quiet tpu-v3-32-euw4a-3
+
 for i in {4..9} {20..28}; do tpu-delete-quiet tpu-v3-32-euw4a-$i ; done
 
 tpu-delete-quiet tpu-v3-256-euw4a-10
 tpu-delete-quiet tpu-v3-256-euw4a-11
 tpu-delete-quiet tpu-v3-128-euw4a-12
 tpu-delete-quiet tpu-v3-128-euw4a-13
-tpu-delete-quiet tpu-v3-64-euw4a-14
+tpu-delete-quiet tpu-v3-32-euw4a-14
 
 tpu-delete-quiet tpu-v2-512-euw4a-15
 tpu-delete-quiet tpu-v2-256-euw4a-16
@@ -26,7 +31,12 @@ tpu-create-eu-pod 10 v3-256 26 --async
 tpu-create-eu-pod 11 v3-256 26 --async
 tpu-create-eu-pod 12 v3-128 27 --async
 tpu-create-eu-pod 13 v3-128 27 --async
-tpu-create-eu-pod 14 v3-64 28 --async
+tpu-create-eu-pod 14 v3-32 29 --async
+
+preemptible=' ' tpu-create-eu-pod 0 v3-32 29 --async
+preemptible=' ' tpu-create-eu-pod 1 v3-32 29 --async
+preemptible=' ' tpu-create-eu-pod 2 v3-32 29 --async
+preemptible=' ' tpu-create-eu-pod 3 v3-32 29 --async
 
 tpu-create-eu-pod 15 v2-512 25 --async
 tpu-create-eu-pod 16 v2-256 26 --async
