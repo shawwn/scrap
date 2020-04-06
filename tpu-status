@@ -1,4 +1,3 @@
 #!/bin/bash
-zone="${1:-europe-west4-a}"
-shift 1
-gcloud compute tpus list --zone "$zone" "$@" | natsort | replace '        ' ' ' | replace '          ' ''
+gcloud compute tpus list --zone europe-west4-a "$@" | natsort | replace '        ' ' ' | replace '          ' ''
+gcloud compute tpus list --zone us-central1-a "$@" | skip-first-n-lines 1 | natsort | replace '        ' ' ' | replace '          ' ''
