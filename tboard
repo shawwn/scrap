@@ -10,5 +10,11 @@ then
     exit 1
 fi
 
+port="${2:-0}"
+shift 1
+
+host="${HOST:-0.0.0.0}"
+
 set -x
-exec tensorboard --host 0.0.0.0 --port 0 --logdir "$dir" "$@"
+exec tensorboard --host "${host}" --port "${port}" --logdir "$dir" "$@"
+
