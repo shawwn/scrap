@@ -1,0 +1,14 @@
+#!/bin/sh
+
+dir="${1}"
+shift 1
+
+if [ -z "${dir}" ]
+then
+    1>&2 echo "usage:"
+    1>&2 echo "  ${0} <directory> [<option>]"
+    exit 1
+fi
+
+set -x
+exec tensorboard --host 0.0.0.0 --port 0 --logdir "$dir" "$@"
