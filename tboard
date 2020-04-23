@@ -15,6 +15,11 @@ shift 1
 
 host="${HOST:-0.0.0.0}"
 
-set -x
-exec tensorboard --host "${host}" --port "${port}" --logdir "$dir" "$@"
+# --samples_per_plugin=images=100 shows up to 100 images:
+#
+# https://github.com/tensorflow/tensorboard/issues/1012#issuecomment-397758274
+#
+images="${IMAGES:-100}"
 
+set -x
+exec tensorboard --host "${host}" --port "${port}" --logdir "$dir" --samples_per_plugin=images="${images}" "$@"
