@@ -1,7 +1,6 @@
 #!/bin/bash
 
-dst="${1:-origin}"
-shift 1
+dst="origin"
 
 set -x
 exec git push --set-upstream "${dst}" "$@"
