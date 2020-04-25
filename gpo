@@ -1,0 +1,7 @@
+#!/bin/sh
+
+dst="${1:-origin}"
+shift 1
+
+set -x
+exec git push --set-upstream "${dst}" "$@"
