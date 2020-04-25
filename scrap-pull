@@ -1,0 +1,8 @@
+#!/bin/bash
+
+dir="${1:-${HOME}/scrap}"
+shift 1
+
+set -ex
+cd "${dir}" && git pull
+
