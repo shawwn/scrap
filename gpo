@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 dst="${1:-origin}"
 shift 1
