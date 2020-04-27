@@ -1,4 +1,4 @@
 #!/bin/bash
 
-ps aux | exec narrow "$@"
+ps aux | narrow "$@"
 
