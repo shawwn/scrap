@@ -15,9 +15,9 @@ fi
 
 set -ex
 git fetch "${remote}"
-git stash
+#git stash
 git reset --hard "${remote}/${branch}"
-git stash pop
+#git stash pop
 git status
 
 
