@@ -14,7 +14,7 @@ else
 fi
 
 set -ex
-git fetch "${remote}/${branch}"
+git fetch "${remote}"
 git stash
 git reset --hard "${remote}/${branch}"
 git stash pop
