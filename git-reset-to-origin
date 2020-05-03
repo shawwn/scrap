@@ -1,0 +1,21 @@
+#!/bin/sh
+set -ex
+remote="$1"
+shift 1
+branch="`git-branch-current`"
+set +x
+
+echo "Warning: about to roll back to ${remote}/${branch}, stashing current changes."
+read -r -p "Continue? [y/N] " response
+if [[ $response =~ ^([yY][eE][sS]|[yY])$ ]]; then
+  :
+else
+  exit 1
+fi
+
+set -ex
+git stash
+git reset --hard "${remote}/${branch}"
+git status
+
+
