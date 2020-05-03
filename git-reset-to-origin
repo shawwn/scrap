@@ -5,7 +5,7 @@ shift 1
 branch="`git-branch-current`"
 set +x
 
-echo "Warning: about to roll back to ${remote}/${branch}, stashing current changes."
+echo "Warning: about to roll back to ${remote}/${branch}. Stash your changes before doing this."
 read -r -p "Continue? [y/N] " response
 if [[ $response =~ ^([yY][eE][sS]|[yY])$ ]]; then
   :
