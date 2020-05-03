@@ -1,0 +1,8 @@
+#!/bin/sh
+
+set -ex
+
+ip_addr="${1}"
+shift 1
+
+exec iptables -A INPUT --src "${ip_addr}" -p tcp --dport 22 -j DROP "$@"
