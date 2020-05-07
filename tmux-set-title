@@ -1,0 +1,15 @@
+#!/bin/sh
+
+title="${1}"
+shift 1
+
+if [ -z "${title}" ]
+then
+    1>&2 echo "usage:"
+    1>&2 echo "  ${0} <title>"
+    exit 1
+fi
+
+set -x
+exec printf '\033]2;%s\033\\' "$title"
+
