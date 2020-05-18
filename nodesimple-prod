@@ -1,0 +1,6 @@
+#!/bin/sh
+
+# enable CORS, disable caching
+set -ex
+
+ exec nodesimple "$@" --cors -c-1
