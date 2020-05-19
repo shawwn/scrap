@@ -10,5 +10,5 @@ then
     exit 1
 fi
 
-while true; do subreddit-pics-pages 80 "$dir" | sponge "${dir}.txt" ; sleep 600 ; done
+while true; do subreddit-pics-pages 160 "$dir" | sponge "${dir}.txt" ; sleep 600 ; done
 
