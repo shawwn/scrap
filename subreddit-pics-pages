@@ -17,8 +17,9 @@ name=""
 for i in {0..$dir}; do
   while IFS= read -r line
   do
-    echo "$line"
+    url="$(echo $line | splitby ' ' | second)"
     name="$(echo $line | splitby ' ' | first)"
+    echo "$url"
   done < <(subreddit-pics "$sub" "$name")
 done
 
