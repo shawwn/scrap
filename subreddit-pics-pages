@@ -1,0 +1,24 @@
+#!/bin/bash
+
+dir="${1}"
+shift 1
+
+if [ -z "${dir}" ]
+then
+    1>&2 echo "usage:"
+    1>&2 echo "  ${0} <directory> [<option>]"
+    exit 1
+fi
+set -e
+sub="${1}"
+shift 1
+
+name=""
+for i in {0..$dir}; do
+  while IFS= read -r line
+  do
+    echo "$line"
+    name="$(echo $line | splitby ' ' | first)"
+  done < <(subreddit-pics "$sub" "$name")
+done
+

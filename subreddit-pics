@@ -1,0 +1,17 @@
+#!/bin/sh
+
+dir="${1}"
+shift 1
+
+if [ -z "${dir}" ]
+then
+    1>&2 echo "usage:"
+    1>&2 echo "  ${0} <directory> [<option>]"
+    exit 1
+fi
+
+after="$1"
+set -ex
+
+curl -fsSL "https://www.reddit.com/r/${dir}.json?limit=10000&after=${after}" -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36' | jq '.data.children[].data | .name+" "+.url' -c -r | egrep '[.](jpg|gif|jpeg|png|bmp)'
+
