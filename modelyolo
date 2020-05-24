@@ -43,6 +43,10 @@ TODO
 parser.add_argument('-v', '--verbose',
     action="store_true",
     help="verbose output" )
+     
+parser.add_argument('--outdir',
+    default="data",
+    help="Output directory" )
 
 args = None
 
@@ -68,21 +72,21 @@ def run():
 def process(entries):
     seen = {}
     ids = []
-    maketree('data')
+    maketree(args.outdir)
     imgs = []
     for entry in entries:
       url, user, tag, x, y, w, h = entry
       fname = os.path.basename(url)
       name, ext = os.path.splitext(fname)
-      path = os.path.join('data', name+'.txt')
+      path = os.path.join(args.outdir, name+'.txt')
       with open(path, "w") as f:
         pass
     for entry in entries:
       url, user, tag, x, y, w, h = entry
       fname = os.path.basename(url)
       name, ext = os.path.splitext(fname)
-      path = os.path.join('data', name+'.txt')
-      imgpath = os.path.join('data', fname)
+      path = os.path.join(args.outdir, name+'.txt')
+      imgpath = os.path.join(args.outdir, fname)
       imgpath = os.path.abspath(imgpath)
       if imgpath not in imgs:
         imgs.append(imgpath)
@@ -91,9 +95,9 @@ def process(entries):
         ids.append(tag)
       with open(path, "a") as f:
         f.write('%d %f %f %f %f\n' % (seen[tag], x, y, w, h))
-    trainpath = os.path.abspath(os.path.join('data', 'train.txt'))
-    validpath = os.path.abspath(os.path.join('data', 'valid.txt'))
-    namespath = os.path.abspath(os.path.join('data', 'features.names'))
+    trainpath = os.path.abspath(os.path.join(args.outdir, 'train.txt'))
+    validpath = os.path.abspath(os.path.join(args.outdir, 'valid.txt'))
+    namespath = os.path.abspath(os.path.join(args.outdir, 'features.names'))
     with open(namespath, 'w') as f:
       for x in ids:
         f.write('%s\n' % x)
@@ -106,7 +110,7 @@ def process(entries):
     with open(validpath, 'w') as f:
       for x in valid:
         f.write('%s\n' % x)
-    with open(os.path.join('data', 'features.data'), 'w') as f:
+    with open(os.path.join(args.outdir, 'features.data'), 'w') as f:
       f.write("""classes= %d
 train  = %s
 valid  = %s
