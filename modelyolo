@@ -101,6 +101,7 @@ def process(entries):
     with open(namespath, 'w') as f:
       for x in ids:
         f.write('%s\n' % x)
+    np.random.seed(0)
     np.random.shuffle(imgs)
     train = imgs[0:len(imgs)*9//10]
     valid = imgs[len(imgs)*9//10:]
