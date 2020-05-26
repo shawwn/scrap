@@ -21,5 +21,8 @@ host="${HOST:-0.0.0.0}"
 #
 images="${IMAGES:-100000}"
 
+echo "http://$(curl -fsSL api.ipify.org):${port}"
+echo ""
+
 set -x
 exec tensorboard --host "${host}" --port "${port}" --logdir "$dir" --samples_per_plugin=images="${images}" "$@"
