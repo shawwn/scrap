@@ -19,7 +19,7 @@ host="${HOST:-0.0.0.0}"
 #
 # https://github.com/tensorflow/tensorboard/issues/1012#issuecomment-397758274
 #
-images="${IMAGES:-100000}"
+images="${IMAGES:-100}"
 
 echo "http://$(curl -fsSL api.ipify.org):${port}"
 echo ""
