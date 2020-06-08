@@ -1,0 +1,10 @@
+#!/bin/sh
+set -x
+creds="${HOME}/.config/gcloud/application_default_credentials.json"
+if [ -z "$BEARER" ]
+then
+  bearer="$(oauth2l header --json "$creds" cloud-platform)"
+else
+  bearer="Authorization: Bearer $BEARER"
+fi
+exec curl -s -H "$bearer" -H "Accept: application/json" "$@"
