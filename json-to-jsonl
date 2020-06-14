@@ -1,0 +1,20 @@
+#!/bin/sh
+
+dir="${1}"
+shift 1
+
+if [ -z "${dir}" ]
+then
+    1>&2 echo "usage:"
+    1>&2 echo "  ${0} <directory> [<option>]"
+    exit 1
+fi
+
+cat "$dir" | jq '.[]' -c
+
+while [ ! -z "$1" ]
+do
+  cat "$1" | jq '.[]' -c
+  shift 1
+done
+
