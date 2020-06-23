@@ -8,4 +8,17 @@ out="${1}"
 shift 1
 
 # http://pimentoso.blogspot.com/2016/01/convert-videos-for-twitter-using-ffmpeg.html
-exec ffmpeg -i "${in}" -r 40 -c:v libx264 -b:v 1M -vf scale=640:-1 "${out}" "$@"
+#exec ffmpeg -i "${in}" -r 30 -c:v libx264 -b:v 1M -vf scale=640:-1 "${out}" "$@"
+exec ffmpeg -i "${in}" -af "apad=pad_dur=1" -r 30 -c:v libx264 -b:v 1M -vf scale=640:-1 "${out}" "$@"
+
+#ffmpeg -i "${in}" -r 30 -c:v libx264 -b:v 1M -vf scale=640:-1 video-for-twitter.mp4 -y "$@"
+##ffmpeg -i "${in}" -r 30 -c:v libvpx -crf 10 -b:v 1M -vf scale=640:-1 video-for-twitter.mp4 -y "$@"
+#ffmpeg -f lavfi -i anullsrc=channel_layout=5.1:sample_rate=48000 -t 1 silence.ac3 -y
+#cat >video-for-twitter-input.txt <<'EOF' 
+#file 'silence.ac3'
+#file 'video-for-twitter.mp4'
+#EOF
+#ffmpeg -f concat -i video-for-twitter-input.txt -codec copy "${out}" -y
+#rm -f video-for-twitter-input.txt
+#rm -f video-for-twitter.mp4
+#rm -f silent.ac3
