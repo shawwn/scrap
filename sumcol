@@ -3,6 +3,6 @@
 column="${1:-0}"
 shift 1
 
-set -x
+#set -x
 cols "$column" "$@" | summing
 
