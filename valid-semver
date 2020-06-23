@@ -1,0 +1,9 @@
+#!/usr/bin/env python3
+import semver
+import sys
+ver = sys.argv[1]
+print(tuple(x for x in semver.VersionInfo.parse(ver).to_tuple() if x is not None))
+
+##!/bin/sh
+#id="(?:[0-9]+[0-9a-zA_Z_-]*)"
+#printf "%s" "$1" | exec egrep "^$id[.]$id[.]$id([-][^+]+([+].+)?)?$"

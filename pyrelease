@@ -1,0 +1,19 @@
+#!/bin/sh
+if [ ! -z "$1" ]
+then
+  set -ex
+  versionfile="$(find . -depth 2 -type f -name '_version.py' | first)"
+  [ ! -z "$versionfile" ]
+  versionline="$(echo "__version_info__ = $(valid-semver "$1")")"
+  (echo "$versionline"; cat "$versionfile" | grep -v '^__version_info__ =') | sponge "$versionfile"
+  pyrelease
+  git add "$versionfile"
+  git commit -m "Version $1"
+  git push
+  exit 0
+fi
+set -ex
+rm -rf dist
+python3 setup.py sdist
+twine check dist/*
+twine upload dist/*
