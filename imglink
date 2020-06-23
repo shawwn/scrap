@@ -1,0 +1,13 @@
+#!/bin/sh
+
+filename="$1"
+shift 1
+
+set -ex
+
+if [ -z "$filename" ]
+then
+  filename="$(gfyname).png"
+  pngpaste "$filename"
+fi
+exec imgur "$filename" "$@"
