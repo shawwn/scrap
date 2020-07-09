@@ -1,7 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 set -e
 output="$(git pull)"
-set +e
-[ "$output" == "Already up to date." ] 2>/dev/null && exit 0
-set -x
-exec "$@"
+[ "$output" == "Already up to date." ]
