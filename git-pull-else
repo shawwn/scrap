@@ -1,4 +1,3 @@
 #!/bin/bash
 set -e
-output="$(git pull)"
-[ "$output" != "Already up to date." ]
+git-check-pull && git pull
