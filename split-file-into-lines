@@ -1,0 +1,23 @@
+#!/bin/bash
+
+set -ex
+
+lines="${1}"
+shift 1
+file="${1}"
+shift 1
+
+if [ -z "${file}" ]
+then
+    1>&2 echo "usage:"
+    1>&2 echo "  ${0} <lines> <file>"
+    exit 1
+fi
+
+lines1=$(math "$lines" - 1)
+
+fileext=${file##*.}
+
+# https://stackoverflow.com/a/14974094/9919772
+exec awk "NR%$lines==1 { file = FILENAME \"-\" sprintf(\"%06d.${fileext}\", NR+$lines1) } { print > file }" "$file"
+
