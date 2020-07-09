@@ -1,4 +1,4 @@
 #!/bin/bash
 set -e
 output="$(git pull)"
-[ "$output" == "Already up to date." ]
+[ "$output" != "Already up to date." ]
