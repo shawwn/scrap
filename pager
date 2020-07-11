@@ -1,0 +1,7 @@
+#!/bin/sh
+if [ -t 1 ]
+then
+  exec less -x8 -R "$@"
+else
+  exec cat
+fi
