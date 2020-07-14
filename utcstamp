@@ -1,6 +1,7 @@
 #!/bin/sh
 
-TIME=${1:-`utcnow`}
+now=${1:-`utcnow`}
+shift
 
-date -ur $TIME "+%Y%m%d-%H%M%S"
+exec date -ur $now "+%Y%m%d-%H%M%S"
 
