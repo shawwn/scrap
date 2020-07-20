@@ -45,7 +45,7 @@ args = None
 #==============================================================================
 
 def is_cloud_path(x):
-  return bool(re.match('.*?://', x))
+  return bool(re.match('^.+?://', x))
 
 
 def file_name_as_directory(x):
