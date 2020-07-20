@@ -1,0 +1,7 @@
+#!/bin/sh
+
+for path in "$@"
+do
+  gsutil-exists "$path" && continue
+  printf "" | gsutil cp - "$path"
+done
