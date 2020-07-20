@@ -1,0 +1,4 @@
+#!/bin/sh
+set -e
+
+gsutil-latest-checkpoint "$@" | rg -o '[-]([0-9]+)' --replace '$1' --color=never

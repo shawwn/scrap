@@ -1,8 +1,8 @@
-#!/bin/sh
+#!/bin/bash
 set -e
 
-for model_dir in "$@"
-do
+run() {
+  model_dir="$1"
   model_dir="$(printf "%s" "$model_dir" | replace '/checkpoint' '' | file-name-as-directory)"
 
   model_file="$(gsutil cat "${model_dir}checkpoint" | narrow '^model_checkpoint_path:' | rg -o '"(.*?)"' --replace '$1')"
@@ -10,4 +10,9 @@ do
   then
     printf "%s%s\n" "$model_dir" "$model_file"
   fi
+}
+
+for model_dir in "$@"
+do
+  run "$model_dir" &
 done
