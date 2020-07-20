@@ -1,0 +1,12 @@
+#!/bin/sh
+
+dir="`pwd`"
+cd "$(dirname "$0")"
+path="`pwd`"
+cd "${dir}"
+
+path="$(echo "${path}" | replace "${HOME}" '${HOME}')"
+
+cat <<EOF
+export PATH="${path}:\$PATH"
+EOF
