@@ -1,0 +1,15 @@
+#!/bin/sh
+
+path="${1}"
+shift 1
+
+if [ -z "${path}" ]
+then
+    1>&2 echo "usage:"
+    1>&2 echo "  ${0} <path> [<paths>...]"
+    exit 1
+fi
+
+# https://stackoverflow.com/questions/29357420/gsutil-how-can-i-check-if-a-file-exists-in-a-gcs-bucket-a-sub-directory-usin
+exec gsutil -q stat "$path" "$@"
+
