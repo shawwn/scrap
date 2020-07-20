@@ -1,8 +1,9 @@
 #!/bin/sh
 
 set -e
-model_dir="${1}"
-shift 1
-model_dir="$(file-name-as-directory "$model_dir")"
 
-unbuffer gsutil ls "${model_dir}**/checkpoint" | rg -o '(.*?)/checkpoint([^/])' --replace '$1/$2' --color=never
+for model_dir in "$@"
+do
+  model_dir="$(file-name-as-directory "$model_dir")"
+  unbuffer gsutil ls "${model_dir}**/checkpoint" | rg -o '(.*?)/checkpoint([^/])' --replace '$1/$2' --color=never
+done
