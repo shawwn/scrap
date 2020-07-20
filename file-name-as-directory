@@ -34,6 +34,9 @@ TODO
 parser.add_argument('-v', '--verbose',
     action="store_true",
     help="verbose output" )
+     
+parser.add_argument('-a', '--append', type=str, default="",
+    help="Append a string to the paths" )
 
 args = None
 
@@ -63,7 +66,7 @@ def run():
         args.args.extend(indata.splitlines())
     # for each arg on cmdline...
     for arg in args.args:
-        print(file_name_as_directory(arg))
+        print(file_name_as_directory(arg)+args.append)
 
 def main():
     try:
