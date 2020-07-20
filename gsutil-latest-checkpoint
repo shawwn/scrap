@@ -16,3 +16,5 @@ for model_dir in "$@"
 do
   run "$model_dir" &
 done
+
+wait
