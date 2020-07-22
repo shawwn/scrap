@@ -1,0 +1,18 @@
+#!/bin/bash
+
+msg="${1}"
+default=${2:-n}
+
+is $default y && spec="(Y/n)" || spec="(y/N)"
+
+if [ -z "${msg}" ]
+then
+    echo "usage:"
+    echo "  ${0} <msg> [<option>]"
+    exit 1
+fi
+
+
+read -r -p "${msg} ${spec}: " answer
+
+is "${answer:-$default}" y Y yes || exit 1
