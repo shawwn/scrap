@@ -1,0 +1,12 @@
+#!/bin/bash
+[ -z "$1" ] && exit 1 # no args
+x="$1"
+shift
+[ -z "$1" ] && exit 0 # single arg
+
+while [ ! -z "$1" ]
+do
+  [[ $x =~ $1 ]] && exit 0
+  shift
+done
+exit 1
