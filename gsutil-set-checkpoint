@@ -1,0 +1,10 @@
+#!/bin/sh
+set -e
+
+model_dir="${1}"
+shift 1
+model_dir="$(file-name-as-directory "$model_dir")"
+
+number="${1:-$(gsutil-latest-checkpoint-step "$model_dir")}"
+
+( echo "model_checkpoint_path: \"model.ckpt-${number}\""; gsutil cat "${model_dir}checkpoint" | grep -v '^model_checkpoint_path:' ) | sponge | see-stdout | gsutil cp - "${model_dir}checkpoint"

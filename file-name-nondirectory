@@ -33,12 +33,10 @@ TODO
      
 parser.add_argument('-v', '--verbose',
     action="store_true",
-    help="verbose output")
+    help="verbose output" )
      
-parser.add_argument('-p', '--plus',
-    action="store_true",
-    help="also replace spaces by plus signs, as required for unquoting HTML form values")
-
+parser.add_argument('-a', '--append', type=str, default="",
+    help="Append a string to the paths" )
 
 args = None
 
@@ -46,8 +44,16 @@ args = None
 # Main
 #==============================================================================
 
-import urllib
-import urllib.parse
+def is_cloud_path(x):
+  return bool(re.match('^.+?://', x))
+
+
+def file_name_nondirectory(x):
+  sep = '/' if is_cloud_path(x) else os.path.sep
+  if x.endswith(sep):
+    return ''
+  return os.path.basename(x)
+
 
 def run():
     if args.verbose:
@@ -59,9 +65,8 @@ def run():
         indata = sys.stdin.read()
         args.args.extend(indata.splitlines())
     # for each arg on cmdline...
-    unquote = urllib.parse.unquote_plus if args.plus else urllib.parse.unquote
     for arg in args.args:
-        print(unquote(arg))
+        print(file_name_nondirectory(arg)+args.append)
 
 def main():
     try:
@@ -83,5 +88,4 @@ def main():
 
 if __name__ == "__main__":
     main()
-
 

@@ -33,12 +33,10 @@ TODO
      
 parser.add_argument('-v', '--verbose',
     action="store_true",
-    help="verbose output")
+    help="verbose output" )
      
-parser.add_argument('-p', '--plus',
-    action="store_true",
-    help="also replace spaces by plus signs, as required for unquoting HTML form values")
-
+parser.add_argument('-d', '--directory', type=str, default=None,
+    help="tries to return a relative name that is equivalent to filename, assuming the result will be interpreted relative to directory")
 
 args = None
 
@@ -46,8 +44,10 @@ args = None
 # Main
 #==============================================================================
 
-import urllib
-import urllib.parse
+def file_relative_name(filename, directory=None):
+  if directory is None:
+    directory = os.getcwd()
+  return os.path.relpath(filename, directory)
 
 def run():
     if args.verbose:
@@ -59,9 +59,8 @@ def run():
         indata = sys.stdin.read()
         args.args.extend(indata.splitlines())
     # for each arg on cmdline...
-    unquote = urllib.parse.unquote_plus if args.plus else urllib.parse.unquote
     for arg in args.args:
-        print(unquote(arg))
+        print(file_relative_name(arg, directory=args.directory))
 
 def main():
     try:
@@ -83,5 +82,4 @@ def main():
 
 if __name__ == "__main__":
     main()
-
 

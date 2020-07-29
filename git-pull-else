@@ -1,0 +1,3 @@
+#!/bin/bash
+set -e
+git fetch && git-check-pull && git pull

@@ -1,0 +1,13 @@
+#!/bin/sh
+
+utc="${1}"
+shift 1
+
+if [ -z "${utc}" ]
+then
+    1>&2 echo "usage:"
+    1>&2 echo "  ${0} <utc>"
+    exit 1
+fi
+
+exec math "($(utcnow) - ${utc})/86400.0"

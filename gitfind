@@ -1,0 +1,4 @@
+#!/bin/sh
+
+# http://literatejava.com/git/how-to-find-a-git-branch-containing-changes-to-a-given-file/
+exec git log --all --source -- "$@"

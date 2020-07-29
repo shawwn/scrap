@@ -5,14 +5,16 @@ HEAD = """
 #!/bin/sh
 
 dir="${1}"
+shift 1
 
 if [ -z "${dir}" ]
 then
-    echo "usage:"
-    echo "  ${0} <directory> [<option>]"
+    1>&2 echo "usage:"
+    1>&2 echo "  ${0} <directory> [<option>]"
     exit 1
 fi
 
+set -x
 """.lstrip()
 
 BODY = """

@@ -1,0 +1,4 @@
+#!/bin/sh
+
+# https://unix.stackexchange.com/questions/178752/using-tee-to-output-intermediate-results-to-stdout-instead-of-files
+exec tee /dev/fd/2

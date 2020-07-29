@@ -1,0 +1,4 @@
+#!/bin/sh
+
+# https://discordapp.com/channels/687504710118146232/731629337614483466/731644518432112711
+exec youtube-dl --skip-download --write-auto-sub --write-sub --sub-lang en "$@"

@@ -1,8 +1,20 @@
-#!/bin/sh
-set -ex
+#!/bin/bash
+set -e
 
-model_dir="${1}"
-shift 1
+run() {
+  model_dir="$1"
+  model_dir="$(printf "%s" "$model_dir" | replace '/checkpoint' '' | file-name-as-directory)"
 
-gsutil ls "${model_dir}/model.ckpt-*" | natsort | last 3 | grep data | first | resub '[.]data.*' ''
+  model_file="$(gsutil cat "${model_dir}checkpoint" | narrow '^model_checkpoint_path:' | rg -o '"(.*?)"' --replace '$1')"
+  if [ ! -z "$model_file" ]
+  then
+    printf "%s%s\n" "$model_dir" "$model_file"
+  fi
+}
 
+for model_dir in "$@"
+do
+  run "$model_dir" &
+done
+
+wait

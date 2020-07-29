@@ -33,12 +33,7 @@ TODO
      
 parser.add_argument('-v', '--verbose',
     action="store_true",
-    help="verbose output")
-     
-parser.add_argument('-p', '--plus',
-    action="store_true",
-    help="also replace spaces by plus signs, as required for unquoting HTML form values")
-
+    help="verbose output" )
 
 args = None
 
@@ -46,8 +41,8 @@ args = None
 # Main
 #==============================================================================
 
-import urllib
-import urllib.parse
+def is_cloud_path(x):
+  return bool(re.match('^.+?://', x))
 
 def run():
     if args.verbose:
@@ -59,9 +54,9 @@ def run():
         indata = sys.stdin.read()
         args.args.extend(indata.splitlines())
     # for each arg on cmdline...
-    unquote = urllib.parse.unquote_plus if args.plus else urllib.parse.unquote
     for arg in args.args:
-        print(unquote(arg))
+        if is_cloud_path(arg):
+          print(arg)
 
 def main():
     try:
@@ -83,5 +78,4 @@ def main():
 
 if __name__ == "__main__":
     main()
-
 

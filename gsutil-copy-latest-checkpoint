@@ -1,11 +1,27 @@
 #!/bin/sh
-set -ex
+set -e
 
 model_dir="${1}"
 shift 1
+model_dir="$(file-name-as-directory "$model_dir")"
+
 output_dir="${1}"
 shift 1
+output_dir="$(file-name-as-directory "$output_dir")"
 
-gsutil cp "${model_dir}/checkpoint" "${output_dir}"
-gsutil ls "${model_dir}/model.ckpt-*" | natsort | last 3 | xargs -I {} gsutil cp {} "${output_dir}"
+number="${1:-$(gsutil-latest-checkpoint-step "$model_dir")}"
 
+#gsutil cp "${model_dir}checkpoint" "${output_dir}"
+#gsutil ls "${model_dir}model.ckpt-*" | natsort | narrow "[-]${number}[.]" | xargs -I {} gsutil cp {} "${output_dir}"
+
+cat <<EOF
+gsutil cp "${model_dir}model.ckpt-${number}.*" "${output_dir}"
+EOF
+gsutil cp "${model_dir}model.ckpt-${number}.*" "${output_dir}"
+
+cat <<EOF
+gsutil-touch "${output_dir}checkpoint"
+gsutil-set-checkpoint "${output_dir}" "$number"
+EOF
+gsutil-touch "${output_dir}checkpoint"
+gsutil-set-checkpoint "${output_dir}" "$number"

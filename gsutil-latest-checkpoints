@@ -1,0 +1,3 @@
+#!/bin/sh
+
+gsutil-runs "$@" | xargs -n 1 gsutil-latest-checkpoint

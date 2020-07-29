@@ -1,0 +1,3 @@
+#!/bin/bash
+
+find . -type f | grep -v node_modules | grep -v bower_components | grep -v '^[.]/[.]' | grep -v '[.]/src/assets/js/old-components/' | grep -v '/compiled/' | grep -v node_modules | grep -v '/[.]git' | grep -v 'DS_Store' | egrep -v '[.](png|jpg|ico|ttf|woff|woff2|eot|otf)$' | egrep -v '[.]min[.](js|css)$' | narrow "$@"

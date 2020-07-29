@@ -1,5 +1,5 @@
 #!/bin/sh
-set -ex
+set -e
 
 model_dir="${1}"
 shift 1

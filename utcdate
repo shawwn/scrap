@@ -1,0 +1,8 @@
+#!/bin/sh
+
+time="${1:-$(utcnow)}"
+format="${2:-"+%Y-%m-%d"}"
+shift
+shift
+
+exec localdate "${time}" "${format}" -u "$@"

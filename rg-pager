@@ -1,0 +1,7 @@
+#!/bin/sh
+if [ -t 1 ]
+then
+  rg "$@" -p | pager
+else
+  rg "$@"
+fi

@@ -1,0 +1,2 @@
+#!/bin/sh
+exec rg-pager -g '!*.min.*' -g '!*.map' -g '!*angular*.js' -g '!*angular-1.6*' -g '!*/docs/*'  -g '!zepto/index.js' -g '!Octane_Closure/code-load.js_c' -g '!SunSpider/string-unpack-code.js' -g '!*/bundle.js' -g '!*.min.*' "$@"

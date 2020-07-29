@@ -1,0 +1,3 @@
+#!/bin/bash
+
+gsutil ls $(file-name-as-directory "$@" --append '**/checkpoint')

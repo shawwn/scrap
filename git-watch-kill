@@ -1,0 +1,2 @@
+#!/bin/bash
+while true; do git-pull-else && ( psfind "$@" ; pskill "$@" ; date ) ; sleep 60; done
