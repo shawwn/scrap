@@ -101,7 +101,7 @@ def run():
         args.args.extend(indata.splitlines())
     # for each arg on cmdline...
     for path in args.args:
-      ckpts = list(checkpoints_to_remove(path, args.steps))
+      ckpts = list(checkpoints_to_remove(path, int(args.steps)))
       for v in ckpts:
         print(v)
 
