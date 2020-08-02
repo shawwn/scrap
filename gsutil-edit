@@ -1,0 +1,11 @@
+#!/bin/sh
+file=$(mktemp)
+gsutil cp ${1} $file
+old_metadata=$(ls -li "$file")
+"${VISUAL:-"${EDITOR:-vi}"}" "$file"
+new_metadata=$(ls -li "$file")
+if [ "$new_metadata" = "$old_metadata" ]; then
+  echo "File unchanged"
+else
+  gsutil cp $file ${1}
+fi
