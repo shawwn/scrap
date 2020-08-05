@@ -1,0 +1,19 @@
+#!/bin/sh
+
+set -e
+
+bucket="${1}"
+shift 1
+
+if [ -z "${bucket}" ]
+then
+    1>&2 echo "usage:"
+    1>&2 echo "  ${0} <bucket>"
+    exit 1
+fi
+
+bucket="$(echo "$bucket" | sed -e s/gs:[/][/]//g)"
+
+set -x
+exec gsutil ls -L -b "gs://${bucket}"
+
