@@ -1,8 +1,12 @@
 #!/bin/sh
 
-set -ex
+set -e
 
 WEBDIS_HOST="${WEBDIS_HOST:-127.0.0.1}"
 WEBDIS_PORT="${WEBDIS_PORT:-7379}"
 
-exec curl -fsSL "http://${WEBDIS_HOST}:${WEBDIS_PORT}/$(echo "$*" | replace ' ' '/' | urlencode)"
+COMMAND="$(echo "$*" | replace ' ' '/' | urlencode)"
+
+#set -x
+
+exec curl -fsSL "http://${WEBDIS_HOST}:${WEBDIS_PORT}/${COMMAND}"
