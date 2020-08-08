@@ -1,0 +1,7 @@
+#!/bin/sh
+set -ex
+cat <<'EOF'
+sudo iptables -vnL -t nat
+# sudo iptables -t nat -F POSTROUTING
+# sudo iptables -t nat -F PREROUTING
+EOF
