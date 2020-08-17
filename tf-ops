@@ -1,0 +1,7 @@
+#!/bin/sh
+set -ex
+# TODO: What's the proper way to retrieve this directory via python?
+cd /usr/local/lib/python3.7/site-packages/tensorflow_core
+set +x
+
+exec rg 'FastPathExecute' -A 3 | narrow "$@" | rg '".*?"' -C 10
