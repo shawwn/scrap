@@ -1,0 +1,6 @@
+#!/bin/sh
+
+set -ex
+
+# https://unix.stackexchange.com/questions/56084/how-do-i-copy-a-symbolic-link#:~:text=Use%20cp%20%2DP%20(capital%20P,all%20symbolic%20links%20as%20such.
+exec cp -RP "$@"
