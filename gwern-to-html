@@ -1,0 +1,2 @@
+#!/bin/sh
+curl -fsSL gwern.net/sitemap.xml | rg 'https://.*?loc' -o | replace '</loc' '' 'sitemap.xml:' '' | sed -e 's/^/<a href="/' | sed -e 's/$/"><\/a>/' | rg -o '^(.*?)(http.*?)"><' --replace '$1$2">$2</a>'
