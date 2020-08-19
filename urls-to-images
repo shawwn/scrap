@@ -1,2 +1,2 @@
 #!/bin/sh
-rg -o '^(.+)$' --replace '<img src="$1"><br>'
+rg -o '^(.+)$' --replace '<a href="$1">$1</a><br><img src="$1"><br><hr>'

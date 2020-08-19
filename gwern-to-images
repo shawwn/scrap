@@ -1,0 +1,2 @@
+#!/bin/sh
+gwern-sitemap | egrep -i '[.](svg|jpg|jpeg|gif|png)' | urls-to-images
