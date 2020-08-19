@@ -1,0 +1,2 @@
+#!/bin/sh
+gwern-sitemap | rg -v 'gwern.net/.*[/][^/]+[.]' | rg -v docs
