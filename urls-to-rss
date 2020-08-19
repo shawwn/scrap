@@ -18,10 +18,11 @@ cat <<EOF
   <description>$description</description>
 EOF
 
-rg -o '^(.+)$' --replace '  <item>
-    <link>$1</link>
+rg -o '^(http[s]://[^/]+/)(.+)$' --replace '  <item>
+    <link>$1$2</link>
+    <title>$2</title>
   </item>
-' --color=never
+  ' --color=never
 
 cat <<'EOF'
 </channel></rss>
