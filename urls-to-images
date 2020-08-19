@@ -1,0 +1,2 @@
+#!/bin/sh
+rg -o '^(.+)$' --replace '<img src="$1"><br>'
