@@ -1,0 +1,2 @@
+#!/bin/sh
+curl -fsSL gwern.net/sitemap.xml | rg '(http.*?)<' -o --replace '$1'
