@@ -1,2 +1,2 @@
 #!/bin/sh
-curl -fsSL gwern.net/sitemap.xml | rg '(http.*?)<' --replace '<a href="$1">$1</a>' -o
+curl -fsSL gwern.net/sitemap.xml | rg '(http.*?)<' --replace '<a href="$1">$1</a><br>' -o
