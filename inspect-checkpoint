@@ -1,0 +1,17 @@
+#!/bin/sh
+
+# from https://wh0.github.io/2017/09/07/tf-checkpoints.html
+
+dir="${1}" # e.g. gs://tpu-usc1/runs/gpt-2/distill/117Mf32/model-16051
+shift 1
+
+if [ -z "${dir}" ]
+then
+    1>&2 echo "usage:"
+    1>&2 echo "  ${0} <directory> [<option>]"
+    exit 1
+fi
+
+set -x
+
+exec python3 -m tensorflow.python.tools.inspect_checkpoint --file_name="${dir}" "$@"
