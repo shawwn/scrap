@@ -25,6 +25,16 @@ if [ ! -f "$file" ]
 then
   set -x
 
+  # https://rimuhosting.com/knowledgebase/linux/misc/trapping-ctrl-c-in-bash
+  
+  # trap ctrl-c and call ctrl_c()
+  trap ctrl_c INT
+
+  function ctrl_c() {
+          echo "** Trapped CTRL-C; cleaning up ${file}.tmp"
+          rm -f "${file}.tmp"
+  }
+
   curl --socks5 "localhost:${port}" -fsSL "$url" -o "${file}.tmp" "$@" || rm -f "${file}.tmp"
   mv "${file}.tmp" "${file}" 2>/dev/null
 else
