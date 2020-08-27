@@ -24,7 +24,7 @@ def main():
     if args.outfile == '-':
       args.silent = True
     i = 0
-    with open(args.infile) as f:
+    with (open(args.infile) if args.infile != '-' else sys.stdin) as f:
       for i, line in scrap_for_each_line.for_each_line(f, silent=args.silent):
         fixed = fix_text(line)
         out.write(fixed)
