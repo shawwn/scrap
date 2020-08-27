@@ -21,7 +21,11 @@ fi
 
 file="$(basename "${url}")"
 
-set -x
-
-exec curl --socks5 "localhost:${port}" -fsSL "$url" -o "$file" "$@"
+if [ ! -f "$file" ]
+then
+  set -x
+  exec curl --socks5 "localhost:${port}" -fsSL "$url" -o "$file" "$@"
+else
+  echo "Skipping existing file: $file" 1>&2
+fi
 
