@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 port="${1}"
 shift 1
@@ -23,8 +23,9 @@ file="$(basename "${url}")"
 
 if [ ! -f "$file" ]
 then
-  set -ex
-  curl --socks5 "localhost:${port}" -fsSL "$url" -o "${file}.tmp" "$@"
+  set -x
+
+  curl --socks5 "localhost:${port}" -fsSL "$url" -o "${file}.tmp" "$@" || rm -f "${file}.tmp"
   mv "${file}.tmp" "${file}"
 else
   echo "Skipping existing file: $file" 1>&2
