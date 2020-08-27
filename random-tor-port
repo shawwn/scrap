@@ -1,0 +1,2 @@
+#!/bin/sh
+(for i in {91..95} ; do randint ${i}00 ${i}10; done) | shuf | head -n 1
