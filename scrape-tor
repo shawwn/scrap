@@ -11,4 +11,4 @@ then
 fi
 
 
-cat "$url_list" | shuf | xargs -n 1 curltor-port-save-file `random-tor-port`
+cat "$url_list" | shuf | xargs -n 1 -I {} sh -c 'curltor-port-save-file `random-tor-port` {}'
