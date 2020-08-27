@@ -1,0 +1,17 @@
+#!/bin/sh
+
+url="${1}"
+shift 1
+
+if [ -z "${url}" ]
+then
+    1>&2 echo "usage:"
+    1>&2 echo "  ${0} <url> [<option>]"
+    exit 1
+fi
+
+set -e
+file="$(basename "${url}")"
+
+exec curl -fsSL "$url" -o "$file" "$@"
+
