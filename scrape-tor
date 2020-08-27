@@ -1,0 +1,14 @@
+#!/bin/bash
+
+url_list="${1}"
+shift 1
+
+if [ -z "${url_list}" ]
+then
+    1>&2 echo "usage:"
+    1>&2 echo "  ${0} <url_list> [<option>]"
+    exit 1
+fi
+
+
+cat "$url_list" | shuf | xargs -n 1 curltor-port-save-file `random-tor-port`
