@@ -114,6 +114,13 @@ def main():
     with (open(args.infile) if args.infile != '-' else sys.stdin) as f:
       for i, line in for_each_line(f, silent=args.silent):
         fixed = fix_text(line)
+        # replace unicode … with ... which ftfy doesn't do by default
+        # NOTE: this departs from openai's convention of calling
+        # ftfy.fix_text() with default arguments. In particular,
+        # OpenAI's GPT-2 models do generate unicode ellipses.
+        # Nonetheless, we replace unicdoe ellipses with ... to
+        # increase the chances of semantic understanding.
+        fixed = fixed.replace('…', '...')
         out.write(fixed)
         i += 1
         if i % 100 == 0:
