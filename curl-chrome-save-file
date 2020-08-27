@@ -11,4 +11,4 @@ then
 fi
 
 file="$(basename "$url")"
-exec curl-chrome "$url" -o "$file" "$@"
+exec curl-chrome -fsSL "$url" -o "$file" "$@"
