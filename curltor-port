@@ -1,0 +1,14 @@
+#!/bin/sh
+
+port="${1}"
+shift 1
+
+if [ -z "${port}" ]
+then
+    1>&2 echo "usage:"
+    1>&2 echo "  ${0} <port> <url> [<option>]"
+    exit 1
+fi
+
+exec curl --socks5 "localhost:${port}" "$@"
+
