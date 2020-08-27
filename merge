@@ -7,6 +7,12 @@ args = sys.argv[1:]
 if len(args) <= 0:
     pass
 
+skip_empty = False
+if '--skip-empty' in args:
+  skip_empty = True
+  args.remove('--skip-empty')
+
+
 # Each argument is a filename.
 
 # Echo each filename and then the contents of the file.
@@ -17,7 +23,9 @@ for filename in args:
         continue
 
     with open(filename) as f:
-        sys.stdout.write('"%%file: %s"\n' % filename)
-        sys.stdout.write('%s\n' % f.read())
-        sys.stdout.flush()
+        text = f.read().replace('\r', '')
+        if len(text) > 0 or not skip_empty:
+            sys.stdout.write('"%%file: %s"\n' % filename)
+            sys.stdout.write('%s\n' % text)
+            sys.stdout.flush()
 
