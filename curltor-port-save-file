@@ -21,5 +21,7 @@ fi
 
 file="$(basename "${url}")"
 
+set -x
+
 exec curl --socks5 "localhost:${port}" -fsSL "$url" -o "$file" "$@"
 
