@@ -1,0 +1,2 @@
+#!/bin/sh
+exec matchfiles -r "$@" -v '/[.]' -v \\.swp$ -v \\.DS_Store$ -v \\.jar$ -v \\.pyc$ -v \\.jpg$ -v \\.png$ -v \\.blend$ "$@"
