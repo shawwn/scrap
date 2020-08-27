@@ -120,7 +120,9 @@ def main():
         # OpenAI's GPT-2 models do generate unicode ellipses.
         # Nonetheless, we replace unicdoe ellipses with ... to
         # increase the chances of semantic understanding.
-        fixed = fixed.replace('…', '...')
+        fixed = fixed.replace(' …', '...') # first pass: convert "foo  …" to "foo..."
+        fixed = fixed.replace(' …', '...') # second pass: convert "foo …" to "foo..."
+        fixed = fixed.replace('…', '...') # final pass: convert "foo…" to "foo..."
         out.write(fixed)
         i += 1
         if i % 100 == 0:
