@@ -9,7 +9,94 @@ import sys
 
 from ftfy import fix_text
 
-import scrap_for_each_line
+### inline this import
+#import scrap_for_each_line
+import tqdm
+import sys
+try:
+  from tensorflow import io
+  gfile = io.gfile
+except:
+  from tensorflow import gfile
+import time
+
+def file_size(f):
+  if isinstance(f, str):
+    with try_open(f) as f:
+      return file_size(f)
+  #if isinstance(f, gfile.GFile):
+  if 'gfile.GFile' in str(type(f)):
+    return f.size()
+  else:
+    was = f.tell()
+    try:
+      f.seek(0, 2)
+      pos = f.tell()
+    finally:
+      f.seek(was, 0)
+    return pos
+
+def try_open(filename, *args, **kws):
+  if filename.startswith("gs://"):
+    try:
+      from tensorflow import io
+      gfile = io.gfile
+    except:
+      from tensorflow import gfile
+    return gfile.GFile(filename, *args, **kws)
+  else:
+    return open(filename, *args, **kws)
+
+
+from contextlib import contextmanager
+
+
+@contextmanager
+def nullcontext():
+  yield
+
+import io
+
+def for_each_line(f, total=None, verbose=True, ignore_errors=True, message=None, silent=False):
+    if isinstance(f, str):
+      with try_open(f) as infile:
+        for i, line in for_each_line(infile, total=total, verbose=verbose, ignore_errors=ignore_errors, message=message):
+          yield i, line
+    elif isinstance(f, list):
+      i = 0
+      for line in tqdm.tqdm(f) if not silent else f:
+        yield i, line
+        i += 1
+    else:
+      i = 0
+      prev = None
+      try:
+        size = file_size(f)
+      except io.UnsupportedOperation:
+        size = -1
+      pos = 0
+      prev_pos = 0
+      n = 0
+      while True:
+        try:
+          with (tqdm.tqdm(total=size) if size < 0 or not silent else nullcontext()) as pbar:
+            for line in f:
+              yield i, line
+              i += 1
+              pos += len(line)
+              if pbar is not None:
+                pbar.update(pos - prev_pos)
+              prev = line
+              prev_pos = pos
+            break
+        except UnicodeDecodeError:
+          n += 1
+          if verbose:
+            sys.stderr.write('Error on line %d after %s\n' % (i+n+1, repr(prev)))
+          if not ignore_errors:
+            raise
+
+#### </import scrap_for_each_line>
 
 parser = argparse.ArgumentParser(
     description='Use FTFY to prepare a dataset for training.',
@@ -25,7 +112,7 @@ def main():
       args.silent = True
     i = 0
     with (open(args.infile) if args.infile != '-' else sys.stdin) as f:
-      for i, line in scrap_for_each_line.for_each_line(f, silent=args.silent):
+      for i, line in for_each_line(f, silent=args.silent):
         fixed = fix_text(line)
         out.write(fixed)
         i += 1
