@@ -1,0 +1,14 @@
+#!/bin/sh
+
+bytes="${1}"
+shift 1
+
+if [ -z "${bytes}" ]
+then
+    1>&2 echo "usage:"
+    1>&2 echo "  ${0} <bytes>"
+    exit 1
+fi
+
+exec math "${bytes} / 1000000"
+
