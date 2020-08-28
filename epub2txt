@@ -23,6 +23,7 @@ import zipfile
 import xml.parsers.expat
 import html2text
 from glob import glob
+from pprint import pprint as pp
 
 
 class ContainerParser():
@@ -105,6 +106,7 @@ class TocParser():
         self.toc = []
 
     def startElement(self, name, attributes):
+        # TODO: what to do when no navpoints? Example: https://imgur.com/gAWuSaf
         if name == "navPoint":
             level = len(self.stack)
             self.currentNP = NavPoint(
@@ -153,27 +155,68 @@ class epub2txt():
             ops = ops+"/"
         toc = TocParser(file.read(ops + ncx)).parseToc()
 
-        # fo = open("%s_%s.txt" % (title, author), "w")
-        content = []
+        file_order = []
+        files = {}
         for t in toc:
-            html = file.read(ops + t.content.split("#")[0])
-            text = html2text.html2text(html.decode("utf-8"))
-            # fo.write("*"*(t.level+1) + " " + t.text.encode("utf-8")+"\n")
-            # fo.write(t.text.encode("utf-8")+"{{{%d\n" % (t.level+1))
-            # fo.write(text.encode("utf-8")+"\n")
-            content.append("*" * (t.level+1) + " " +
-                           t.text + "\n")
-            content.append(t.text + "{{{%d\n" % (t.level+1))
-            content.append(text + "\n")
-        # fo.close()
+          xmlfile = t.content.split("#")[0]
+          if xmlfile not in files:
+            file_order.append(xmlfile)
+            html = file.read(ops + xmlfile).decode("utf-8")
+            files[xmlfile] = html
+
+        if False:
+          for t in toc:
+              chapter = file_order.index(xmlfile) + 1
+              sys.stderr.write(str([t.content, {'id': t.id, 'level': t.level, 'playorder': t.playorder, 'text': t.text}]) + '\n')
+              sys.stderr.flush()
+              anchor = t.content.split("#", 1)[1] if '#' in t.content else ''
+              xmlfile = t.content.split("#")[0]
+              soup = files[xmlfile]
+              if isinstance(soup, str):
+                import bs4
+                files[xmlfile] = bs4.BeautifulSoup(soup, features="lxml")
+                soup = files[xmlfile]
+              if len(anchor) > 0:
+                el = soup.find(id=anchor)
+                assert el is not None
+                # pre = soup.new_tag("pre")
+                # s = "*"*(t.level+1) + " " + t.text+"\n"
+                # s += t.text+"{{{%d\n" % (t.level+1)
+                # pre.string = s
+                # #el.insert_before(pre) # nah, don't do this
+                heading = 'Chapter %d.%d.%d: %s' % (chapter, t.level+1, int(t.playorder), t.text)
+                tag = soup.new_tag("h%d" % (t.level+1))
+                tag.string = heading
+                el.insert_before(tag)
+
+        content = []
+        for xmlfile in file_order:
+          soup = files[xmlfile]
+          html = str(soup)
+          h = html2text.HTML2Text()
+          h.body_width = 0
+          text = h.handle(html)
+          content.append(text + "\n")
+
         file.close()
-        return ''.join(content)
+        result = ''.join(content)
+        # final postprocessing fixups: tables come out all weird, so
+        # fix them with a hack.
+        result = result.replace('\n\n| \n\n', ' | ')
+        return result
 
 
 if __name__ == "__main__":
-    if sys.argv[1]:
-        filenames = glob(sys.argv[1])
-        for filename in filenames:
-            txt = epub2txt(filename).convert()
-            print(txt)
+    args = sys.argv[1:]
+    infile = args[0]
+    outfile = args[1] if len(args) > 1 else '-'
+    filenames = glob(infile) if '*' in infile else [infile]
+    out = None
+    for filename in filenames:
+        txt = epub2txt(filename).convert()
+        if len(txt.strip()) > 0:
+          if out is None:
+            out = open(outfile, "w") if outfile is not '-' else sys.stdout
+          out.write(txt)
+          out.flush()
 
