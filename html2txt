@@ -1,0 +1,53 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+# Copied verbatim from https://github.com/soskek/bookcorpus
+
+# Requirements:
+#
+# beautifulsoup4>=4.6.3
+# html2text>=2018.1.9
+# blingfire>=0.0.9
+# progressbar>=2.5
+# lxml>=4.3.2
+
+import os
+import sys
+import urllib
+
+import html2text
+from glob import glob
+from pprint import pprint as pp
+
+
+class html2txt():
+    def __init__(self, infile=None):
+        self.infile = infile
+
+    def convert(self):
+        # print "Processing %s ..." % self.infile
+        f = sys.stdin if self.infile == '-' else open(self.infile)
+
+        html = f.read()
+
+        h = html2text.HTML2Text()
+        h.body_width = 0
+        result = h.handle(html) + "\n"
+
+        # final postprocessing fixups: tables come out all weird, so
+        # fix them with a hack.
+        result = result.replace('\n\n| \n\n', ' | ')
+        return result
+
+
+if __name__ == "__main__":
+    args = sys.argv[1:]
+    infile = args[0]
+    outfile = args[1] if len(args) > 1 else '-'
+    filenames = glob(infile) if '*' in infile else [infile]
+    out = open(outfile, "w") if outfile is not '-' else sys.stdout
+    for filename in filenames:
+        txt = html2txt(filename).convert()
+        out.write(txt)
+        out.flush()
+
