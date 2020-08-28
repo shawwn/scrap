@@ -18,6 +18,7 @@ fi
 [ "$ft" == "ls" ] && ft=elf
 [ "$ft" == "ts" ] && ft=typescript
 [ "$ft" == "clj" ] && ft=clojure
+[ "$ft" == "md" ] && ft=markdown
 
 cat <<EOS
 exec edit -c "set ft=$ft" "$@"
