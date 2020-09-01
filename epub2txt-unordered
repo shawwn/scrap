@@ -155,13 +155,17 @@ class epub2txt():
         #     ops = ops+"/"
         # toc = TocParser(file.read(ops + ncx)).parseToc()
         files = {x.filename: file.read(x).decode('utf8') for x in file.filelist if x.filename.endswith('htm') or x.filename.endswith('html')}
+        from natsort import natsorted
+        file_order = natsorted(list(files.keys()))
 
         content = []
-        for xmlfile, html in files.items():
+        for xmlfile in file_order:
+          html = files[xmlfile]
           sys.stderr.write(xmlfile + '\n')
           h = html2text.HTML2Text()
           h.body_width = 0
           text = h.handle(html)
+          content.append('"%file: {}"'.format(xmlfile) + '\n')
           content.append(text + "\n")
 
         file.close()
