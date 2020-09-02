@@ -4,15 +4,16 @@ import sys
 
 # args = [x.decode('unicode-escape') for x in sys.argv[1:]] # python 2
 args = [str.encode(x).decode('unicode-escape') for x in sys.argv[1:]]
+args = [x.encode('utf8') for x in args]
 
 #for line in fileinput.input():
 #for line in sys.stdin.readlines():
-data = sys.stdin.read()
+data = sys.stdin.buffer.read()
 params = list(args)
 while len(params) > 0:
     replacing = params[0] if len(params) >= 1 else ''
     replacement = params[1] if len(params) >= 2 else ''
     params = params[2:]
     data = data.replace(replacing, replacement)
-sys.stdout.write(data)
+sys.stdout.buffer.write(data)
 
