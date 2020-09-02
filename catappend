@@ -1,0 +1,21 @@
+#!/usr/bin/env python3
+import sys
+
+args = sys.argv[1:]
+
+strip = False
+if '--strip' in args:
+  args.remove('--strip')
+  strip = True
+
+append = str.encode(args[0]).decode('unicode-escape')
+files = args[1:]
+
+for filename in files:
+  with open(filename, encoding='utf8') as f:
+    data = f.read()
+    if strip:
+      data = data.strip()
+    sys.stdout.write(data)
+  sys.stdout.write(append)
+  sys.stdout.flush()
