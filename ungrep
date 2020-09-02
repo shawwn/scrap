@@ -1,0 +1,6 @@
+#!/bin/sh
+
+# unbuffered grep
+# https://blog.jpalardy.com/posts/grep-and-output-buffering/
+
+exec stdbuf -o0 grep "$@"
