@@ -45,7 +45,8 @@ def try_open(filename, *args, **kws):
       from tensorflow import gfile
     return gfile.GFile(filename, *args, **kws)
   else:
-    return open(filename, *args, **kws)
+    encoding = kws.pop('encoding', 'utf8')
+    return open(filename, *args, **kws, encoding=encoding)
 
 
 from contextlib import contextmanager
