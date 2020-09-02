@@ -5,7 +5,7 @@ cd "$(dirname "$0")"
 path="`pwd`"
 cd "${dir}"
 
-path="$(echo "${path}" | replace "${HOME}" '${HOME}')"
+#path="$(echo "${path}" | replace "${HOME}" '${HOME}')"
 
 cat <<EOF
 export PATH="${path}:\$PATH"
