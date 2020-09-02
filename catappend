@@ -11,11 +11,13 @@ if '--strip' in args:
 append = str.encode(args[0]).decode('unicode-escape')
 files = args[1:]
 
+append = append.encode('utf8')
+
 for filename in files:
-  with open(filename, encoding='utf8') as f:
+  with open(filename, 'rb') as f:
     data = f.read()
     if strip:
       data = data.strip()
-    sys.stdout.write(data)
-  sys.stdout.write(append)
-  sys.stdout.flush()
+    sys.stdout.buffer.write(data)
+  sys.stdout.buffer.write(append)
+  sys.stdout.buffer.flush()
