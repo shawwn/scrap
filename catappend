@@ -14,10 +14,14 @@ files = args[1:]
 append = append.encode('utf8')
 
 for filename in files:
-  with open(filename, 'rb') as f:
-    data = f.read()
-    if strip:
-      data = data.strip()
-    sys.stdout.buffer.write(data)
-  sys.stdout.buffer.write(append)
-  sys.stdout.buffer.flush()
+  try:
+    with open(filename, 'rb') as f:
+      data = f.read()
+      if strip:
+        data = data.strip()
+      sys.stdout.buffer.write(data)
+    sys.stdout.buffer.write(append)
+    sys.stdout.buffer.flush()
+  except:
+    import traceback
+    traceback.print_exc()
