@@ -1,2 +1,2 @@
 #!/bin/sh
-files "${1:-.}" | narrow "[.](cpp|cc|cxx|c|h|hpp|hxx|hh|m|mm)$" | natsort | reverse
+find "${1:-.}" -type f | egrep "[.](cpp|cc|cxx|c|h|hpp|hxx|hh|m|mm)$" | sort -r
