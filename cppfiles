@@ -1,0 +1,2 @@
+#!/bin/sh
+files . | narrow "[.](cpp|cc|cxx|c|h|hpp|hxx|hh|m|mm)$" "$@" | natsort | reverse
