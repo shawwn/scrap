@@ -183,8 +183,8 @@ class epub2txt():
             text += '\n'
           text = fix_text(text)
           filename = self.epub+'/'+xmlfile
-          name, ext = os.path.splitext(filename)
-          bookname = name + '.md'
+          #name, ext = os.path.splitext(filename)
+          bookname = filename + '.md'
           content.append('<|file name={}|>'.format(json.dumps(bookname)) + '\n')
           content.append(text)
           content.append('<|/file name={}|>'.format(json.dumps(bookname)) + '\n')
