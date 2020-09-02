@@ -175,7 +175,7 @@ class epub2txt():
         content = []
         for xmlfile in file_order:
           html = files[xmlfile]
-          sys.stderr.write(xmlfile + '\n')
+          sys.stderr.write(self.epub+'/'+xmlfile + '\n')
           h = html2text.HTML2Text()
           h.body_width = 0
           text = h.handle(html)
