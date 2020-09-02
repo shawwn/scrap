@@ -1,0 +1,2 @@
+#!/bin/sh
+exec git remote -v "$@"
