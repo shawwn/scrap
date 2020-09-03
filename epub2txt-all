@@ -141,9 +141,27 @@ class TocParser():
         return self.toc
 
 
+def subst_1(pattern, replacement, lines, ignore=None):
+  for line in lines:
+    if ignore is None or not re.match(ignore, line):
+      line = re.sub(pattern, replacement, line)
+    yield line
+
+
+def subst(pattern, replacement, lines, ignore=None):
+  if isinstance(lines, str):
+    return '\n'.join(subst_1(pattern, replacement, lines.split('\n'), ignore=ignore))
+  else:
+    return subst_1(pattern, replacement, lines, ignore=ignore)
+
+
+from io import BytesIO
+
+
 class epub2txt():
     def __init__(self, epubfile=None):
-        self.epub = epubfile
+        self.epub = epubfile if epubfile != '-' else BytesIO(sys.stdin.buffer.read())
+        self.epub_name = epubfile
 
     def convert(self):
         # print "Processing %s ..." % self.epub
@@ -177,14 +195,14 @@ class epub2txt():
         for xmlfile in file_order:
           html = files[xmlfile]
           if not args.quiet:
-            sys.stderr.write(self.epub+'/'+xmlfile + '\n')
+            sys.stderr.write(self.epub_name+'/'+xmlfile + '\n')
           h = html2text.HTML2Text()
           h.body_width = 0
           text = h.handle(html)
           if not text.endswith('\n'):
             text += '\n'
           text = fix_text(text)
-          filename = self.epub+'/'+xmlfile
+          filename = self.epub_name+'/'+xmlfile
           #name, ext = os.path.splitext(filename)
           bookname = filename + '.md'
           if not args.no_metadata:
@@ -212,10 +230,46 @@ class epub2txt():
           #result = result.replace(' …', '...') # second pass: convert "foo …" to "foo..."
           result = result.replace('…', '...') # final pass: convert "foo…" to "foo..."
 
+        result = result.split('\n') # split into lines for performance in the following sections.
+
+        ignore_ul_item = r'[*]\s'
+        ignore_ol_item = r'[0-9]+[.]\s'
+        ignore_li = '(?!(' + ignore_ul_item + ')|(' + ignore_ol_item + '))'
+        ignore_code='^[ ]{4,}' + ignore_li + r'[^\s]'
+
+        def sub(pattern, replacement, text):
+          return subst(pattern, replacement, text, ignore=ignore_code)
+
         if args.plain_text:
           #result = unmark(result)
-          result = re.sub('[!]\s*[\[].*?[\]]\s*[(].*?[)]', ' ', result)
-          result = re.sub('[!]?[\[](.*?)[\]]\s*[(].*?[)]', r'\1', result)
+          # get rid of images
+          result = sub('[!]\s*[\[].*?[\]][(].*?[)]', ' ', result)
+          # remove reference links, e.g.  [3](e9781429926119_bm01.html#end_en12)
+          result = sub('\[([0-9]+?)\][(].*?[)]', '', result)
+          # replace [foo](www.example.com) with foo
+          result = sub('[!]?\[(.*?)\][(].*?[)]', r'\1', result)
+
+        # convert lines back to text
+        result = '\n'.join(result)
+
+        if not args.no_collapse_blanks:
+          # replace long runs of blank lines with three blank lines
+          rx = re.compile(r'([\r\t ]*[\n]+){2,}', re.DOTALL)
+          result = re.sub(rx, r'\n\n', result)
+
+        # fix up cases like this:
+        #
+        #   ... some text...
+        #   ## Chapter 1
+        #
+        # Put a newline before the "## Chapter 1", to have a blank
+        # line before headings.
+        result = re.sub(r'\n([^\n]+)[\n]#', r'\n\1\n\n#', result)
+
+        # if not args.no_collapse_blanks:
+        #   # replace long runs of blank lines with three blank lines
+        #   rx = re.compile(r'([\r\t ]*[\n]+){3,}', re.DOTALL)
+        #   result = re.sub(rx, r'\n\n\n', result)
 
         if args.append is not None:
           append = str.encode(args.append).decode('unicode-escape')
@@ -260,7 +314,7 @@ parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter,
 TODO
 """)
      
-parser.add_argument('infile')
+parser.add_argument('infile', default='-', nargs='?')
 parser.add_argument('outfile', default='-', nargs='?')
 
 parser.add_argument('-v', '--verbose',
@@ -286,6 +340,10 @@ parser.add_argument('-p', '--plain-text',
 parser.add_argument('-q', '--quiet',
     action="store_true",
     help="Don't output ToC info to stderr")
+
+parser.add_argument('-nc', '--no-collapse-blanks',
+    action="store_true",
+    help="Don't collapse long runs of blank lines into three blank lines" )
 
 args = None
 
