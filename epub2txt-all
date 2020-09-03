@@ -288,7 +288,8 @@ def extract_epub_order(file, opf=None):
   hfiles = htmlfiles(filelist)
   if len(hfiles) > 0:
     sys.stderr.write('Leftover HTML files: {!r}\n'.format(hfiles))
-    import pdb; pdb.set_trace()
+    if args.debug:
+      import pdb; pdb.set_trace()
   return found + filelist
 
 
@@ -554,6 +555,10 @@ parser.add_argument('-q', '--quiet',
 parser.add_argument('-nc', '--no-collapse-blanks',
     action="store_true",
     help="Don't collapse long runs of blank lines into three blank lines" )
+
+parser.add_argument('--debug',
+    action="store_true",
+    help="pdb.set_trace() on error conditions" )
 
 args = None
 
