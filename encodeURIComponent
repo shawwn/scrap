@@ -1,3 +1,22 @@
 #!/usr/bin/env node
-argv=process.argv.slice(2)
-process.stdout.write(encodeURIComponent(argv[0]));
+
+pr = process.stdout.write
+prn = console.log
+enc = encodeURIComponent
+argv = process.argv.slice(2)
+
+if (argv.length > 0) {
+  for (const arg of argv) {
+    prn(enc(arg))
+  }
+} else {
+  process.stdin.on('data', (data) => {
+    data = data.toString()
+    lines = data.split("\n")
+    for (const line of lines) {
+      if (line.trim().length > 0) {
+        prn(enc(line))
+      }
+    }
+  });
+}
