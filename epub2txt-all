@@ -11,6 +11,7 @@
 # progressbar>=2.5
 # lxml>=4.3.2
 
+import re
 import os
 import sys
 import urllib
@@ -175,7 +176,8 @@ class epub2txt():
         content = []
         for xmlfile in file_order:
           html = files[xmlfile]
-          sys.stderr.write(self.epub+'/'+xmlfile + '\n')
+          if not args.quiet:
+            sys.stderr.write(self.epub+'/'+xmlfile + '\n')
           h = html2text.HTML2Text()
           h.body_width = 0
           text = h.handle(html)
@@ -185,30 +187,129 @@ class epub2txt():
           filename = self.epub+'/'+xmlfile
           #name, ext = os.path.splitext(filename)
           bookname = filename + '.md'
-          content.append('<|file name={}|>'.format(json.dumps(bookname)) + '\n')
+          if not args.no_metadata:
+            content.append('<|file name={}|>'.format(json.dumps(bookname)) + '\n')
           content.append(text)
-          content.append('<|/file name={}|>'.format(json.dumps(bookname)) + '\n')
+          if not args.no_metadata:
+            content.append('<|/file name={}|>'.format(json.dumps(bookname)) + '\n')
 
         file.close()
         result = ''.join(content)
         # final postprocessing fixups: tables come out all weird, so
         # fix them with a hack.
         result = result.replace('\n\n| \n\n', ' | ')
+
+        if args.ftfy:
+          import ftfy
+          result = ftfy.fix_text(result)
+          # replace unicode … with ... which ftfy doesn't do by default
+          # NOTE: this departs from openai's convention of calling
+          # ftfy.fix_text() with default arguments. In particular,
+          # OpenAI's GPT-2 models do generate unicode ellipses.
+          # Nonetheless, we replace unicdoe ellipses with ... to
+          # increase the chances of semantic understanding.
+          result = result.replace(' …', '...') # first pass: convert "foo  …" to "foo..."
+          #result = result.replace(' …', '...') # second pass: convert "foo …" to "foo..."
+          result = result.replace('…', '...') # final pass: convert "foo…" to "foo..."
+
+        if args.plain_text:
+          #result = unmark(result)
+          result = re.sub('[!]\s*[\[].*?[\]]\s*[(].*?[)]', ' ', result)
+          result = re.sub('[!]?[\[](.*?)[\]]\s*[(].*?[)]', r'\1', result)
+
+        if args.append is not None:
+          append = str.encode(args.append).decode('unicode-escape')
+          result += append
+          
         return result
 
 
-if __name__ == "__main__":
-    args = sys.argv[1:]
-    infile = args[0]
-    outfile = args[1] if len(args) > 1 else '-'
-    filenames = glob(infile) if '*' in infile else [infile]
+# https://stackoverflow.com/questions/761824/python-how-to-convert-markdown-formatted-text-to-text
+
+from markdown import Markdown
+from io import StringIO
+
+
+def unmark_element(element, stream=None):
+    if stream is None:
+        stream = StringIO()
+    if element.text:
+        stream.write(element.text)
+    for sub in element:
+        unmark_element(sub, stream)
+    if element.tail:
+        stream.write(element.tail)
+    return stream.getvalue()
+
+
+def unmark(text):
+    # patching Markdown
+    Markdown.output_formats["plain"] = unmark_element
+    __md = Markdown(output_format="plain")
+    __md.stripTopLevelTags = False
+    return __md.convert(text)
+
+
+#==============================================================================
+# Cmdline
+#==============================================================================
+import argparse
+
+parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter, 
+    description="""
+TODO
+""")
+     
+parser.add_argument('infile')
+parser.add_argument('outfile', default='-', nargs='?')
+
+parser.add_argument('-v', '--verbose',
+    action="store_true",
+    help="verbose output" )
+
+parser.add_argument('-n', '--no-metadata',
+    action="store_true",
+    help="Don't output <|file name=...|>" )
+
+parser.add_argument('-f', '--ftfy',
+    action="store_true",
+    help="Run text through ftfy.fix_text()" )
+
+parser.add_argument('-a', '--append',
+    default=None,
+    help="Append this string to the end of the text (useful for adding <|endoftext|>)")
+
+parser.add_argument('-p', '--plain-text',
+    action="store_true",
+    help="Convert markdown to plain text")
+     
+parser.add_argument('-q', '--quiet',
+    action="store_true",
+    help="Don't output ToC info to stderr")
+
+args = None
+
+
+def main():
+    global args
+    if not args:
+        args, leftovers = parser.parse_known_args()
+        args.args = leftovers
+    # args = sys.argv[1:]
+    # infile = args[0]
+    # outfile = args[1] if len(args) > 1 else '-'
+    # filenames = glob(infile) if '*' in infile else [infile]
+    filenames = glob(args.infile) if '*' in args.infile else [args.infile]
     out = None
     for filename in filenames:
         txt = epub2txt(filename).convert()
         if len(txt.strip()) > 0:
           if out is None:
-            out = open(outfile, "w") if outfile is not '-' else sys.stdout
+            out = open(args.outfile, "w") if args.outfile is not '-' else sys.stdout
           out.write(txt)
           out.flush()
+
+if __name__ == "__main__":
+  main()
 
 # TODO: Look into this bug: https://i.imgur.com/zDora9Y.png
