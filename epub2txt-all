@@ -26,6 +26,10 @@ import html2text
 from glob import glob
 from pprint import pprint as pp
 
+from natsort import natsorted
+
+import json
+
 
 class ContainerParser():
     def __init__(self, xmlcontent=None):
@@ -140,6 +144,187 @@ class TocParser():
         parser.Parse(self.xml, 1)
         return self.toc
 
+def epub_name_matches(pattern, name):
+  rx = re.compile(r'[^a-zA-Z_\-/.]', re.IGNORECASE)
+  norm = re.sub(rx, '', name)
+  return re.search(pattern, norm)
+
+def epub_toc_file(filelist):
+  for name in filelist:
+    if epub_name_matches(r'\b(toc|table.?of)', name):
+      return name
+
+def extract_markdown_links(text):
+  for match in re.finditer(r'(?![!])\[(.*?)\]\((.*?)\)', text):
+    yield match.groups()
+
+def extract_html_links(text):
+  for match in re.finditer(r'"([^"]+?[.][a-zA-Z]{2,}(?:[#][^"]+)?)"', text):
+    yield match.groups()
+
+def html_links(text):
+  return [x[0] for x in extract_html_links(text)]
+
+def flatten(xs):
+  r = []
+  for x in xs:
+    if isinstance(x, list):
+      r.extend(flatten(x))
+    else:
+      r.append(x)
+  return r
+
+def string_bucket(buckets, strings, flat=False):
+  strings = [x for x in strings]
+  results = []
+  for bucket in buckets:
+    if isinstance(bucket, str):
+      bucket = bucket.split(',')
+    out = []
+    rem = []
+    for pattern in bucket:
+      neg = pattern.startswith('!')
+      if neg:
+        pattern = pattern[1:]
+      for s in strings:
+        if epub_name_matches(pattern, s):
+          out.append(s)
+    for string in out:
+      strings.remove(string)
+    results.append(out)
+  results.append(strings)
+  if flat:
+    results = flatten(results)
+  return results
+
+def sort_epub_files(filelist):
+  *front, outro, chapters, other = string_bucket([
+    'cover',
+    'title',
+    'copyright',
+    'toc,table.?of,contents',
+    'frontmatter,acknowledge',
+    'intro,forward',
+    'index,outro,epilogue',
+    '[.]htm[l]?$',
+    ], natsorted(filelist), flat=False)
+  return flatten(front) + chapters + outro + other
+
+
+def extract_epub_rootfile(file):
+  filelist = [x.filename for x in file.filelist]
+  if 'META-INF/container.xml' in filelist:
+    return file.read('META-INF/container.xml').decode('utf8')
+
+
+def extract_epub_opf(file, meta=None):
+  if meta is None:
+    meta = extract_epub_rootfile(file)
+  root = [line for line in meta.split('\n') if '<rootfile ' in line]
+  assert len(root) > 0
+  rootpath = html_links(root[0])[0]
+  assert rootpath.endswith('opf')
+  return file.read(rootpath).decode('utf8')
+
+
+def rmblanklines(text):
+  return '\n'.join([x for x in text.split('\n') if len(x.strip()) > 0])
+
+
+def extract_epub_section(name, file, opf=None):
+  if opf is None:
+    opf = extract_epub_opf(file)
+  result = re.sub(re.compile('.*<{name}.*?>(.*?)</{name}>.*'.format(name=name), re.DOTALL), r'\1', opf)
+  return rmblanklines(result)
+
+
+def extract_epub_guide(file, opf=None):
+  return extract_epub_section("guide", file=file, opf=opf)
+
+
+
+def extract_epub_manifest(file, opf=None):
+  return extract_epub_section("manifest", file=file, opf=opf)
+
+def xmlnode(element, text):
+  items = re.finditer(r'<(?P<tag>{element})\s?(?P<props>.*?)(?:/>|>(?P<value>.*?)</{element}>)'.format(element=element), text)
+  items = [item.groupdict() for item in items]
+  for item in items:
+    props = dict(re.findall(r'([^\s]*?)="(.*?)"', item['props']))
+    #item['props'] = props # ehh, just merge it
+    del item['props']
+    item.update(props)
+  return items
+
+def extract_epub_items(file, opf=None):
+  manifest = extract_epub_manifest(file, opf=opf)
+  return xmlnode('item', manifest)
+
+def extract_epub_spine(file, opf=None):
+  spine = extract_epub_section("spine", file=file, opf=opf)
+  return xmlnode('itemref', spine)
+
+# def extract_epub_ids(file, opf=None):
+#   items = extract_epub_items(file, opf=opf)
+#   return {x['id']: x['href'] for x in items}
+
+def href2filename(href, filelist):
+  href = href.split('#', 1)[0] # strip anchor
+  for name in filelist:
+    if name == href or name.endswith('/' + href):
+      return name
+
+def htmlfiles(filelist):
+  return [filename for filename in filelist if filename.endswith('htm') or filename.endswith('html')]
+
+def extract_epub_order(file, opf=None):
+  filelist = sort_epub_files([x.filename for x in file.filelist])
+  items = extract_epub_items(file, opf=opf)
+  spine = extract_epub_spine(file, opf=opf)
+  ids = {x['id']: x['href'] for x in items}
+  found = [href2filename(ids[ref['idref']], filelist) for ref in spine]
+  for filename in found:
+    filelist.remove(filename)
+  hfiles = htmlfiles(filelist)
+  if len(hfiles) > 0:
+    sys.stderr.write('Leftover HTML files: {!r}\n'.format(hfiles))
+    import pdb; pdb.set_trace()
+  return found + filelist
+
+
+def extract_epub_toc(file):
+  filelist = [x.filename for x in file.filelist]
+  meta = extract_epub_rootfile(file)
+  if meta is not None:
+    opf = extract_epub_opf(file, meta)
+    guide = extract_epub_guide(file, opf)
+    links = html_links(toc)
+    leftover = sort_epub_files(filelist)
+    result = []
+    for link in links:
+      link = link.split('#', 1)[0] # strip anchor
+      for name in leftover:
+        if name.endswith('/' + link):
+          result.append(name)
+          leftover.remove(name)
+          break
+    return result, leftover
+  else:
+    return None, None
+
+
+def epub_html_files(file):
+  files, leftover = extract_epub_toc(file)
+  if files is not None and leftover is not None:
+    return [x for x in files + leftover if x.endswith('htm') or x.endswith('html')]
+
+
+def uniq(xs):
+  r = []
+  for x in xs:
+    if x not in r:
+      r.append(x)
+  return r
 
 def subst_1(pattern, replacement, lines, ignore=None):
   for line in lines:
@@ -160,7 +345,7 @@ from io import BytesIO
 
 class epub2txt():
     def __init__(self, epubfile=None):
-        self.epub = epubfile if epubfile != '-' else BytesIO(sys.stdin.buffer.read())
+        self.epub = epubfile if epubfile != '-' and not epubfile.startswith('/dev/fd/') else BytesIO(sys.stdin.buffer.read())
         self.epub_name = epubfile
 
     def convert(self):
@@ -173,13 +358,37 @@ class epub2txt():
         # if ops != "":
         #     ops = ops+"/"
         # toc = TocParser(file.read(ops + ncx)).parseToc()
-        files = {x.filename: file.read(x).decode('utf8') for x in file.filelist if x.filename.endswith('htm') or x.filename.endswith('html')}
-        from natsort import natsorted
-        import json
-        file_order = natsorted(list(files.keys()))
 
-        import ftfy
+
+        # filelist = [x.filename for x in file.filelist]
+        # tocfile = epub_toc_file(filelist)
+        # if not tocfile:
+        #   import pdb; pdb.set_trace()
+        # toc = file.read(tocfile).decode('utf-8')
+        # pp(list(extract_html_links(toc)))
+        # import pdb; pdb.set_trace()
+        # files = {x.filename: file.read(x).decode('utf-8') for x in file.filelist if x.filename.endswith('htm') or x.filename.endswith('html')}
+        # from natsort import natsorted
+        # import json
+        # file_order = natsorted(list(files.keys()))
+
+        if False:
+          files = {x.filename: file.read(x).decode('utf-8') for x in file.filelist if x.filename.endswith('htm') or x.filename.endswith('html')}
+          file_order = natsorted(list(files.keys()))
+          # file_order = list(files.keys())
+        else:
+          meta = extract_epub_rootfile(file)
+          if meta is None: import pdb; pdb.set_trace()
+          opf = extract_epub_opf(file, meta=meta)
+          if opf is None: import pdb; pdb.set_trace()
+          # file_order = epub_html_files(file)
+          file_order = htmlfiles(extract_epub_order(file, opf=opf))
+          if file_order is None: import pdb; pdb.set_trace()
+
+        files = {x: file.read(x).decode('utf-8') for x in file_order}
+
         def fix_text(text):
+          import ftfy
           text = ftfy.fix_text(text)
           # replace unicode … with ... which ftfy doesn't do by default
           # NOTE: this departs from openai's convention of calling
@@ -201,7 +410,8 @@ class epub2txt():
           text = h.handle(html)
           if not text.endswith('\n'):
             text += '\n'
-          text = fix_text(text)
+          if args.ftfy:
+            text = fix_text(text)
           filename = self.epub_name+'/'+xmlfile
           #name, ext = os.path.splitext(filename)
           bookname = filename + '.md'
@@ -266,10 +476,10 @@ class epub2txt():
         # line before headings.
         result = re.sub(r'\n([^\n]+)[\n]#', r'\n\1\n\n#', result)
 
-        # if not args.no_collapse_blanks:
-        #   # replace long runs of blank lines with three blank lines
-        #   rx = re.compile(r'([\r\t ]*[\n]+){3,}', re.DOTALL)
-        #   result = re.sub(rx, r'\n\n\n', result)
+        if not args.no_collapse_blanks:
+          # replace long runs of blank lines with three blank lines
+          rx = re.compile(r'([\r\t ]*[\n]+){3,}', re.DOTALL)
+          result = re.sub(rx, r'\n\n\n', result)
 
         if args.append is not None:
           append = str.encode(args.append).decode('unicode-escape')
@@ -278,30 +488,30 @@ class epub2txt():
         return result
 
 
-# https://stackoverflow.com/questions/761824/python-how-to-convert-markdown-formatted-text-to-text
+# # https://stackoverflow.com/questions/761824/python-how-to-convert-markdown-formatted-text-to-text
 
-from markdown import Markdown
-from io import StringIO
-
-
-def unmark_element(element, stream=None):
-    if stream is None:
-        stream = StringIO()
-    if element.text:
-        stream.write(element.text)
-    for sub in element:
-        unmark_element(sub, stream)
-    if element.tail:
-        stream.write(element.tail)
-    return stream.getvalue()
+# from markdown import Markdown
+# from io import StringIO
 
 
-def unmark(text):
-    # patching Markdown
-    Markdown.output_formats["plain"] = unmark_element
-    __md = Markdown(output_format="plain")
-    __md.stripTopLevelTags = False
-    return __md.convert(text)
+# def unmark_element(element, stream=None):
+#     if stream is None:
+#         stream = StringIO()
+#     if element.text:
+#         stream.write(element.text)
+#     for sub in element:
+#         unmark_element(sub, stream)
+#     if element.tail:
+#         stream.write(element.tail)
+#     return stream.getvalue()
+
+
+# def unmark(text):
+#     # patching Markdown
+#     Markdown.output_formats["plain"] = unmark_element
+#     __md = Markdown(output_format="plain")
+#     __md.stripTopLevelTags = False
+#     return __md.convert(text)
 
 
 #==============================================================================
@@ -348,15 +558,13 @@ parser.add_argument('-nc', '--no-collapse-blanks',
 args = None
 
 
+import time
+
 def main():
     global args
     if not args:
         args, leftovers = parser.parse_known_args()
         args.args = leftovers
-    # args = sys.argv[1:]
-    # infile = args[0]
-    # outfile = args[1] if len(args) > 1 else '-'
-    # filenames = glob(infile) if '*' in infile else [infile]
     filenames = glob(args.infile) if '*' in args.infile else [args.infile]
     out = None
     for filename in filenames:
