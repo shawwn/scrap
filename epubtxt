@@ -1,3 +1,4 @@
 #!/bin/sh
 #exec epub2txt-all --no-metadata --ftfy --quiet --plain-text "$@"
-exec epub2txt-all --no-metadata --plain-text "$@"
+#exec epub2txt-all --no-metadata --plain-text "$@"
+exec epub2txt-all --no-metadata --ftfy --plain-text "$@"
