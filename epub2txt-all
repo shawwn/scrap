@@ -396,19 +396,6 @@ class epub2txt():
 
         files = {x: file.read(x).decode('utf-8') for x in file_order}
 
-        def fix_text(text):
-          import ftfy
-          text = ftfy.fix_text(text)
-          # replace unicode … with ... which ftfy doesn't do by default
-          # NOTE: this departs from openai's convention of calling
-          # ftfy.fix_text() with default arguments. In particular,
-          # OpenAI's GPT-2 models do generate unicode ellipses.
-          # Nonetheless, we replace unicdoe ellipses with ... to
-          # increase the chances of semantic understanding.
-          text = text.replace('…', '...')
-          return text
-
-
         content = []
         for xmlfile in file_order:
           html = files[xmlfile]
@@ -419,8 +406,6 @@ class epub2txt():
           text = h.handle(html)
           if not text.endswith('\n'):
             text += '\n'
-          if args.ftfy:
-            text = fix_text(text)
           filename = self.epub_name+'/'+xmlfile
           #name, ext = os.path.splitext(filename)
           bookname = filename + '.md'
