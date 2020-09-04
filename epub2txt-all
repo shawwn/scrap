@@ -585,7 +585,7 @@ def main():
         try:
           txt = epub2txt(filename).convert()
         except:
-          sys.sterr.write('Error converting {!r}:\n'.format(filename))
+          sys.stderr.write('Error converting {!r}:\n'.format(filename))
           raise
         if len(txt.strip()) > 0:
           if out is None:
