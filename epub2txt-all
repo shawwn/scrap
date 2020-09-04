@@ -181,13 +181,9 @@ def string_bucket(buckets, strings, flat=False):
     if isinstance(bucket, str):
       bucket = bucket.split(',')
     out = []
-    rem = []
     for pattern in bucket:
-      neg = pattern.startswith('!')
-      if neg:
-        pattern = pattern[1:]
       for s in strings:
-        if epub_name_matches(pattern, s):
+        if s not in out and epub_name_matches(pattern, s):
           out.append(s)
     for string in out:
       strings.remove(string)
@@ -285,6 +281,9 @@ def extract_epub_order(file, opf=None):
   found = [href2filename(ids[ref['idref']], filelist) for ref in spine]
   for filename in found:
     filelist.remove(filename)
+  # This file seems to be unreferenced by anything else, sometimes.
+  if 'META-INF/nav.xhtml' in filelist:
+    filelist.remove('META-INF/nav.xhtml')
   hfiles = htmlfiles(filelist)
   if len(hfiles) > 0:
     sys.stderr.write('Leftover HTML files: {!r}\n'.format(hfiles))
