@@ -15,4 +15,4 @@ set -x
 nproc="${NPROC:-32}"
 
 
-cat | grep '[.]epub$' | print0 | xargs -0 -I {} -n 1 -P "$nproc" sh -c 'set -e; [ -f "$2/$1.txt" ] && echo "exits: $2/$1.txt" && exit 0 ; mkdir -p "${2}/$(dirname "$1")" ; echo "$1"; epubtxt "$1" | sponge "${2}/$1.txt"' -- "{}" "$dir"
+cat | grep '[.]epub$' | print0 | xargs -0 -I {} -n 1 -P "$nproc" sh -c 'set -e; [ ! -s "$2/$1.txt" ] && echo "rm empty file: $2/$1.txt" && rm -f "$2/$1.txt" ; [ -f "$2/$1.txt" ] && echo "exits: $2/$1.txt" && exit 0 ; mkdir -p "${2}/$(dirname "$1")" ; echo "$1"; epubtxt "$1" | sponge "${2}/$1.txt"' -- "{}" "$dir"

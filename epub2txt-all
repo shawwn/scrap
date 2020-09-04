@@ -286,7 +286,7 @@ def extract_epub_order(file, opf=None):
     filelist.remove('META-INF/nav.xhtml')
   hfiles = htmlfiles(filelist)
   if len(hfiles) > 0:
-    sys.stderr.write('Leftover HTML files: {!r}\n'.format(hfiles))
+    sys.stderr.write('Leftover HTML files for {!r}: {!r}\n'.format(file.filename, hfiles))
     if args.debug:
       import pdb; pdb.set_trace()
   return found + filelist
