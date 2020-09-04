@@ -283,7 +283,7 @@ def extract_epub_order(file, opf=None):
   spine = extract_epub_spine(file, opf=opf)
   ids = {x['id']: x['href'] for x in items}
   found = uniq([href2filename(file, ids[ref['idref']], filelist) for ref in spine])
-  found [x for x in found if x is not None] # href2filename can fail
+  found = [x for x in found if x is not None] # href2filename can fail
   for filename in found:
     if filename not in filelist:
       sys.stderr.write('Unknown found filename for {!r}: {!r}, filelist is {!r}\n'.format(file.filename, filename, filelist))
