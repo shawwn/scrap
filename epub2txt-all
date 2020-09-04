@@ -266,6 +266,7 @@ def extract_epub_spine(file, opf=None):
 
 def href2filename(file, href, filelist):
   href = href.split('#', 1)[0] # strip anchor
+  href = href.replace('%20', ' ') # urldecode
   for name in filelist:
     if name == href or name.endswith('/' + href):
       return name
