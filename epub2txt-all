@@ -278,9 +278,12 @@ def extract_epub_order(file, opf=None):
   items = extract_epub_items(file, opf=opf)
   spine = extract_epub_spine(file, opf=opf)
   ids = {x['id']: x['href'] for x in items}
-  found = [href2filename(ids[ref['idref']], filelist) for ref in spine]
+  found = uniq([href2filename(ids[ref['idref']], filelist) for ref in spine])
   for filename in found:
-    filelist.remove(filename)
+    if filename not in filelist:
+      sys.stderr.write('Unknown found filename for {!r}: {!r}, filelist is {!r}\n'.format(file.filename, filename, filelist))
+    else:
+      filelist.remove(filename)
   # This file seems to be unreferenced by anything else, sometimes.
   if 'META-INF/nav.xhtml' in filelist:
     filelist.remove('META-INF/nav.xhtml')
