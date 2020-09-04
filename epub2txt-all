@@ -210,7 +210,9 @@ def sort_epub_files(filelist):
 def extract_epub_rootfile(file):
   filelist = [x.filename for x in file.filelist]
   if 'META-INF/container.xml' in filelist:
-    return file.read('META-INF/container.xml').decode('utf8')
+    result = file.read('META-INF/container.xml').decode('utf8')
+    result = re.sub("='(.*?)'", r'="\1"', result)
+    return result
 
 
 def extract_epub_opf(file, meta=None):
@@ -220,7 +222,9 @@ def extract_epub_opf(file, meta=None):
   assert len(root) > 0
   rootpath = html_links(root[0])[0]
   assert rootpath.endswith('opf')
-  return file.read(rootpath).decode('utf8')
+  result = file.read(rootpath).decode('utf8')
+  result = re.sub("""='(.*?)'""", r'="\1"', result)
+  return result
 
 
 def rmblanklines(text):
