@@ -43,10 +43,10 @@ args = None
 
 def run():
     if args.verbose:
-        print args
+        print(args)
     if len(args.args) <= 0 and not has_stdin():
         # if there were no args and there was no input, prompt user.
-        print 'Enter input (press Ctrl-D when done):'
+        print('Enter input (press Ctrl-D when done):')
     if len(args.args) <= 0 or has_stdin():
         for line in sys.stdin:
             print(line.strip())
