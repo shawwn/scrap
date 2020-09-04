@@ -80,7 +80,7 @@ def for_each_line(f, total=None, verbose=True, ignore_errors=True, message=None,
       n = 0
       while True:
         try:
-          with (tqdm.tqdm(total=size) if size < 0 or not silent else nullcontext()) as pbar:
+          with (tqdm.tqdm(total=size) if not silent and size < 0 else nullcontext()) as pbar:
             for line in f:
               yield i, line
               i += 1
@@ -122,7 +122,7 @@ def main():
         # Nonetheless, we replace unicdoe ellipses with ... to
         # increase the chances of semantic understanding.
         fixed = fixed.replace(' …', '...') # first pass: convert "foo  …" to "foo..."
-        fixed = fixed.replace(' …', '...') # second pass: convert "foo …" to "foo..."
+        #fixed = fixed.replace(' …', '...') # second pass: convert "foo …" to "foo..."
         fixed = fixed.replace('…', '...') # final pass: convert "foo…" to "foo..."
         out.write(fixed)
         i += 1
