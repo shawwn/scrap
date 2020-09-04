@@ -243,7 +243,9 @@ def extract_epub_manifest(file, opf=None):
   return extract_epub_section("manifest", file=file, opf=opf)
 
 def xmlnode(element, text):
-  items = re.finditer(r'<(?P<tag>{element})\s?(?P<props>.*?)(?:/>|>(?P<value>.*?)</{element}>)'.format(element=element), text)
+  rx = r'<(?P<tag>{element})\s?(?P<props>.*?)(?:/>|>(?P<value>.*?)</{element}>)'.format(element=element)
+  rx = re.compile(rx, re.DOTALL)
+  items = re.finditer(rx, text)
   items = [item.groupdict() for item in items]
   for item in items:
     props = dict(re.findall(r'([^\s]*?)="(.*?)"', item['props']))
@@ -580,7 +582,11 @@ def main():
     filenames = glob(args.infile) if '*' in args.infile else [args.infile]
     out = None
     for filename in filenames:
-        txt = epub2txt(filename).convert()
+        try:
+          txt = epub2txt(filename).convert()
+        except:
+          sys.sterr.write('Error converting {!r}:\n'.format(filename))
+          raise
         if len(txt.strip()) > 0:
           if out is None:
             out = open(args.outfile, "w") if args.outfile is not '-' else sys.stdout
