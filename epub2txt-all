@@ -264,11 +264,15 @@ def extract_epub_spine(file, opf=None):
 #   items = extract_epub_items(file, opf=opf)
 #   return {x['id']: x['href'] for x in items}
 
-def href2filename(href, filelist):
+def href2filename(file, href, filelist):
   href = href.split('#', 1)[0] # strip anchor
   for name in filelist:
     if name == href or name.endswith('/' + href):
       return name
+  sys.stderr.write('href2filename: failed to find href {href!r} in epub {epub!r} with filelist {filelist!r}\n'.format(epub=file.filename, href=href, filelist=filelist))
+  if args.debug:
+    import pdb; pdb.set_trace()
+
 
 def htmlfiles(filelist):
   return [filename for filename in filelist if filename.endswith('htm') or filename.endswith('html')]
@@ -278,7 +282,8 @@ def extract_epub_order(file, opf=None):
   items = extract_epub_items(file, opf=opf)
   spine = extract_epub_spine(file, opf=opf)
   ids = {x['id']: x['href'] for x in items}
-  found = uniq([href2filename(ids[ref['idref']], filelist) for ref in spine])
+  found = uniq([href2filename(file, ids[ref['idref']], filelist) for ref in spine])
+  found [x for x in found if x is not None] # href2filename can fail
   for filename in found:
     if filename not in filelist:
       sys.stderr.write('Unknown found filename for {!r}: {!r}, filelist is {!r}\n'.format(file.filename, filename, filelist))
@@ -586,3 +591,5 @@ if __name__ == "__main__":
   main()
 
 # TODO: Look into this bug: https://i.imgur.com/zDora9Y.png
+
+# TODO: 2020-09-03 bug https://imgur.com/BVMXhEs
