@@ -1,3 +1,7 @@
 #!/bin/sh
-set -x
+
+# https://stackoverflow.com/questions/64649/how-do-i-get-the-find-command-to-print-out-the-file-size-with-the-file-name
+
+# https://unix.stackexchange.com/questions/215234/explanation-of-directives-in-find-printf
+
 exec find "${@:-.}" -type f -printf "%s %p\n"
