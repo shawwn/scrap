@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 #==============================================================================
 # Functionality
@@ -49,7 +49,7 @@ def run():
         print 'Enter input (press Ctrl-D when done):'
     if len(args.args) <= 0 or has_stdin():
         for line in sys.stdin:
-            print line.rstrip()
+            print(line.strip())
 
 def main():
     global args
