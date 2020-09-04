@@ -468,6 +468,16 @@ class epub2txt():
           # replace [foo](www.example.com) with foo
           result = sub('[!]?\[(.*?)\][(].*?[)]', r'\1', result)
 
+        # fix up cases like this:
+        #
+        #   1\. foo
+        #
+        #   2\. bar
+        #
+        # For [\n][0-9]+[\\][.], strip the backslash.
+        #result = re.sub(r'[\n]([0-9]+)[\\][.][ ]', r'\1. ', result)
+        result = sub(re.compile(r'([0-9]+)[\\][.][ ]', re.DOTALL), r'\1. ', result)
+
         # convert lines back to text
         result = '\n'.join(result)
 
