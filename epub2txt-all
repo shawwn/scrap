@@ -243,6 +243,8 @@ def extract_epub_manifest(file, opf=None):
   return extract_epub_section("manifest", file=file, opf=opf)
 
 def xmlnode(element, text):
+  # strip html comments
+  text = re.sub(re.compile(r'<!--.*?-->', re.DOTALL), '', text)
   rx = r'<(?P<tag>{element})\s?(?P<props>.*?)(?:/>|>(?P<value>.*?)</{element}>)'.format(element=element)
   rx = re.compile(rx, re.DOTALL)
   items = re.finditer(rx, text)
@@ -289,6 +291,8 @@ def extract_epub_order(file, opf=None):
     found = uniq([href2filename(file, ids[ref['idref']], filelist) for ref in spine])
   except KeyError as e:
     sys.stderr.write('error: KeyError for {!r}: ids is {!r}, filelist is {!r}\n'.format(file.filename, ids, filelist))
+    if args.debug:
+      import pdb; pdb.set_trace()
     raise e
   found = [x for x in found if x is not None] # href2filename can fail
   for filename in found:
