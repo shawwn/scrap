@@ -1,0 +1,18 @@
+#!/bin/sh
+
+# https://stackoverflow.com/questions/11111562/rsync-copy-over-only-certain-types-of-files-using-include-option
+
+pattern="${1}"
+shift 1
+
+if [ -z "${pattern}" ]
+then
+    1>&2 echo "usage:"
+    1>&2 echo "  ${0} <pattern> <source> <dest> [<option>]"
+    exit 1
+fi
+
+set -x
+
+exec rsync -Pa --include "*/" --exclude="*" --include="$pattern" "$@"
+
