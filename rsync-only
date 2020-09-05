@@ -14,5 +14,5 @@ fi
 
 set -x
 
-exec rsync -Pa --include "*/" --exclude="*" --include="$pattern" "$@"
+exec rsync -Pa --prune-empty-dirs --include "*/" --exclude="*" --include="$pattern" "$@"
 
