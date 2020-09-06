@@ -19,5 +19,5 @@ then
     exit 1
 fi
 
-range "${from}" "${total}" --width 5 --inclusive | xargs -n 1 -I {} echo "{}-of-$(printf "%05d" "${total}")"
+range "${from}" "${total}" --width 5 | xargs -n 1 -I {} echo "${1}{}-of-$(printf "%05d" "${total}")${2}"
 

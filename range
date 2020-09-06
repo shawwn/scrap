@@ -39,7 +39,7 @@ parser.add_argument('start', type=str)
 parser.add_argument('stop', type=str, nargs='?')
 parser.add_argument('step', type=str, nargs='?')
 parser.add_argument('-w', '--width', type=int, default=None)
-parser.add_argument('-i', '--inclusive', action='store_true')
+parser.add_argument('-e', '--exclusive', action='store_true')
 
 args = None
 
@@ -83,7 +83,7 @@ def run():
     args.stop = number(args.stop)
     args.step = number(args.step)
     c = ''
-    for i in range(args.start, args.stop + (1 if args.inclusive else 0), args.step):
+    for i in range(args.start, args.stop + (0 if args.exclusive else 1), args.step):
       sys.stdout.write(c + f"%0{args.width}d" % i)
       c = ' '
     print('')
