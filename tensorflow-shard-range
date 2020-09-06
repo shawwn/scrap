@@ -1,0 +1,23 @@
+#!/bin/bash
+
+from="${1}"
+shift 1
+total="${1}"
+shift 1
+
+if [ -z "${total}" ]
+then
+  total="${from}"
+  from="0"
+fi
+
+
+if [ -z "${from}" ] || [ -z "${total}" ]
+then
+    1>&2 echo "usage:"
+    1>&2 echo "  ${0} <from> <total>"
+    exit 1
+fi
+
+range "${from}" "${total}" --width 5 --inclusive | xargs -n 1 -I {} echo "{}-of-$(printf "%05d" "${total}")"
+

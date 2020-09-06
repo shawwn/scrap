@@ -1,0 +1,111 @@
+#!/usr/bin/env python3
+
+#==============================================================================
+# Functionality
+#==============================================================================
+import pdb
+import sys
+import os
+import re
+
+# utility funcs, classes, etc go here.
+
+def asserting(cond):
+    if not cond:
+        pdb.set_trace()
+    assert(cond)
+
+def has_stdin():
+    return not sys.stdin.isatty()
+
+def reg(pat, flags=0):
+    return re.compile(pat, re.VERBOSE | flags)
+
+#==============================================================================
+# Cmdline
+#==============================================================================
+import argparse
+
+parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter, 
+    description="""
+TODO
+""")
+     
+parser.add_argument('-v', '--verbose',
+    action="store_true",
+    help="verbose output" )
+     
+parser.add_argument('start', type=str)
+parser.add_argument('stop', type=str, nargs='?')
+parser.add_argument('step', type=str, nargs='?')
+parser.add_argument('-w', '--width', type=int, default=None)
+parser.add_argument('-i', '--inclusive', action='store_true')
+
+args = None
+
+#==============================================================================
+# Main
+#==============================================================================
+
+
+def is_integer(x):
+  return np.can_cast(x, np.int32)
+
+
+def is_float(x):
+  return np.can_cast(x, np.float32)
+
+
+def is_exact(x):
+  return is_integer(x) or is_float(x) and x == int(x)
+
+
+def number(x):
+  if isinstance(x, str):
+    if re.match('[-]?[0-9]+', x):
+      return int(x)
+    else:
+      return float(x)
+  return x
+
+
+def run():
+    if args.verbose:
+        print(args)
+    if args.stop is None:
+      args.stop = args.start
+      args.start = '0'
+    if args.step is None:
+      args.step = '1'
+    if args.width is None:
+      args.width = len(args.start)
+    args.start = number(args.start)
+    args.stop = number(args.stop)
+    args.step = number(args.step)
+    c = ''
+    for i in range(args.start, args.stop + (1 if args.inclusive else 0), args.step):
+      sys.stdout.write(c + f"%0{args.width}d" % i)
+      c = ' '
+    print('')
+
+def main():
+    try:
+        global args
+        if not args:
+            args, leftovers = parser.parse_known_args()
+            args.args = leftovers
+        return run()
+    except IOError:
+        # http://stackoverflow.com/questions/15793886/how-to-avoid-a-broken-pipe-error-when-printing-a-large-amount-of-formatted-data
+        try:
+            sys.stdout.close()
+        except IOError:
+            pass
+        try:
+            sys.stderr.close()
+        except IOError:
+            pass
+
+if __name__ == "__main__":
+    main()
+
