@@ -1,0 +1,12 @@
+#!/usr/bin/env python3
+
+# Make sure the Colab Runtime is set to Accelerator: TPU.
+import requests
+import os
+import sys
+url = 'http://' + sys.argv[1].split(':')[0] + ':8475/requestversion/tpu_driver_nightly'
+print(url)
+resp = requests.post(url)
+print(resp)
+import pdb; pdb.set_trace()
+print(resp)
