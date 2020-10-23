@@ -1,0 +1,4 @@
+#!/bin/sh
+cat <<'EOF'
+sudo fsck_exfat -x -y -d /dev/rdisk2s1 | tee -a rdisk2s1.txt
+EOF
