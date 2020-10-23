@@ -4,9 +4,8 @@
 import requests
 import os
 import sys
-url = 'http://' + sys.argv[1].split(':')[0] + ':8475/requestversion/tpu_driver_nightly'
-print(url)
-resp = requests.post(url)
-print(resp)
-import pdb; pdb.set_trace()
-print(resp)
+version=sys.argv[1]
+tpus=sys.argv[2:]
+for tpu in tpus:
+  url = 'http://' + tpu.split(':')[0] + ':8475/requestversion/{version}'.format(version=version)
+  print('curl -X POST ' + url)
