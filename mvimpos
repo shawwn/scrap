@@ -1,0 +1,7 @@
+#!/bin/sh
+
+for name in $(mvim --serverlist)
+do
+  cmd="${cmd}${cmd+,}remote_expr('$name','v:servername.\":\".expand(\"%:p\")')"
+done
+mvim --servername VIM114 --remote-expr \[\"\"\,$cmd\]
