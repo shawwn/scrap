@@ -2,6 +2,6 @@
 
 for name in $(mvim --serverlist)
 do
-  cmd="${cmd}${cmd+,}remote_expr('$name','v:servername.\":\".expand(\"%:p\")')"
+  cmd="${cmd}${cmd+,}remote_expr('$name','v:servername.\":\".expand(\"%:p\").\":\".line(\".\").\":\".col(\".\")')"
 done
-mvim --servername VIM114 --remote-expr \[\"\"\,$cmd\]
+mvim --servername VIM114 --remote-expr "[$cmd]"
