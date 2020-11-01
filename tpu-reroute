@@ -1,0 +1,106 @@
+#!/usr/bin/env python3
+
+#==============================================================================
+# Functionality
+#==============================================================================
+import pdb
+import sys
+import os
+import re
+
+# utility funcs, classes, etc go here.
+
+def asserting(cond):
+    if not cond:
+        pdb.set_trace()
+    assert(cond)
+
+def has_stdin():
+    return not sys.stdin.isatty()
+
+def reg(pat, flags=0):
+    return re.compile(pat, re.VERBOSE | flags)
+
+#==============================================================================
+# Cmdline
+#==============================================================================
+import argparse
+
+parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter, 
+    description="""
+TODO
+""")
+     
+parser.add_argument('-v', '--verbose',
+    action="store_true",
+    help="verbose output" )
+     
+parser.add_argument('--host',
+    type=str,
+    default="router.example.com")
+
+args = None
+
+#==============================================================================
+# Main
+#==============================================================================
+
+
+def reroute(addr, host=None):
+  if host is None or host is False:
+    return addr
+  if addr.startswith('grpc://'):
+    return 'grpc://' + reroute(addr[len('grpc://'):], host=host)
+  if not re.match('[0-9]+[.][0-9]+[.][0-9]+[.][0-9]+[:]8470', addr):
+    return addr
+  if not addr.endswith(':8470'):
+    return addr
+  a, b, c, d = [int(x) for x in addr.split(':')[0].split('.')]
+  if a == 10 and b in [48, 49]:
+    assert (d == 2)
+    port = b * 1000 + c
+  elif a == 10 and b in range(2, 66) and c == 0:
+    port = b * 1000 + d
+  else:
+    return addr
+  return host + ':' + str(port)
+
+
+def run():
+    if args.verbose:
+        print(args)
+    if len(args.args) <= 0 and not has_stdin():
+        # if there were no args and there was no input, prompt user.
+        print('Enter input (press Ctrl-D when done):')
+    if len(args.args) <= 0 or has_stdin():
+        indata = sys.stdin.read()
+        args.args.extend(indata.splitlines())
+    # for each arg on cmdline...
+    for arg in args.args:
+      if ':' not in arg:
+        arg = arg + ':8470'
+      if not arg.startswith('grpc://'):
+        arg = 'grpc://' + arg
+      print(reroute(arg, host=args.host))
+
+def main():
+    try:
+        global args
+        if not args:
+            args, leftovers = parser.parse_known_args()
+            args.args = leftovers
+        return run()
+    except IOError:
+        # http://stackoverflow.com/questions/15793886/how-to-avoid-a-broken-pipe-error-when-printing-a-large-amount-of-formatted-data
+        try:
+            sys.stdout.close()
+        except IOError:
+            pass
+        try:
+            sys.stderr.close()
+        except IOError:
+            pass
+
+if __name__ == "__main__":
+    main()
+
