@@ -1,0 +1,2 @@
+#!/bin/sh
+curl -s -X POST "https://api.gfycat.com/v1/gfycats" -H "Content-Type: application/json" | exec jq .gfyname -r
