@@ -1,0 +1,2 @@
+#!/bin/sh
+data-to-url-json "$@" | jq .result -r

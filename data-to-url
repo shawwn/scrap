@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import requests
 import curlify
 import json
@@ -51,8 +52,9 @@ def json_response(ok, result, **kwds):
 def data_to_url_thread(path):
   def thunk():
     data = filebytes(path)
+    orig = data
     url = data_to_url(data)
-    print(json_response(True, url, data=data, path=path))
+    print(json_response(True, url, data=orig, path=path))
   thread = threading.Thread(target=lambda: on_err(thunk, path=path), daemon=True)
   thread.start()
   return thread
@@ -60,6 +62,7 @@ def data_to_url_thread(path):
 import httpx
 
 async def data_to_url_async(data, path='unknown'):
+  orig = data
   data = data_to_upload_image_args(data)
   async with httpx.AsyncClient() as client:
     try:
@@ -69,35 +72,44 @@ async def data_to_url_async(data, path='unknown'):
           timeout=httpx.Timeout(timeout=None))
       if response.status_code == 200:
         url = response.text
-        print(json_response(True, url, data=data, path=path))
+        print(json_response(True, url, data=orig, path=path))
       else:
         response.raise_for_status()
     except Exception as caught:
-      report_error(caught, data=data, path=path, code=response.status_code)
+      report_error(caught, data=orig, path=path, code=response.status_code)
 
 def filebytes(path):
+  if path == b'/dev/stdin' or path == '/dev/stdin':
+    return sys.stdin.buffer.read()
   with open(path, 'rb') as f:
     return f.read()
+
+def has_stdin():
+    return not sys.stdin.isatty()
 
 if __name__ == '__main__':
   import sys
   import threading
   args = sys.argv[1:]
-  if len(args) <= 0:
-    def thunk():
-      data = sys.stdin.buffer.read()
-      url = data_to_url(data)
-      print(json_response(True, url, data=data, path='/dev/stdin'))
-    on_err(thunk, path='/dev/stdin')
+  thread = None
+  if has_stdin():
+    thread = data_to_url_thread('/dev/stdin')
+    # def thunk():
+    #   data = sys.stdin.buffer.read()
+    #   url = data_to_url(data)
+    #   print(json_response(True, url, data=data, path='/dev/stdin'))
+    # on_err(thunk, path='/dev/stdin')
+    ##
     # try:
     #   print(json_response(True, data_to_url(data), data=data, path='/dev/stdin'))
     # except Exception as caught:
     #   report_error(caught, data=data, path=path, code=response.status_code)
-  else:
-    import asyncio
-    loop = asyncio.get_event_loop()
-    async_tasks = [loop.create_task(data_to_url_async(filebytes(arg), path=arg)) for arg in args]
-    loop.run_until_complete(asyncio.gather(*async_tasks))
-    # threads = [data_to_url_thread(arg) for arg in args]
-    # for thread in threads:
-    #   thread.join()
+  import asyncio
+  loop = asyncio.get_event_loop()
+  async_tasks = [loop.create_task(data_to_url_async(filebytes(arg), path=arg)) for arg in args]
+  loop.run_until_complete(asyncio.gather(*async_tasks))
+  if thread is not None:
+    thread.join()
+  # threads = [data_to_url_thread(arg) for arg in args]
+  # for thread in threads:
+  #   thread.join()
