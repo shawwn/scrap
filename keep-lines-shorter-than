@@ -1,0 +1,17 @@
+#!/bin/sh
+
+n="${1}"
+shift 1
+
+if [ -z "${n}" ]
+then
+    1>&2 echo "usage:"
+    1>&2 echo "  ${0} <n> [<option>]"
+    exit 1
+fi
+
+set -x
+
+# https://unix.stackexchange.com/questions/123243/how-to-remove-lines-shorter-than-xy
+exec awk "length(\$0)<=${n}"
+
