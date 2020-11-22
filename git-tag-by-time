@@ -1,0 +1,4 @@
+#!/bin/sh
+set -x
+# https://stackoverflow.com/questions/6269927/how-can-i-list-all-tags-in-my-git-repository-by-the-date-they-were-created
+exec git for-each-ref --sort=taggerdate --format '%(refname) %(taggerdate)' refs/tags
