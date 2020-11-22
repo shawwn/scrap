@@ -7,7 +7,6 @@ import pdb
 import sys
 import os
 import re
-import struct
 
 # utility funcs, classes, etc go here.
 
@@ -36,10 +35,9 @@ parser.add_argument('-v', '--verbose',
     action="store_true",
     help="verbose output" )
      
-parser.add_argument('-M', '--max-size',
-    type=int,
-    default=None,
-    help="Skip any events whose serialized string size (before base64) is greater than this value." )
+parser.add_argument('-c', '--compact',
+    action="store_true",
+    help="one JSON entry per line" )
 
 args = None
 
@@ -47,31 +45,29 @@ args = None
 # Main
 #==============================================================================
 
-from base64 import b64encode
+from base64 import b64decode
+import re
+from tensorboard.compat.proto import event_pb2
+import google.protobuf.json_format as jf
+import json
 
-def parse_event(f, offset):
-  header_str = f.read(8)
-  if not header_str:
-    return offset, None
-  n = struct.unpack("<Q", header_str)[0]
-  crc_header_str = f.read(4)
-  event_str = f.read(n)
-  crc_event_str = f.read(4)
-  return offset + len(event_str) + 16, event_str
+def process_base64_events(f):
+  for line in f:
+    if ',' in line:
+      line = line.rsplit(',', 1)[-1]
+    event_str = b64decode(line)
+    #print(len(event_str))
+    event = event_pb2.Event.FromString(event_str)
+    #print(event)
+    if args.compact:
+      js = jf.MessageToJson(event, indent=0)
+      js = ''.join(js.splitlines())
+    else:
+      js = jf.MessageToJson(event)
+      # if args.compact:
+      #   js = json.dumps(json.loads(js))
+    print(js)
 
-def parse_tfevents(f):
-  offset = 0
-  while True:
-    offset, event_str = parse_event(f, offset)
-    if event_str is None:
-      break
-    if args.max_size is None or len(event_str) <= args.max_size:
-      yield offset, event_str
-
-def parse_tfevents_stream(f):
-  for offset, event_str in parse_tfevents(f):
-    sys.stdout.write(str(offset) + ',' + b64encode(event_str).decode('utf8') + '\n')
-    sys.stdout.flush()
 
 def run():
     if args.verbose:
@@ -80,8 +76,8 @@ def run():
         # if there were no args and there was no input, prompt user.
         print('Enter input (press Ctrl-D when done):')
     if len(args.args) <= 0 or has_stdin():
-        #indata = sys.stdin.buffer.read()
-        parse_tfevents_stream(sys.stdin.buffer)
+        process_base64_events(sys.stdin)
+        return
     # for each arg on cmdline...
     for arg in args.args:
         print(arg)
