@@ -8,8 +8,9 @@ name="${1:-image.png}"
 shift 1
 
 #content="$(md5sum "$file")"
-content=""
-#set -ex
+content="${1}"
+shift 1
+set -ex
 
 if [ -z "${url}" ]
 then
