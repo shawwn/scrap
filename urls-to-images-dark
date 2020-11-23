@@ -1,0 +1,4 @@
+#!/bin/sh
+echo '<body bgcolor="#778899">'
+urls-to-images "$@"
+echo '</body>'
