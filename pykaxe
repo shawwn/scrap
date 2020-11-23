@@ -1,0 +1,204 @@
+#!/usr/bin/env python3
+import sys
+import os
+import pdb
+
+# sudo pip install tempdir
+from tempdir import TempDir
+
+#==============================================================================
+# Functionality
+#==============================================================================
+
+import re
+WS = re.compile(r'\s+', re.MULTILINE)
+
+#==============================================================================
+# Cmdline
+#==============================================================================
+import argparse
+
+parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter, 
+    description="""
+TODO
+""")
+     
+parser.add_argument('-v', '--verbose',
+        action='store_true',
+        help='verbose output.')
+     
+parser.add_argument('--rx',
+        action='store_true',
+        help="" )
+     
+parser.add_argument('--indent-pattern',
+        default=r':([0-9]*)',
+        help="" )
+     
+parser.add_argument('-e', '--expr',
+        action='store_true',
+        help="commandline args are python expressions; inserted directly into script." )
+
+args = None
+
+#==============================================================================
+# Main
+#==============================================================================
+
+def P(*args):
+    path = os.path.join(*args)
+    return str(os.path.normpath(path))
+
+def mkdir_p(path):
+    try:
+        os.makedirs(path)
+    except OSError as exc: # Python >2.5
+        if exc.errno == errno.EEXIST and os.path.isdir(path):
+            pass
+        else:
+            raise
+
+def touch(*args):
+    assert(len(args) == 1 or len(args) == 2)
+    path = args[0]
+    if len(args) == 2:
+        mkdir_p(args[0])
+        path = P(*args)
+    with open(path, 'w') as f:
+        pass
+
+def tab(times=1):
+    return '    ' * times
+
+def indent(val, indent):
+    x = tab(indent)
+    if isinstance(val, list):
+        return ('\n' + x).join(val)
+    return x + val
+
+def linenums(s):
+    n = 0
+    for line in s.splitlines():
+        n += 1
+        yield n, line
+
+def run():
+    if args.verbose:
+        print(args)
+    rx = re.compile(args.indent_pattern)
+    cmd = 'args'
+    params = []
+    if len(args.args) > 0:
+        cmd = args.args[0]
+        params = args.args[1:]
+
+    keys = []
+    vals = []
+    items = []
+    decls = []
+    for i in range(len(params)):
+        i = len(params) - i - 1
+
+        k = chr(ord('a') + i)
+
+        v = params[i]
+        splice = args.expr
+        if v.startswith(','):
+            v = v.lstrip(',')
+            splice = True
+
+        if not splice:
+            v = '_eval(arg[%d])' % i
+
+        keys += [k]
+        vals += [v]
+        items += [(k, v)]
+        decls += ['%s = %s' % (k, v)]
+        if args.verbose:
+            decls += ['print("'+k+' is " + repr('+k+'))']
+    keys = keys[::-1]
+    vals = vals[::-1]
+    items = items[::-1]
+
+    script = r"""
+import re
+import sys
+import os
+
+args = None
+
+def _eval(x):
+    if x == 'True' or x == 'False':
+        return bool(x)
+    else:
+        try:
+            return int(x)
+        except ValueError:
+            pass
+        try:
+            return float(x)
+        except ValueError:
+            pass
+    return x
+
+def I(x):
+    return str(x)
+
+def O(x):
+    return _eval(x)
+
+def rx(pattern, case=True):
+    flags = re.VERBOSE
+    if not O(case):
+        flags += re.IGNORECASE
+    return re.compile(I(pattern), flags)
+
+#def sub(a,b,c):
+    #return O(rx(I(a)).sub(I(b), I(c)))
+
+def sub(pattern, repl):
+    global args
+    return rx(I(pattern)).sub(I(repl), args)
+
+def val(input, arg):
+    global args
+    _ = arg
+    %s
+    args = ' '.join([str(x) for x in [%s]])
+    %s
+    stdin = input
+    arg = args
+    return %s
+""" % (
+        indent(decls, 1),
+        ', '.join(keys),
+        'print("args is " + repr(args))' if args.verbose else '',
+        cmd)
+
+    if args.verbose:
+        for n,line in linenums(script):
+            print('%3d %s' % (n, line))
+
+    with TempDir() as tmpdir:
+        sys.path.append(tmpdir)
+        touch(P(tmpdir, 'pykaxe'), '__init__.py')
+        touch(P(tmpdir, 'pykaxe', 'dynamic'), '__init__.py')
+        with open(P(tmpdir, 'pykaxe', 'dynamic', 'cmd.py'), 'w') as f:
+            f.write(script)
+        cmd_module = __import__('pykaxe.dynamic.cmd', fromlist=["pykaxe.dynamic"])
+        result = cmd_module.val('', params)
+        if isinstance(result, list):
+            for x in result:
+                print(x)
+        else:
+            print(result)
+
+def main():
+    global args
+    args, leftovers = parser.parse_known_args()
+    args.args = leftovers
+    run()
+
+if __name__ == "__main__":
+    main()
+
