@@ -68,7 +68,7 @@ def replace_upload(m, *, line=None):
   if req.status_code != 200:
     processed = re.sub(regex, '"md5sum": "{}"'.format(md), line)
     out = subprocess.run(['discord-webhook-upload-file', '', '', '{}.png'.format(md), json.dumps("```{}```".format(processed))[1:-1]], input=img, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    time.sleep(0.21)
+    time.sleep(0.41)
     zz = out.stdout.decode('utf8')
     js = zz.splitlines()[-1]
     files = {'upload_file': StringIO(js)}
