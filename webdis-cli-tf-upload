@@ -1,0 +1,20 @@
+#!/bin/bash
+
+# https://stackoverflow.com/questions/1527049/how-can-i-join-elements-of-an-array-in-bash
+function join_by { local d=$1; shift; local f=$1; shift; printf %s "$f" "${@/#/$d}"; }
+
+set -e
+
+#WEBDIS_HOST="${WEBDIS_HOST:-127.0.0.1}"
+WEBDIS_HOST="${WEBDIS_HOST:-test.tensorfork.com}"
+WEBDIS_PORT="${WEBDIS_PORT:-7379}"
+
+#COMMAND="$(echo "$*" | replace ' ' '/' | urlencode)"
+# #set -x
+# exec curl -fsSL "http://${WEBDIS_HOST}:${WEBDIS_PORT}/${COMMAND}"
+
+#COMMAND="$(join_by / "$@")"
+
+#exec curl -fsSL -d "$COMMAND" "http://${WEBDIS_HOST}:${WEBDIS_PORT}"
+
+exec curl -v --upload-file "$1" "http://${WEBDIS_HOST}:${WEBDIS_PORT}/SET/$2"
