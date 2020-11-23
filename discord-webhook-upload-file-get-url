@@ -1,0 +1,3 @@
+#!/bin/sh
+
+discord-webhook-upload-file "$@" | tail -n 1 | jq .attachments[0].url -r
