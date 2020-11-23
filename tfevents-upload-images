@@ -37,8 +37,8 @@ parser.add_argument('-v', '--verbose',
      
 parser.add_argument('-d', '--delay',
     type=float,
-    default=0.8,
-    help="time to wait after usinng webhook" )
+    default=2.0,
+    help="time to wait after using webhook" )
 
 args = None
 
