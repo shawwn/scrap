@@ -1,2 +1,2 @@
 #!/bin/sh
-data-to-url-json "$@" | jq .result -r
+data-to-url "$@" | grep '"ok": true' | jq .result -r

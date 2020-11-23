@@ -43,10 +43,28 @@ def data_to_url(data, raise_on_error=True):
   if raise_on_error:
     response.raise_for_status()
 
+def replace(s, a, b, *more):
+  s = s.replace(a, b)
+  if len(more) > 0:
+    return replace(s, *more)
+  return s
+
+def path_id(path):
+  return replace(path, ' ', '_', '_-_', '-', '/Users/bb/Downloads/celeste/Celeste_Atlases-Postdivided/Graphics/Atlases/', 'Celeste/', '/', '::').lower()
+
 def json_response(ok, result, **kwds):
-  kwds.update({'ok': ok, 'result': result})
   if 'data' in kwds:
     kwds['size'] = len(kwds.pop('data'))
+  if ok:
+    if 'path' in kwds:
+      path = kwds['path']
+      key = ':id'
+      fqn = path_id(path)
+      kwds[':id'] = fqn
+      stub = '&' if '?' in result else '?'
+      stub += key + '=' + fqn
+      result += stub
+  kwds.update({'ok': ok, 'result': result})
   return json.dumps(kwds)
 
 def data_to_url_thread(path):
@@ -60,26 +78,36 @@ def data_to_url_thread(path):
   return thread
 
 import httpx
+import asyncio
 
-async def data_to_url_async(data, path='unknown'):
-  orig = data
-  data = data_to_upload_image_args(data)
-  async with httpx.AsyncClient() as client:
-    try:
-      response = await client.post('https://staging.gather.town/api/uploadImage',
-          headers={'Content-Type': 'application/json'},
-          data=data,
-          timeout=httpx.Timeout(timeout=None))
-      if response.status_code == 200:
-        url = response.text
-        print(json_response(True, url, data=orig, path=path))
-      else:
-        response.raise_for_status()
-    except Exception as caught:
-      report_error(caught, data=orig, path=path, code=response.status_code)
+sem = asyncio.BoundedSemaphore(64)
+
+async def data_to_url_async(path):
+  async with sem:
+    data = filebytes(path)
+    orig = data
+    data = data_to_upload_image_args(data)
+    async with httpx.AsyncClient() as client:
+      try:
+        response = await client.post('https://staging.gather.town/api/uploadImage',
+            headers={'Content-Type': 'application/json'},
+            data=data,
+            timeout=httpx.Timeout(timeout=None))
+        if response.status_code == 200:
+          url = response.text
+          print(json_response(True, url, data=orig, path=path))
+        else:
+          response.raise_for_status()
+      except Exception as caught:
+        report_error(caught, data=orig, path=path, code=response.status_code)
+
+def preparg(path):
+  if path == '-':
+    path = '/dev/stdin'
+  return path
 
 def filebytes(path):
-  if path == b'/dev/stdin' or path == '/dev/stdin':
+  if path == '/dev/stdin':
     return sys.stdin.buffer.read()
   with open(path, 'rb') as f:
     return f.read()
@@ -91,8 +119,17 @@ if __name__ == '__main__':
   import sys
   import threading
   args = sys.argv[1:]
+  args2 = []
+  for arg in args:
+    if arg.startswith('@'):
+      with open(arg[1:]) as f:
+        args2.extend(f.read().splitlines())
+    else:
+      args2.append(arg)
+  args = args2
+  print(len(args))
   thread = None
-  if has_stdin():
+  if has_stdin() and len(args) <= 0:
     thread = data_to_url_thread('/dev/stdin')
     # def thunk():
     #   data = sys.stdin.buffer.read()
@@ -106,7 +143,8 @@ if __name__ == '__main__':
     #   report_error(caught, data=data, path=path, code=response.status_code)
   import asyncio
   loop = asyncio.get_event_loop()
-  async_tasks = [loop.create_task(data_to_url_async(filebytes(arg), path=arg)) for arg in args]
+  import tqdm
+  async_tasks = [loop.create_task(data_to_url_async(preparg(arg))) for arg in tqdm.tqdm(args)]
   loop.run_until_complete(asyncio.gather(*async_tasks))
   if thread is not None:
     thread.join()
