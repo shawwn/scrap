@@ -1,0 +1,2 @@
+#!/bin/sh
+rg -o '.*[.]tfevents[.]([0-9]+)[.].*' --replace '$1 $0' | sort -n

@@ -1,0 +1,2 @@
+#!/bin/sh
+jq '.summary.value[0].image.url + "?:wallTime=" + (.wallTime | tostring) + "&:step=" + .step + "&:tag=" + .summary.value[0].tag' -r | urls-to-images-dark

@@ -34,14 +34,6 @@ TODO
 parser.add_argument('-v', '--verbose',
     action="store_true",
     help="verbose output" )
-     
-parser.add_argument('-c', '--compact',
-    action="store_true",
-    help="one JSON entry per line" )
-     
-parser.add_argument('-u', '--upload-images',
-    action="store_true",
-    help="try to replace base64-encoded images with a permanent url" )
 
 args = None
 
@@ -51,31 +43,49 @@ args = None
 
 from base64 import b64decode
 import re
-from tensorboard.compat.proto import event_pb2
-import google.protobuf.json_format as jf
+#from tensorboard.compat.proto import event_pb2
+#import google.protobuf.json_format as jf
 import json
+import hashlib
+import subprocess
+import requests
+import functools
+from io import StringIO
+from io import BytesIO
 
-def replace_upload(m):
-  print(m);
+db = {}
+regex = reg(r""" "encodedImageString" \s* : \s* "([^"]+?)" """)
 
-def process_base64_events(f):
+def replace_upload(m, *, line=None):
+  #import pdb; pdb.set_trace()
+  img = b64decode(m.group(1))
+  h = hashlib.new('md5')
+  h.update(img)
+  md = h.hexdigest()
+  #db[md] = img
+  req = requests.get('https://test.tensorfork.com/webdis/GET/{}.txt'.format(md))
+  if req.status_code != 200:
+    processed = re.sub(regex, '"md5sum": "{}"'.format(md), line)
+    out = subprocess.run(['discord-webhook-upload-file', '', '', '{}.png'.format(md), json.dumps("```{}```".format(processed))[1:-1]], input=img, check=True, capture_output=True)
+    zz = out.stdout.decode('utf8')
+    js = zz.splitlines()[-1]
+    files = {'upload_file': StringIO(js)}
+    req = requests.put('https://test.tensorfork.com/webdis/SET/{}.txt'.format(md), data=BytesIO(js.encode('utf8')))
+  else:
+    js = req.text
+  j = json.loads(js)
+  url = j['attachments'][0]['url']
+  #import pdb; pdb.set_trace()
+
+  #return '"md5sum": "{}"'.format(md)
+  return '"md5sum": "{}", "url": "{}"'.format(md, url)
+  
+
+def process_json_events(f):
   for line in f:
-    if ',' in line:
-      line = line.rsplit(',', 1)[-1]
-    event_str = b64decode(line)
-    #print(len(event_str))
-    event = event_pb2.Event.FromString(event_str)
-    #print(event)
-    if args.compact:
-      js = jf.MessageToJson(event, indent=0)
-      js = ''.join(js.splitlines())
-    else:
-      js = jf.MessageToJson(event)
-      # if args.compact:
-      #   js = json.dumps(json.loads(js))
-    #if args.upload_images:
-    #  js = re.sub(reg(r""" "encodedImageString" \s* : \s* "(.*?)" """), replace_upload)
-    print(js)
+    line = re.sub(regex, functools.partial(replace_upload, line=line), line)
+    sys.stdout.write(line)
+    sys.stdout.flush()
 
 
 def run():
@@ -85,11 +95,13 @@ def run():
         # if there were no args and there was no input, prompt user.
         print('Enter input (press Ctrl-D when done):')
     if len(args.args) <= 0 or has_stdin():
-        process_base64_events(sys.stdin)
+        process_json_events(sys.stdin)
         return
-    # for each arg on cmdline...
-    for arg in args.args:
-        print(arg)
+    else:
+        # for each arg on cmdline...
+        for arg in args.args:
+          with open(arg) as f:
+            process_json_events(f)
 
 def main():
     try:
