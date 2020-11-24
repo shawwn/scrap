@@ -14,6 +14,6 @@ webhook="$1"
 shift 1
 
 set -ex
-cat "$dir" | tfevents-parse | tfevents-parse-events -c  | tfevents-upload-images --webhook "$webhook" | tee "${dir}.json.tmp"
+cat "$dir" | tfevents-parse | tfevents-parse-events -c  | tfevents-upload-images --webhook "$webhook" "$@" | tee "${dir}.json.tmp"
 mv "${dir}.json.tmp" "${dir}.json"
 
