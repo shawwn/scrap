@@ -1,0 +1,13 @@
+#!/bin/sh
+
+url="${1:-metadata.google.internal}"
+shift 1
+
+if [ -z "${url}" ]
+then
+    1>&2 echo "usage:"
+    1>&2 echo "  ${0} <url> [<option>]"
+    exit 1
+fi
+
+2>&1 traceroute -m 1 "${url}" | rg '[(]([0-9.]+?)[)]' -o --replace '$1' | head -n 1
