@@ -1,0 +1,5 @@
+#!/bin/sh
+
+# https://stackoverflow.com/questions/1459150/how-to-undo-git-commit-amend-done-instead-of-git-commit
+set -ex
+exec git reset --soft HEAD@{1} "$@"
