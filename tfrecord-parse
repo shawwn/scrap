@@ -1,0 +1,121 @@
+#!/usr/bin/env tf2python3
+
+#==============================================================================
+# Functionality
+#==============================================================================
+import pdb
+import sys
+import os
+import re
+
+# utility funcs, classes, etc go here.
+
+def asserting(cond):
+    if not cond:
+        pdb.set_trace()
+    assert(cond)
+
+def has_stdin():
+    return not sys.stdin.isatty()
+
+def reg(pat, flags=0):
+    return re.compile(pat, re.VERBOSE | flags)
+
+#==============================================================================
+# Cmdline
+#==============================================================================
+import argparse
+
+parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter, 
+    description="""
+TODO
+""")
+     
+parser.add_argument('-v', '--verbose',
+    action="store_true",
+    help="verbose output" )
+     
+parser.add_argument('-p', '--positions-only',
+    action="store_true",
+    help="Don't print the encoded examples, only print the start/end positions" )
+     
+parser.add_argument('-e', '--examples-only',
+    action="store_true",
+    help="Only print the encoded examples" )
+
+args = None
+
+#==============================================================================
+# Main
+#==============================================================================
+
+import tensorflow as tf
+from tensorflow.python.lib.io import tf_record
+
+def tfrecord_iterate(path): # e.g. 'gs://tpu-usc1/datasets/imagenet/validation-00117-of-00128'
+  if '*' in path or '?' in path:
+    for full in tf.io.gfile.glob(path):
+      yield from tfrecord_iterate(full)
+  reader = tf_record.tf_record_random_reader(path)
+  next_offset = 0
+  while True:
+    offset = next_offset
+    try:
+      data, next_offset = reader.read(next_offset)
+      yield path, offset, next_offset, data
+    except IndexError:
+      break
+
+from base64 import b64encode
+import json
+
+def tfrecord_parse(path):
+  for path, offset, next_offset, data in tfrecord_iterate(path):
+    assert ',' not in path
+    if args.positions_only:
+      print(json.dumps({'path': path, 'offset': offset, 'next': next_offset}))
+      #print(path+','+str(offset)+','+str(next_offset))
+    elif args.examples_only:
+      print(b64encode(data).decode('utf8'))
+    else:
+      #print(path+','+str(offset)+','+str(next_offset)+','+b64encode(data).decode('utf8'))
+      print(json.dumps({'path': path, 'offset': offset, 'next': next_offset, 'data': b64encode(data).decode('utf8')}))
+    #print('{},{},{}'.format(offset, next_offset, b64encode(data).decode('utf8')))
+    sys.stdout.flush()
+    
+
+def run():
+    if args.verbose:
+        print(args)
+    if len(args.args) <= 0 and not has_stdin():
+        # if there were no args and there was no input, prompt user.
+        print('Enter input (press Ctrl-D when done):')
+    if len(args.args) <= 0 and has_stdin():
+        raise Exception("currently, stdin isn't supported. save the tfrecord to disk or pass in a cloud path.")
+        # indata = sys.stdin.read()
+        # args.args.extend(indata.splitlines())
+    # for each arg on cmdline...
+    for arg in args.args:
+        tfrecord_parse(arg)
+
+def main():
+    try:
+        global args
+        if not args:
+            args, leftovers = parser.parse_known_args()
+            args.args = leftovers
+        return run()
+    except IOError:
+        # http://stackoverflow.com/questions/15793886/how-to-avoid-a-broken-pipe-error-when-printing-a-large-amount-of-formatted-data
+        try:
+            sys.stdout.close()
+        except IOError:
+            pass
+        try:
+            sys.stderr.close()
+        except IOError:
+            pass
+
+if __name__ == "__main__":
+    main()
+

@@ -1,0 +1,12 @@
+#!/bin/sh
+
+dir="${1}"
+shift 1
+
+if [ -z "${dir}" ]
+then
+  tfrecord-parse | tfrecord-parse-examples
+else
+  gs-find "$dir" "$@" -f plain | xargs tfrecord-parse | tfrecord-parse-examples
+fi
+

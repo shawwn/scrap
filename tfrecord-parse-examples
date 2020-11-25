@@ -1,0 +1,104 @@
+#!/usr/bin/env python3
+
+#==============================================================================
+# Functionality
+#==============================================================================
+import pdb
+import sys
+import os
+import re
+
+# utility funcs, classes, etc go here.
+
+def asserting(cond):
+    if not cond:
+        pdb.set_trace()
+    assert(cond)
+
+def has_stdin():
+    return not sys.stdin.isatty()
+
+def reg(pat, flags=0):
+    return re.compile(pat, re.VERBOSE | flags)
+
+#==============================================================================
+# Cmdline
+#==============================================================================
+import argparse
+
+parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter, 
+    description="""
+TODO
+""")
+     
+parser.add_argument('-v', '--verbose',
+    action="store_true",
+    help="verbose output" )
+
+args = None
+
+#==============================================================================
+# Main
+#==============================================================================
+
+import tensorflow as tf
+#from tensorboard.compat.proto import event_pb2
+from tensorflow.core.example import example_pb2
+import braces
+import subprocess
+import traceback
+from base64 import b64decode
+from google.protobuf.json_format import MessageToJson
+import json
+
+def process(line):
+  entry = json.loads(line)
+  data = b64decode(entry['data'])
+  example = example_pb2.Example.FromString(data)
+  del entry['data']
+  entry['type'] = example_pb2.Example.DESCRIPTOR.full_name
+  entry['parsed'] = json.loads(MessageToJson(example))
+  print(json.dumps(entry))
+  sys.stdout.flush()
+
+def process_file(path):
+  if path == '-' or path == '/dev/stdin':
+    for line in sys.stdin:
+      process(line)
+  else:
+    with tf.io.gfile.GFile(path) as f:
+      for line in f:
+        process(line)
+
+def run():
+    if args.verbose:
+        print(args)
+    if len(args.args) <= 0 and not has_stdin():
+        # if there were no args and there was no input, prompt user.
+        print('Enter input (press Ctrl-D when done):')
+    if len(args.args) <= 0:
+        process_file('/dev/stdin')
+    for arg in args.args:
+        process_file(arg)
+
+def main():
+    try:
+        global args
+        if not args:
+            args, leftovers = parser.parse_known_args()
+            args.args = leftovers
+        return run()
+    except IOError:
+        # http://stackoverflow.com/questions/15793886/how-to-avoid-a-broken-pipe-error-when-printing-a-large-amount-of-formatted-data
+        try:
+            sys.stdout.close()
+        except IOError:
+            pass
+        try:
+            sys.stderr.close()
+        except IOError:
+            pass
+
+if __name__ == "__main__":
+    main()
+
