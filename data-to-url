@@ -17,7 +17,7 @@ def data_to_upload_image_args(data):
       data = data.encode('latin1')
   if isinstance(data, bytes):
     data = list(iter(data))
-  data = {'bytes': {'type': 'Buffer', 'data': data}}
+  data = {'spaceId': '', 'bytes': {'type': 'Buffer', 'data': data}}
   data = json.dumps(data)
   data = data.encode('utf8')
   return data
