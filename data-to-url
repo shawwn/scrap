@@ -1,4 +1,34 @@
 #!/usr/bin/env python3
+
+
+
+#==============================================================================
+# Cmdline
+#==============================================================================
+import argparse
+
+parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter, 
+    description="""
+TODO
+""")
+     
+parser.add_argument('-v', '--verbose',
+    action="store_true",
+    help="verbose output" )
+     
+parser.add_argument('-j', '--json',
+    action="store_true",
+    help="stdin contains json entries (one per line), with the file content stored in 'data' encoded as base64" )
+     
+parser.add_argument('-e', '--examples-only',
+    action="store_true",
+    help="Only print the encoded examples" )
+
+args = None
+
+
+
+
 import requests
 import curlify
 import json
@@ -26,6 +56,7 @@ def report_error(caught, code=200, **kwds):
   message = str(caught)
   # sys.stderr.write('Failed for {} of data size {}: {}\n'.format(kwds, len(data), message))
   print(json_response(False, message, code=code, **kwds))
+  sys.stdout.flush()
 
 def on_err(thunk, *args, handler=report_error, exception=Exception, **kwds):
   try:
@@ -58,6 +89,8 @@ def json_response(ok, result, **kwds):
   if ok:
     if 'path' in kwds:
       path = kwds['path']
+      if callable(path):
+        path = path()
       key = ':id'
       fqn = path_id(path)
       kwds[':id'] = fqn
@@ -73,9 +106,38 @@ def data_to_url_thread(path):
     orig = data
     url = data_to_url(data)
     print(json_response(True, url, data=orig, path=path))
+    sys.stdout.flush()
   thread = threading.Thread(target=lambda: on_err(thunk, path=path), daemon=True)
   thread.start()
   return thread
+
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from functools import partial
+from base64 import b64decode
+
+def data_from_stdin():
+  path='/dev/stdin'
+  if not args.json:
+    return data_to_url_thread('/dev/stdin').join()
+  else:
+    def thunk(line):
+      #print(len(line))
+      entry = json.loads(line)
+      data = entry['data']
+      del entry['data']
+      data = b64decode(data)
+      qs = '?' + '&'.join([':{key}={value}'.format(key=k, value=v) for k, v in entry.items()])
+      orig = data
+      url = data_to_url(data)
+      print(json_response(True, url, data=orig, path=entry.get('path', path)))
+      sys.stdout.flush()
+    with ThreadPoolExecutor(max_workers=10) as e:
+      def futures():
+        for line in sys.stdin:
+          yield e.submit(lambda line: on_err(partial(thunk, line=line), path=path), line)
+      for results in as_completed(futures()):
+        #print('result', results)
+        pass
 
 import httpx
 import asyncio
@@ -96,6 +158,7 @@ async def data_to_url_async(path):
         if response.status_code == 200:
           url = response.text
           print(json_response(True, url, data=orig, path=path))
+          sys.stdout.flush()
         else:
           response.raise_for_status()
       except Exception as caught:
@@ -115,39 +178,65 @@ def filebytes(path):
 def has_stdin():
     return not sys.stdin.isatty()
 
-if __name__ == '__main__':
-  import sys
-  import threading
-  args = sys.argv[1:]
-  args2 = []
-  for arg in args:
+import sys
+import threading
+import asyncio
+import tqdm
+
+def run():
+  argv = args.args
+  argv2 = []
+  for arg in argv:
     if arg.startswith('@'):
       with open(arg[1:]) as f:
-        args2.extend(f.read().splitlines())
+        argv2.extend(f.read().splitlines())
     else:
-      args2.append(arg)
-  args = args2
-  print(len(args))
+      argv2.append(arg)
+  argv = argv2
+  print(len(argv))
   thread = None
-  if has_stdin() and len(args) <= 0:
-    thread = data_to_url_thread('/dev/stdin')
-    # def thunk():
-    #   data = sys.stdin.buffer.read()
-    #   url = data_to_url(data)
-    #   print(json_response(True, url, data=data, path='/dev/stdin'))
-    # on_err(thunk, path='/dev/stdin')
-    ##
-    # try:
-    #   print(json_response(True, data_to_url(data), data=data, path='/dev/stdin'))
-    # except Exception as caught:
-    #   report_error(caught, data=data, path=path, code=response.status_code)
-  import asyncio
+  if has_stdin() and len(argv) <= 0:
+    data_from_stdin()
+    # thread = data_to_url_thread('/dev/stdin')
+    # # def thunk():
+    # #   data = sys.stdin.buffer.read()
+    # #   url = data_to_url(data)
+    # #   print(json_response(True, url, data=data, path='/dev/stdin'))
+    # # on_err(thunk, path='/dev/stdin')
+    # ##
+    # # try:
+    # #   print(json_response(True, data_to_url(data), data=data, path='/dev/stdin'))
+    # # except Exception as caught:
+    # #   report_error(caught, data=data, path=path, code=response.status_code)
   loop = asyncio.get_event_loop()
-  import tqdm
-  async_tasks = [loop.create_task(data_to_url_async(preparg(arg))) for arg in tqdm.tqdm(args)]
+  async_tasks = [loop.create_task(data_to_url_async(preparg(arg))) for arg in tqdm.tqdm(argv)]
   loop.run_until_complete(asyncio.gather(*async_tasks))
   if thread is not None:
     thread.join()
-  # threads = [data_to_url_thread(arg) for arg in args]
+  # threads = [data_to_url_thread(arg) for arg in argv]
   # for thread in threads:
   #   thread.join()
+
+
+
+def main():
+    try:
+        global args
+        if not args:
+            args, leftovers = parser.parse_known_args()
+            args.args = leftovers
+        return run()
+    except IOError:
+        # http://stackoverflow.com/questions/15793886/how-to-avoid-a-broken-pipe-error-when-printing-a-large-amount-of-formatted-data
+        try:
+            sys.stdout.close()
+        except IOError:
+            pass
+        try:
+            sys.stderr.close()
+        except IOError:
+            pass
+
+if __name__ == "__main__":
+    main()
+
