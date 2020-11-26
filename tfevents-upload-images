@@ -85,7 +85,6 @@ def replace_upload(m, *, line=None):
       req = requests.put('https://test.tensorfork.com/webdis/SET/{}.txt'.format(md), data=BytesIO(js.encode('utf8')))
       time.sleep(args.delay)
     except:
-      time.sleep(args.delay)
       import traceback
       traceback.print_exc()
       return '"error": "%d"' % req.status_code
