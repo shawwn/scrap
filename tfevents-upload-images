@@ -77,12 +77,16 @@ def replace_upload(m, *, line=None):
   req = requests.get('https://test.tensorfork.com/webdis/GET/{}.txt'.format(md))
   if req.status_code != 200:
     processed = re.sub(regex, '"md5sum": "{}"'.format(md), line)
-    out = subprocess.run(['discord-webhook-upload-file', args.webhook, '', '{}.png'.format(md), json.dumps("```{}```".format(processed))[1:-1]], input=img, check=True, stdout=subprocess.PIPE)
+    try:
+      out = subprocess.run(['discord-webhook-upload-file', args.webhook, '', '{}.png'.format(md), json.dumps("```{}```".format(processed))[1:-1]], input=img, check=True, stdout=subprocess.PIPE)
+      zz = out.stdout.decode('utf8')
+      js = zz.splitlines()[-1]
+      files = {'upload_file': StringIO(js)}
+      req = requests.put('https://test.tensorfork.com/webdis/SET/{}.txt'.format(md), data=BytesIO(js.encode('utf8')))
+    except:
+      import traceback
+      traceback.print_exc()
     time.sleep(args.delay)
-    zz = out.stdout.decode('utf8')
-    js = zz.splitlines()[-1]
-    files = {'upload_file': StringIO(js)}
-    req = requests.put('https://test.tensorfork.com/webdis/SET/{}.txt'.format(md), data=BytesIO(js.encode('utf8')))
   else:
     js = req.text
   j = json.loads(js)
