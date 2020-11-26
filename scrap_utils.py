@@ -133,3 +133,19 @@ def ipinfo(ifconfig):
     for iface in parse_ifconfig(ifconfig):
         print(iface)
 
+
+import sys
+
+def pipeline(thunk, *args, stdout=sys.stdout, stderr=sys.stderr):
+    try:
+        return thunk(*args)
+    except IOError:
+        # http://stackoverflow.com/questions/15793886/how-to-avoid-a-broken-pipe-error-when-printing-a-large-amount-of-formatted-data
+        try:
+            sys.stdout.close()
+        except IOError:
+            pass
+        try:
+            sys.stderr.close()
+        except IOError:
+            pass

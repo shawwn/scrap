@@ -1,9 +1,14 @@
 #!/usr/bin/env python3
 import sys
-wasblank=True
-for line in sys.stdin:
-    if wasblank and len(line.strip()) <= 0:
-        continue
-    sys.stdout.write(line)
-    sys.stdout.flush()
 
+def main():
+  wasblank=True
+  for line in sys.stdin:
+      if wasblank and len(line.strip()) <= 0:
+          continue
+      sys.stdout.write(line)
+      sys.stdout.flush()
+
+if __name__ == '__main__':
+  import scrap_utils
+  scrap_utils.pipeline(main)
