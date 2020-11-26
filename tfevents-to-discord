@@ -1,0 +1,16 @@
+#!/bin/sh
+
+set -ex
+
+dir="${1}" # e.g. arfa-euw4/runs/bigfur/nov21_01
+shift 1
+
+webhook_url="${1}"
+shift 1
+
+set +e
+
+last_n="${1:-10}"
+shift 1
+
+while true; do find "${dir}"/images/ -type f -name '*.tfevents.*' | narrow '!tmp$' '!json$' | natsort | last "$last_n" | xargs -n 1 -I {} tfevents-to-final-json "{}" "${webhook_url}" --delay 3.0 ; sleep 5; date ; done
