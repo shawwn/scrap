@@ -1,8 +1,9 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import sys
 wasblank=True
 for line in sys.stdin:
     if wasblank and len(line.strip()) <= 0:
         continue
     sys.stdout.write(line)
+    sys.stdout.flush()
 
