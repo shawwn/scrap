@@ -1,0 +1,90 @@
+#!/usr/bin/env python3
+
+#==============================================================================
+# Functionality
+#==============================================================================
+import pdb
+import sys
+import os
+import re
+
+# utility funcs, classes, etc go here.
+
+def asserting(cond):
+    if not cond:
+        pdb.set_trace()
+    assert(cond)
+
+def has_stdin():
+    return not sys.stdin.isatty()
+
+def reg(pat, flags=0):
+    return re.compile(pat, re.VERBOSE | flags)
+
+#==============================================================================
+# Cmdline
+#==============================================================================
+import argparse
+
+parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter, 
+    description="""
+TODO
+""")
+     
+parser.add_argument('-v', '--verbose',
+    action="store_true",
+    help="verbose output" )
+     
+parser.add_argument('-i', '--ignore-case',
+    action="store_true",
+    help="case insensitive deduplication" )
+     
+parser.add_argument('-0', '--nul',
+    action="store_true",
+    help=r"expect NUL (``\0'') characters as separators, instead of newlines." )
+
+args = None
+
+#==============================================================================
+# Main
+#==============================================================================
+
+def run():
+    if len(args.args) <= 0 and not has_stdin():
+        # if there were no args and there was no input, prompt user.
+        print('Enter input (press Ctrl-D when done):')
+    if len(args.args) <= 0 or has_stdin():
+        indata = sys.stdin.read()
+        args.args += indata.split('\0') if args.nul else indata.splitlines();
+    if args.verbose:
+        print(args)
+    # for each arg on cmdline...
+    seen = set()
+    for arg in args.args:
+        k = arg.lower() if args.ignore_case else arg
+        if k not in seen:
+            seen.add(k)
+            print(arg)
+            sys.stdout.flush()
+
+def main():
+    try:
+        global args
+        if not args:
+            args, leftovers = parser.parse_known_args()
+            args.args = leftovers
+        return run()
+    except IOError:
+        # http://stackoverflow.com/questions/15793886/how-to-avoid-a-broken-pipe-error-when-printing-a-large-amount-of-formatted-data
+        try:
+            sys.stdout.close()
+        except IOError:
+            pass
+        try:
+            sys.stderr.close()
+        except IOError:
+            pass
+
+if __name__ == "__main__":
+    main()
+
