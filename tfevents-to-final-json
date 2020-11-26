@@ -14,6 +14,10 @@ webhook="$1"
 shift 1
 
 set -ex
-cat "$dir" | tfevents-parse | tfevents-parse-events -c  | tfevents-upload-images --webhook "$webhook" "$@" | tee "${dir}.json.tmp"
+# filter out real training examples due to five different people
+# hounding me to do so. don't blame me when someone later on wonders
+# "why aren't my real training examples showing up?" or "how do we get
+# a link to real training examples?"
+cat "$dir" | tfevents-parse | tfevents-parse-events -c  | narrow '!real_images' | tfevents-upload-images --webhook "$webhook" "$@" | tee "${dir}.json.tmp"
 mv "${dir}.json.tmp" "${dir}.json"
 
