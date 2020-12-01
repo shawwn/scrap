@@ -1,0 +1,19 @@
+#!/bin/sh
+
+name="${1}"
+shift
+
+if [ -z "${name}" ]
+then
+    echo "usage:"
+    echo "  ${0} <name> [<option>]"
+    exit 1
+fi
+
+opts="$@"
+if [ "${opts}" == -- ]
+then
+  opts="-u --keep-index"
+fi
+set -x
+exec git stash save "${opts}" -- "${name}"
