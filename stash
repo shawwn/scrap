@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 name="${1}"
 shift
@@ -11,7 +11,7 @@ then
 fi
 
 opts="$@"
-if [ "${opts}" == -- ]
+if [[ "${opts}" == "--" ]]
 then
   opts="-u --keep-index"
 fi
