@@ -30,7 +30,6 @@ args = None
 
 
 import requests
-import curlify
 import json
 
 # these work:
