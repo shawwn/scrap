@@ -1,0 +1,141 @@
+#!/usr/bin/env python3
+
+#==============================================================================
+# Functionality
+#==============================================================================
+import pdb
+import sys
+import os
+import re
+import json
+from pprint import pprint as pp
+import numpy as np
+
+# utility funcs, classes, etc go here.
+
+def asserting(cond):
+    if not cond:
+        pdb.set_trace()
+    assert(cond)
+
+def has_stdin():
+    return not sys.stdin.isatty()
+
+def reg(pat, flags=0):
+    return re.compile(pat, re.VERBOSE | flags)
+
+def maketree(path):
+    try:
+        os.makedirs(path)
+    except:
+        pass
+
+#==============================================================================
+# Cmdline
+#==============================================================================
+import argparse
+
+parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter, 
+    description="""
+TODO
+""")
+     
+parser.add_argument('-v', '--verbose',
+    action="store_true",
+    help="verbose output" )
+     
+parser.add_argument('--outdir',
+    default="data",
+    help="Output directory" )
+
+args = None
+
+#==============================================================================
+# Main
+#==============================================================================
+
+def run():
+    if args.verbose:
+        print(args)
+    if len(args.args) <= 0 and not has_stdin():
+        # if there were no args and there was no input, prompt user.
+        print('Enter input (press Ctrl-D when done):')
+    entries = []
+    if len(args.args) <= 0 or has_stdin():
+        entries.extend([json.loads(x) for x in sys.stdin.read().splitlines()])
+    for arg in args.args:
+      with open(arg) as f:
+        for line in f:
+          entries.append(json.loads(line))
+    process(entries)
+
+def process(entries):
+    seen = {}
+    ids = []
+    maketree(args.outdir)
+    imgs = []
+    for entry in entries:
+      url, user, tag, x, y, w, h = entry
+      fname = os.path.basename(url)
+      name, ext = os.path.splitext(fname)
+      path = os.path.join(args.outdir, name+'.txt')
+      with open(path, "w") as f:
+        pass
+    for entry in entries:
+      url, user, tag, x, y, w, h = entry
+      fname = os.path.basename(url)
+      name, ext = os.path.splitext(fname)
+      path = os.path.join(args.outdir, name+'.txt')
+      imgpath = os.path.join(args.outdir, fname)
+      imgpath = os.path.abspath(imgpath)
+      if imgpath not in imgs:
+        imgs.append(imgpath)
+      if tag not in seen:
+        seen[tag] = len(seen)
+        ids.append(tag)
+      with open(path, "a") as f:
+        f.write('%d %f %f %f %f\n' % (seen[tag], x, y, w, h))
+    trainpath = os.path.abspath(os.path.join(args.outdir, 'train.txt'))
+    validpath = os.path.abspath(os.path.join(args.outdir, 'valid.txt'))
+    namespath = os.path.abspath(os.path.join(args.outdir, 'features.names'))
+    with open(namespath, 'w') as f:
+      for x in ids:
+        f.write('%s\n' % x)
+    np.random.seed(0)
+    np.random.shuffle(imgs)
+    train = imgs[0:len(imgs)*9//10]
+    valid = imgs[len(imgs)*9//10:]
+    with open(trainpath, 'w') as f:
+      for x in train:
+        f.write('%s\n' % x)
+    with open(validpath, 'w') as f:
+      for x in valid:
+        f.write('%s\n' % x)
+    with open(os.path.join(args.outdir, 'features.data'), 'w') as f:
+      f.write("""classes= %d
+train  = %s
+valid  = %s
+names = %s
+backup = backup/""" % (len(ids), trainpath, validpath, namespath))
+
+def main():
+    try:
+        global args
+        if not args:
+            args, leftovers = parser.parse_known_args()
+            args.args = leftovers
+        return run()
+    except IOError:
+        # http://stackoverflow.com/questions/15793886/how-to-avoid-a-broken-pipe-error-when-printing-a-large-amount-of-formatted-data
+        try:
+            sys.stdout.close()
+        except IOError:
+            pass
+        try:
+            sys.stderr.close()
+        except IOError:
+            pass
+
+if __name__ == "__main__":
+    main()
+
