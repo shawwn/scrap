@@ -1,0 +1,12 @@
+#!/bin/sh
+set -x
+file="${1:-HEAD}"
+shift
+
+if [ -z "$file" ]
+then
+  echo "gda <file>"
+  exit 1
+fi
+
+exec git diff --no-prefix -U1000 "${file}" "$@"
