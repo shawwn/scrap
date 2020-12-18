@@ -1,0 +1,22 @@
+#!/bin/bash
+
+set -e
+
+source="${1%.*}"
+shift 1
+start_time="$1" # e.g. 00:00:04
+shift 1
+end_time="$1" # e.g. 00:00:08
+shift 1
+
+if [ -z "${source}" ]
+then
+    1>&2 echo "usage:"
+    1>&2 echo "  ${0} <source> [<option>]"
+    exit 1
+fi
+
+set -ex
+
+ffmpeg -i "${source}".gif -ss "${start_time}" -t "${end_time}" -async 1 "${source}"cut.gif
+echo "Saved to ${source}cut.gif"
