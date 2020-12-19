@@ -1,0 +1,24 @@
+#!/bin/sh
+
+set -ex
+
+src="${1}" # e.g. /swapfile4
+shift 1
+size="${1}" # e.g. 10G
+shift 1
+
+set -ex
+
+# fail if swapfile exists.
+[ ! -f "${src}" ]
+
+# create a 100GB swapfile
+fallocate -l 100G "${src}"
+
+# TODO: is this better than fallocate? Why?
+#dd if=/dev/zero of="${src}" count=100K bs=1M
+
+mkswap "${src}"
+chown root:root "${src}"
+chmod 600 "${src}"
+swapon "${src}"
