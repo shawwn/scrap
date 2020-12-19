@@ -12,12 +12,7 @@ set -ex
 # fail if swapfile exists.
 [ ! -f "${src}" ]
 
-# create a 100GB swapfile
-sudo fallocate -l 100G "${src}"
-
-# TODO: is this better than fallocate? Why?
-#dd if=/dev/zero of="${src}" count=100K bs=1M
-
+sudo fallocate -l "${size}" "${src}"
 sudo mkswap "${src}"
 sudo chown root:root "${src}"
 sudo chmod 600 "${src}"
