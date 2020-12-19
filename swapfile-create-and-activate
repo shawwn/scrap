@@ -13,12 +13,12 @@ set -ex
 [ ! -f "${src}" ]
 
 # create a 100GB swapfile
-fallocate -l 100G "${src}"
+sudo fallocate -l 100G "${src}"
 
 # TODO: is this better than fallocate? Why?
 #dd if=/dev/zero of="${src}" count=100K bs=1M
 
-mkswap "${src}"
-chown root:root "${src}"
-chmod 600 "${src}"
-swapon "${src}"
+sudo mkswap "${src}"
+sudo chown root:root "${src}"
+sudo chmod 600 "${src}"
+sudo swapon "${src}"
