@@ -44,6 +44,10 @@ parser.add_argument('-w', '--webhook',
     type=str,
     default="",
     help="The discord webhook URL" )
+     
+parser.add_argument('-c', '--compress',
+    action="store_true",
+    help="Upload as JPEG with quality=95" )
 
 args = None
 
@@ -63,6 +67,7 @@ import functools
 from io import StringIO
 from io import BytesIO
 import time
+import PIL.Image
 
 db = {}
 regex = reg(r""" "encodedImageString" \s* : \s* "([^"]+?)" """)
@@ -73,12 +78,19 @@ def replace_upload(m, *, line=None):
   h = hashlib.new('md5')
   h.update(img)
   md = h.hexdigest()
+  filename = md + ('.jpg' if args.compress else '.png')
+  if args.compress:
+    # convert to jpg
+    image = PIL.Image.open(BytesIO(img))
+    bio = BytesIO()
+    image.save(bio, format='jpeg', quality=95)
+    img = bio.getvalue()
   #db[md] = img
   req = requests.get('https://test.tensorfork.com/webdis/GET/{}.txt'.format(md))
   if req.status_code != 200:
     processed = re.sub(regex, '"md5sum": "{}"'.format(md), line)
     try:
-      out = subprocess.run(['discord-webhook-upload-file', args.webhook, '', '{}.png'.format(md), json.dumps("```{}```".format(processed))[1:-1]], input=img, check=True, stdout=subprocess.PIPE)
+      out = subprocess.run(['discord-webhook-upload-file', args.webhook, '', filename, json.dumps("```{}```".format(processed))[1:-1]], input=img, check=True, stdout=subprocess.PIPE)
       zz = out.stdout.decode('utf8')
       js = zz.splitlines()[-1]
       files = {'upload_file': StringIO(js)}
