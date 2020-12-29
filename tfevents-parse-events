@@ -43,6 +43,16 @@ parser.add_argument('-u', '--upload-images',
     action="store_true",
     help="try to replace base64-encoded images with a permanent url" )
 
+parser.add_argument('-w', '--walltime-min',
+    type=float,
+    default=None,
+    help="Skip summaies whose walltime is < this value" )
+
+parser.add_argument('-s', '--step-min',
+    type=int,
+    default=None,
+    help="Skip summaies whose step is < this value" )
+
 args = None
 
 #==============================================================================
@@ -54,6 +64,7 @@ import re
 from tensorboard.compat.proto import event_pb2
 import google.protobuf.json_format as jf
 import json
+import traceback
 
 def replace_upload(m):
   print(m);
@@ -75,7 +86,23 @@ def process_base64_events(f):
       #   js = json.dumps(json.loads(js))
     #if args.upload_images:
     #  js = re.sub(reg(r""" "encodedImageString" \s* : \s* "(.*?)" """), replace_upload)
+    if args.step_min is not None or args.walltime_min is not None:
+      j = json.loads(js)
+      step = j.get('step', None)
+      walltime = j.get('wallTime', None)
+      if args.step_min is not None and step is not None:
+        if step < args.step_min:
+          continue
+      if args.walltime_min is not None and walltime is not None:
+        if walltime < args.walltime_min:
+          continue
     print(js)
+    # try:
+    # except:
+    #   traceback.print_exc()
+    #   sys.stderr.write('For event string %s\n' % repr(event_str))
+    #   sys.stderr.flush()
+
 
 
 def run():
