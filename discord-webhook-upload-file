@@ -10,7 +10,7 @@ shift 1
 #content="$(md5sum "$file")"
 content="${1}"
 shift 1
-set -ex
+set -e
 
 if [ -z "${url}" ]
 then
