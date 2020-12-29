@@ -87,14 +87,20 @@ def process_base64_events(f):
     #if args.upload_images:
     #  js = re.sub(reg(r""" "encodedImageString" \s* : \s* "(.*?)" """), replace_upload)
     if args.step_min is not None or args.walltime_min is not None:
-      j = json.loads(js)
-      step = j.get('step', None)
-      walltime = j.get('wallTime', None)
-      if args.step_min is not None and step is not None:
-        if step < args.step_min:
+      if False:
+        j = json.loads(js)
+        step = j.get('step', None)
+        walltime = j.get('wallTime', None)
+        if args.step_min is not None and step is not None:
+          if step < args.step_min:
+            continue
+        if args.walltime_min is not None and walltime is not None:
+          if walltime < args.walltime_min:
+            continue
+      else:
+        if args.step_min is not None and event.step < args.step_min:
           continue
-      if args.walltime_min is not None and walltime is not None:
-        if walltime < args.walltime_min:
+        if args.walltime_min is not None and event.wallTime < args.walltime_min:
           continue
     print(js)
     # try:
