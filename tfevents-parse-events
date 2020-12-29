@@ -76,6 +76,11 @@ def process_base64_events(f):
     event_str = b64decode(line)
     #print(len(event_str))
     event = event_pb2.Event.FromString(event_str)
+    if args.step_min is not None or args.walltime_min is not None:
+      if args.step_min is not None and event.step < args.step_min:
+        continue
+      if args.walltime_min is not None and event.wall_time < args.walltime_min:
+        continue
     #print(event)
     if args.compact:
       js = jf.MessageToJson(event, indent=0)
@@ -86,22 +91,6 @@ def process_base64_events(f):
       #   js = json.dumps(json.loads(js))
     #if args.upload_images:
     #  js = re.sub(reg(r""" "encodedImageString" \s* : \s* "(.*?)" """), replace_upload)
-    if args.step_min is not None or args.walltime_min is not None:
-      if False:
-        j = json.loads(js)
-        step = j.get('step', None)
-        walltime = j.get('wallTime', None)
-        if args.step_min is not None and step is not None:
-          if step < args.step_min:
-            continue
-        if args.walltime_min is not None and walltime is not None:
-          if walltime < args.walltime_min:
-            continue
-      else:
-        if args.step_min is not None and event.step < args.step_min:
-          continue
-        if args.walltime_min is not None and event.wallTime < args.walltime_min:
-          continue
     print(js)
     # try:
     # except:
