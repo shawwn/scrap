@@ -1,0 +1,3 @@
+#!/bin/sh
+# https://ocroquette.wordpress.com/2015/09/23/shell-wc-getting-progress-in-real-time/
+exec awk 'BEGIN {T=0} (T!=systime()) { printf "%s %s\n",NR,$0 ; T=systime()} END { print NR}' "$@"
