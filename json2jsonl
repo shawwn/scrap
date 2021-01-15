@@ -1,0 +1,259 @@
+#!/usr/bin/env python3
+
+#==============================================================================
+# Functionality
+#==============================================================================
+import pdb
+import sys
+import os
+import re
+
+# utility funcs, classes, etc go here.
+
+def asserting(cond):
+    if not cond:
+        pdb.set_trace()
+    assert(cond)
+
+def has_stdin():
+    return not sys.stdin.isatty()
+
+def reg(pat, flags=0):
+    return re.compile(pat, re.VERBOSE | flags)
+
+#==============================================================================
+# Cmdline
+#==============================================================================
+import argparse
+
+parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter, 
+    description="""
+TODO
+""")
+     
+parser.add_argument('-v', '--verbose',
+    action="store_true",
+    help="verbose output" )
+
+args = None
+
+#==============================================================================
+# Main
+#==============================================================================
+
+from argparse import Namespace
+
+def stream(f):
+  if isinstance(f, Namespace):
+    return f
+  s = Namespace()
+  s.f = f
+  s.peek = None
+  return s
+
+def p(x, label=None):
+  if label == 'toplevel':
+    sys.stdout.buffer.write(x + b'\n')
+    sys.stdout.buffer.flush()
+  else:
+    #print(label, repr(x))
+    pass
+  return x
+
+def readc(s, p=lambda x: x):
+  if s.peek is not None:
+    c = s.peek
+    s.peek = None
+  else:
+    c = s.f.read(1)
+  assert isinstance(c, bytes)
+  if c:
+    return p(c)
+
+def peekc(s):
+  c = readc(s, p=lambda x: x)
+  if c:
+    s.peek = c
+    return c
+
+whitespace = [b' ', b'\n', b'\t', b'\r', b',']
+delimiters = [b',', b']', b'}', b'', b'[', b'{']
+
+def skip_over(s, chars=whitespace):
+  if peekc(s) in chars:
+    readc(s)
+    return True
+
+def skip_whitespace(s):
+  if skip_over(s, whitespace):
+    while skip_over(s, whitespace):
+      pass
+    return True
+
+def expected(s, char, got):
+  if char is not None:
+    raise ValueError("Expected {!r}, got {!r}".format(char, got))
+
+def read_match(s, opening, closing):
+  out = []
+  if opening:
+    c = readc(s)
+    if c not in opening:
+      expected(s, opening, c)
+    out.append(c)
+  while True:
+    c = read(s)
+    if c is None:
+      expected(s, closing, c)
+      break
+    out.append(c)
+    if closing and c in closing:
+      break
+  return b''.join(out)
+
+def last(l):
+  if len(l) > 0:
+    return l[-1]
+
+import json
+
+def read_string(s, opening=b'"', closing=b'"'):
+  assert readc(s) == opening
+  out = read_until(s, b'"', backslash=True)
+  assert readc(s) == closing
+  return p(opening + out + closing, 'string')
+
+def read_list(s):
+  assert readc(s) == b'['
+  out = []
+  while peekc(s):
+    skip_whitespace(s)
+    if skip_over(s, b']'):
+      p('list done')
+      return b'[' + b','.join(out) + b']'
+    out.append(read(s))
+    skip_whitespace(s)
+    if skip_over(s, b']'):
+      p('list done')
+      return b'[' + b','.join(out) + b']'
+  expected(s, b']', peekc(s))
+
+def read_until(s, closing, backslash=False):
+  out = []
+  while True:
+    if backslash and peekc(s) == b'\\':
+      out.append(readc(s))
+      out.append(readc(s) or b'\\')
+      continue
+    if not peekc(s):
+      break
+    if peekc(s) in closing:
+      return b''.join(out)
+    out.append(readc(s))
+  return expected(s, closing, peekc(s))
+
+
+
+from collections import OrderedDict
+
+def read_dict(s):
+  assert readc(s) == b'{'
+  #out = OrderedDict()
+  out = []
+  while True:
+    skip_whitespace(s)
+    if not peekc(s):
+      break
+    k = p(read_string(s), 'key')
+    skip_whitespace(s)
+    assert skip_over(s, b':')
+    skip_whitespace(s)
+    v = p(read(s), 'value')
+    #out[k] = v
+    out.append(b':'.join([k, v]))
+    skip_whitespace(s)
+    if skip_over(s, b'}'):
+      p('dict done')
+      return b'{' + b','.join(out) + b'}'
+  expected(s, b'}', peekc(s))
+
+def read(s):
+  skip_whitespace(s)
+  c = peekc(s)
+  if not c:
+    return
+  if c == b'[':
+    return read_list(s)
+  if c == b'{':
+    return read_dict(s)
+  if c == b'"':
+    return read_string(s)
+  return read_until(s, whitespace + delimiters)
+  #return read_match(s, None, [b'', b' ', b'\t', b','])
+  # c = readc(s)
+  # if c == b'\\':
+  #   c += (readc(s) or b'\\')
+  # return c
+
+def process(s):
+  s = stream(s)
+  while True:
+    skip_whitespace(s)
+    c = peekc(s)
+    if not c:
+      return
+    if c == b'{':
+      p(read_dict(s), 'toplevel')
+      continue
+    else:
+      assert skip_over(s, b'[')
+      # if c != b'[':
+      #   expected(s, b'[')
+      # else:
+      #   x = read(s)
+      #   import pdb; pdb.set_trace()
+      # x = read(s)
+      while True:
+        x = read(s)
+        if not x:
+          break
+        p(x, 'toplevel')
+        skip_whitespace(s)
+        if skip_over(s, b']'):
+          break
+
+def run():
+    if args.verbose:
+        print(args)
+    if len(args.args) <= 0 and not has_stdin():
+        # if there were no args and there was no input, prompt user.
+        print('Enter input (press Ctrl-D when done):')
+    if len(args.args) <= 0 or has_stdin():
+        process(sys.stdin.buffer)
+    # for each arg on cmdline...
+    for arg in args.args:
+        f = open(arg, 'rb')
+        process(f)
+        f.close()
+
+def main():
+    try:
+        global args
+        if not args:
+            args, leftovers = parser.parse_known_args()
+            args.args = leftovers
+        return run()
+    except IOError:
+        # http://stackoverflow.com/questions/15793886/how-to-avoid-a-broken-pipe-error-when-printing-a-large-amount-of-formatted-data
+        try:
+            sys.stdout.close()
+        except IOError:
+            pass
+        try:
+            sys.stderr.close()
+        except IOError:
+            pass
+
+if __name__ == "__main__":
+    main()
+
