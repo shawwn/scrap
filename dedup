@@ -67,6 +67,15 @@ def run():
             print(arg)
             sys.stdout.flush()
 
+def run():
+    seen = set()
+    for arg in sys.stdin.buffer:
+        k = arg.lower() if args.ignore_case else arg
+        if k not in seen:
+            seen.add(k)
+            sys.stdout.buffer.write(k)
+            sys.stdout.buffer.flush()
+
 def main():
     try:
         global args
