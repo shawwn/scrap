@@ -1,0 +1,16 @@
+#!/bin/sh
+
+name="${1}"
+shift 1
+
+if [ -z "${name}" ]
+then
+    1>&2 echo "usage:"
+    1>&2 echo "  ${0} <name> [<option>]"
+    exit 1
+fi
+
+export name="$name"
+
+nl -nln -bt -v 0 | print0 | xargs -0 -n 50 sh -c 'index="$(echo $1 | cols 0)" ; ( while [ ! -z "$1" ]; do echo $1 ; shift 1 ; done ) | cols -1 | urls-to-images-dark > ${name}_${index}.html ; echo ${name}_${index}.html' --
+
