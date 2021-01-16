@@ -4,4 +4,4 @@
 
 # https://unix.stackexchange.com/questions/215234/explanation-of-directives-in-find-printf
 
-exec find "${@:-.}" -type f -printf "%s %p\n"
+exec find "${@:-.}" -type f -printf "%s\t%p\n"
