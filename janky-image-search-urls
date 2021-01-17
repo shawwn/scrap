@@ -1,0 +1,2 @@
+#!/bin/sh
+janky-image-search "$@" | jq .item_download_url -r

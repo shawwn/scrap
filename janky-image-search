@@ -1,0 +1,13 @@
+#!/bin/sh
+
+dir="${1}"
+shift 1
+
+if [ -z "${dir}" ]
+then
+    1>&2 echo "usage:"
+    1>&2 echo "  ${0} <directory> [<option>]"
+    exit 1
+fi
+
+curl -fsSL https://battle.shawwn.com/sdc/f100m/yfcc100m_dataset.json | jq '{user_tags, machine_tags, description, title, item_download_url, item_url}' -c | egrep -i "\"($dir)\"" "$@"
