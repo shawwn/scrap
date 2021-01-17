@@ -31,7 +31,7 @@ parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter,
 TODO
 """)
      
-parser.add_argument('-v', '--verbose',
+parser.add_argument('--verbose',
     action="store_true",
     help="verbose output" )
      
@@ -42,6 +42,14 @@ parser.add_argument('-i', '--ignore-case',
 parser.add_argument('-0', '--nul',
     action="store_true",
     help=r"expect NUL (``\0'') characters as separators, instead of newlines." )
+     
+parser.add_argument('-f', '--filename',
+    action="store_true",
+    help="Dedup based on os.path.basename of the input" )
+     
+parser.add_argument('-v', '--invert',
+    action="store_true",
+    help="Inverted output, i.e. only print if the item was already seen" )
 
 args = None
 
@@ -50,30 +58,17 @@ args = None
 #==============================================================================
 
 def run():
-    if len(args.args) <= 0 and not has_stdin():
-        # if there were no args and there was no input, prompt user.
-        print('Enter input (press Ctrl-D when done):')
-    if len(args.args) <= 0 or has_stdin():
-        indata = sys.stdin.read()
-        args.args += indata.split('\0') if args.nul else indata.splitlines();
-    if args.verbose:
-        print(args)
-    # for each arg on cmdline...
-    seen = set()
-    for arg in args.args:
-        k = arg.lower() if args.ignore_case else arg
-        if k not in seen:
-            seen.add(k)
-            print(arg)
-            sys.stdout.flush()
-
-def run():
     seen = set()
     for arg in sys.stdin.buffer:
-        k = arg.lower() if args.ignore_case else arg
-        if k not in seen:
-            seen.add(k)
-            sys.stdout.buffer.write(k)
+        item = arg.lower() if args.ignore_case else arg
+        k = os.path.basename(item) if args.filename else item
+        if args.invert:
+          ok = k in seen
+        else:
+          ok = k not in seen
+        seen.add(k)
+        if ok:
+            sys.stdout.buffer.write(item)
             sys.stdout.buffer.flush()
 
 def main():
