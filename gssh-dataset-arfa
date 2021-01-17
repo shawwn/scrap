@@ -1,0 +1,2 @@
+#!/bin/sh
+exec gssh arfafax vm-euw4a-0-dataset-arfa --project mlops-engine "$@"
