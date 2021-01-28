@@ -1,0 +1,3 @@
+#!/bin/sh
+set -ex
+exec python3 setup.py build_ext --inplace "$@"
