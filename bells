@@ -1,0 +1,6 @@
+#!/bin/sh
+
+# lol
+# https://stackoverflow.com/a/40032385/9919772
+
+tput bel && sleep 0.33s && tput bel && sleep 0.33s && tput bel && sleep 0.33s && tput bel && sleep 0.33s && tput bel && sleep 0.33s && tput bel && sleep 0.33s && tput bel && sleep 0.33s && tput bel && sleep 0.33s && tput bel && sleep 0.33s && tput bel && sleep 0.33s
