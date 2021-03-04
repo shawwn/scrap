@@ -1,0 +1,126 @@
+#!/usr/bin/env python3
+
+#==============================================================================
+# Functionality
+#==============================================================================
+import pdb
+import sys
+import os
+import re
+
+# utility funcs, classes, etc go here.
+
+def asserting(cond):
+    if not cond:
+        pdb.set_trace()
+    assert(cond)
+
+def has_stdin():
+    return not sys.stdin.isatty()
+
+def reg(pat, flags=0):
+    return re.compile(pat, re.VERBOSE | flags)
+
+#==============================================================================
+# Cmdline
+#==============================================================================
+import argparse
+
+parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter, 
+    description="""
+TODO
+""")
+     
+parser.add_argument('-v', '--verbose',
+    action="store_true",
+    help="verbose output" )
+     
+parser.add_argument('-f', '--format',
+    type=str,
+    default="json",
+    help="{json,plain}. When plain, only print filenames." )
+
+args = None
+
+#==============================================================================
+# Main
+#==============================================================================
+
+from braces import braceexpand
+import subprocess
+import json
+
+
+def tuples(l, n=2):
+  l = [x for x in l]
+  r = []
+  for i in range(0, len(l), n):
+    r.append(l[i:i+n])
+  return r
+
+
+def gs_expand(pattern):
+  if not isinstance(pattern, (list, tuple)):
+    pattern = [pattern]
+  patterns = []
+  for pat in pattern:
+    patterns.extend(braceexpand(pat))
+  return patterns
+
+
+def gs_sizeof(pattern):
+  patterns = gs_expand(pattern)
+  for some in tuples(patterns, 200):
+    p = subprocess.Popen(['gsutil', 'du'] + some, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    try:
+      for line in p.stdout:
+        if isinstance(line, bytes):
+          line = line.decode('utf8')
+        line = line.rstrip()
+        size, name = line.split(maxsplit=1)
+        size = int(size)
+        yield name, size
+    finally:
+      p.stdout.close()
+
+
+def run():
+    if args.verbose:
+        print(args)
+    if len(args.args) <= 0 and not has_stdin():
+        # if there were no args and there was no input, prompt user.
+        print('Enter input (press Ctrl-D when done):')
+    if len(args.args) <= 0 or has_stdin():
+        indata = sys.stdin.read()
+        args.args.extend(indata.splitlines())
+    if args.verbose:
+      for pattern in gs_expand(args.args):
+        print(pattern)
+    for name, size in gs_sizeof(args.args):
+      if args.format == 'json':
+        print(json.dumps({'path': name, 'size': size}))
+      else:
+        print(name)
+      sys.stdout.flush()
+
+def main():
+    try:
+        global args
+        if not args:
+            args, leftovers = parser.parse_known_args()
+            args.args = leftovers
+        return run()
+    except IOError:
+        # http://stackoverflow.com/questions/15793886/how-to-avoid-a-broken-pipe-error-when-printing-a-large-amount-of-formatted-data
+        try:
+            sys.stdout.close()
+        except IOError:
+            pass
+        try:
+            sys.stderr.close()
+        except IOError:
+            pass
+
+if __name__ == "__main__":
+    main()
+
