@@ -1,0 +1,19 @@
+#!/bin/sh
+
+set -e
+
+dir="$(pwd)"
+bin="$0"
+while [ -L "${bin}" ]
+do
+    x="$(readlink "${bin}")"
+    cd "$(dirname "${bin}")"
+    bin="${x}"
+done
+cd "$(dirname "${bin}")"
+home="$(pwd)"
+cd "${dir}"
+
+source "${home}/tf2"
+
+exec python3 "$@"
