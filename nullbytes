@@ -1,0 +1,15 @@
+#!/bin/sh
+
+bs="${1}"
+shift 1
+count="${1:-1}"
+shift 1
+
+if [ -z "${bs}" ]
+then
+    1>&2 echo "usage:"
+    1>&2 echo "  ${0} <number of null bytes> [count=1]"
+    exit 1
+fi
+
+exec dd 2>/dev/null </dev/zero bs="$bs" count="$count"
