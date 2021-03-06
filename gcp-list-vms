@@ -1,0 +1,14 @@
+#!/bin/sh
+
+project="$1"
+shift 1
+
+
+if [ -z "$project" ]
+then
+  set -ex
+  exec gcloud compute instances list "$@"
+else
+  set -ex
+  exec gcloud compute instances list --project "$project" "$@"
+fi
