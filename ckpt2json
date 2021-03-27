@@ -88,8 +88,6 @@ import json
 import tensorflow as tf
 import os
 import tqdm
-import braces
-
 from natsort import natsorted
 
 
@@ -149,9 +147,7 @@ def ckpt2json(checkpoint_path):
 def run():
     if args.verbose:
         print(args)
-    ckpts = list(braces.braceexpand(args.checkpoint))
-    for ckpt in (tqdm.tqdm(ckpts) if len(ckpts) > 1 else ckpts):
-      ckpt2json(ckpt)
+    ckpt2json(args.checkpoint)
 
 def main():
     try:
