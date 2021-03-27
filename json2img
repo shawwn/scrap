@@ -63,6 +63,9 @@ def json2img(tensor):
     return
   # reshape to 2D.
   tensor = tensor.reshape([-1, tensor.shape[-1]])
+  # if either dimension is 1, copy the tensor 8 times along that
+  # dimension, to make it easier to see 1D values (like biases).
+  tensor = np.tile(tensor, [32 if dim == 1 else 1 for dim in tensor.shape])
   # rescale to [0.0 .. 1.0]
   tensor = (tensor - tensor.min()) / (tensor.max() - tensor.min())
   # rescale to [0, 255]
