@@ -62,7 +62,6 @@ def json2img(tensor):
   if len(tensor.shape) <= 0:
     return
   # reshape to 2D.
-  tensor = tensor.reshape([1])
   tensor = tensor.reshape([-1, tensor.shape[-1]])
   # rescale to [0.0 .. 1.0]
   tensor = (tensor - tensor.min()) / (tensor.max() - tensor.min())
