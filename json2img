@@ -57,9 +57,12 @@ def json2img(tensor):
   if not isinstance(tensor, np.ndarray):
     # convert to numpy array.
     tensor = np.array(tensor, dtype=np.float32)
-  # reshape to 2D.
+  # skip single-value 1D tensors, since it makes no sense to convert
+  # those to images.
   if len(tensor.shape) <= 0:
-    tensor = tensor.reshape([1])
+    return
+  # reshape to 2D.
+  tensor = tensor.reshape([1])
   tensor = tensor.reshape([-1, tensor.shape[-1]])
   # rescale to [0.0 .. 1.0]
   tensor = (tensor - tensor.min()) / (tensor.max() - tensor.min())
@@ -69,8 +72,10 @@ def json2img(tensor):
   return PIL.Image.fromarray(tensor)
 
 def exportjson2img(inpath, outpath):
-  print('{inpath} -> {outpath}'.format(inpath=inpath, outpath=outpath))
-  return json2img(inpath).save(outpath)
+  img = json2img(inpath)
+  if img is not None:
+    print('{inpath} -> {outpath}'.format(inpath=inpath, outpath=outpath))
+    return img.save(outpath)
 
 def run():
     if args.verbose:
