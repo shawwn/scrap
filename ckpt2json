@@ -62,6 +62,7 @@ def numpy2json(arr):
 def tensor2json(ckpt, outdir, name):
   print(os.path.join(outdir, name))
   tensor = ckpt.get_tensor(name)
+  name = name.replace('/', os.path.sep)
   maketree(os.path.join(outdir, name))
   with open(os.path.join(outdir, name, 'data.json'), 'w') as f:
     json = numpy2json(tensor)
@@ -69,7 +70,9 @@ def tensor2json(ckpt, outdir, name):
 
 def ckpt2json(checkpoint_path):
   ckpt = tf.train.load_checkpoint(checkpoint_path)
-  outdir = os.path.basename(checkpoint_path)
+  #outdir = os.path.basename(checkpoint_path)
+  outdir = checkpoint_path.replace('://', '/')
+  outdir = outdir.replace('/', os.path.sep)
   maketree(outdir)
   shapes = ckpt.get_variable_to_shape_map()
   types = {variable: type.name for variable, type in ckpt.get_variable_to_dtype_map().items()}
