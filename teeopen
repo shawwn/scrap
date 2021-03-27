@@ -1,0 +1,13 @@
+#!/bin/sh
+
+dir="${1}"
+shift 1
+if [ "${dir}" == "-a" ]
+then
+  dir="${1}"
+  shift 1
+  tee -a "$dir"
+else
+  tee "$dir"
+fi
+open "$dir"
