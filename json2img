@@ -1,0 +1,106 @@
+#!/usr/bin/env python3
+
+#==============================================================================
+# Functionality
+#==============================================================================
+import pdb
+import sys
+import os
+import re
+
+# utility funcs, classes, etc go here.
+
+def asserting(cond):
+    if not cond:
+        pdb.set_trace()
+    assert(cond)
+
+def has_stdin():
+    return not sys.stdin.isatty()
+
+def reg(pat, flags=0):
+    return re.compile(pat, re.VERBOSE | flags)
+
+#==============================================================================
+# Cmdline
+#==============================================================================
+import argparse
+
+parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter, 
+    description="""
+TODO
+""")
+     
+parser.add_argument('-v', '--verbose',
+    action="store_true",
+    help="verbose output" )
+
+args = None
+
+#==============================================================================
+# Main
+#==============================================================================
+
+import json
+import PIL.Image
+import os
+import numpy as np
+import tqdm
+
+def json2img(tensor):
+  if isinstance(tensor, str):
+    # read from disk.
+    with open(tensor) as f:
+      tensor = f.read()
+    # load as json.
+    tensor = json.loads(tensor)
+  if not isinstance(tensor, np.ndarray):
+    # convert to numpy array.
+    tensor = np.array(tensor, dtype=np.float32)
+  # reshape to 2D.
+  tensor = tensor.reshape([-1, tensor.shape[-1]])
+  # rescale to [0.0 .. 1.0]
+  tensor = (tensor - tensor.min()) / (tensor.max() - tensor.min())
+  # rescale to [0, 255]
+  tensor = np.clip(tensor * 256, 0, 255).astype('uint8')
+  # convert to image and return.
+  return PIL.Image.fromarray(tensor)
+
+def exportjson2img(inpath, outpath):
+  print('{inpath} -> {outpath}'.format(inpath=inpath, outpath=outpath))
+  return json2img(inpath).save(outpath)
+
+def run():
+    if args.verbose:
+        print(args)
+    if len(args.args) <= 0 and not has_stdin():
+        # if there were no args and there was no input, prompt user.
+        print('Enter input (press Ctrl-D when done):')
+    if len(args.args) <= 0 or has_stdin():
+        indata = sys.stdin.read()
+        args.args.extend(indata.splitlines())
+    # for each arg on cmdline...
+    for arg in tqdm.tqdm(args.args):
+        exportjson2img(arg, arg + '.png')
+
+def main():
+    try:
+        global args
+        if not args:
+            args, leftovers = parser.parse_known_args()
+            args.args = leftovers
+        return run()
+    except IOError:
+        # http://stackoverflow.com/questions/15793886/how-to-avoid-a-broken-pipe-error-when-printing-a-large-amount-of-formatted-data
+        try:
+            sys.stdout.close()
+        except IOError:
+            pass
+        try:
+            sys.stderr.close()
+        except IOError:
+            pass
+
+if __name__ == "__main__":
+    main()
+
