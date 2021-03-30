@@ -101,10 +101,13 @@ def numpy2json(arr):
   return json.dumps(arr.tolist())
 
 def tensor2json(ckpt, outdir, name):
-  tensor = ckpt.get_tensor(name)
-  name = name.replace('/', os.path.sep)
-  maketree(os.path.join(outdir, name))
-  with open(os.path.join(outdir, name, 'data.json'), 'w') as f:
+  outpath = os.path.join(outdir, name.replace('/', os.path.sep))
+  maketree(outpath)
+  outpath = os.path.join(outpath, 'data.json')
+  if os.path.exists(outpath) and os.path.getsize(outpath) > 0:
+    return
+  with open(outpath, 'w') as f:
+    tensor = ckpt.get_tensor(name)
     json = numpy2json(tensor)
     print(json, file=f)
 
