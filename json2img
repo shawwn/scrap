@@ -403,6 +403,8 @@ def run():
     for arg in tqdm.tqdm(args.args):
       try:
         exportjson2img(arg, arg + '.png')
+      except KeyboardInterrupt:
+        break
       except:
         import traceback
         traceback.print_exc()
