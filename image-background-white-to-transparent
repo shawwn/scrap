@@ -1,0 +1,24 @@
+#!/bin/sh
+
+input="${1}"
+shift 1
+output="${1}"
+shift 1
+
+if [ -z "${input}" ]
+then
+    1>&2 echo "usage:"
+    1>&2 echo "  ${0} <input> <output> [<option>]"
+    exit 1
+fi
+
+if [ -z "${output}" ]
+then
+    1>&2 echo "usage:"
+    1>&2 echo "  ${0} <input> <output> [<option>]"
+    exit 1
+fi
+
+set -x
+exec convert "$input" -fuzz 2% -transparent white "$@" "$output"
+
