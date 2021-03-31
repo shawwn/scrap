@@ -9,7 +9,7 @@ import sys
 import numpy as np
 from matplotlib import pyplot as plt
 import scipy.io.wavfile as wav
-from scikits.audiolab import Sndfile
+#from scikits.audiolab import Sndfile
 from numpy.lib import stride_tricks
 from moviepy.editor import AudioFileClip, VideoFileClip
 
@@ -203,7 +203,7 @@ if __name__ == '__main__':
 
     for infile in sys.argv[1:]:
         outfile = '%s.png' % infile
-        print '%s -> %s' % (infile, outfile)
+        print('%s -> %s' % (infile, outfile))
         try:
             plotstft(infile, plotpath=outfile)
         except e:
