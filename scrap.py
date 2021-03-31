@@ -5,7 +5,10 @@ import pdb
 import re
 import pipes
 import errno
-from cStringIO import StringIO
+try:
+  from cStringIO import StringIO
+except:
+  from io import StringIO
 
 def asserting(cond):
     if not cond:
@@ -126,12 +129,13 @@ def edit(fname=None, filetype=None, stdin=None):
     """
     import spawn_editor
     output = spawn_editor.edit_file(fname, filetype=filetype)
-    if output is None or output == '':
-        print("Deleting empty file %s" % fname)
-        if os.path.isfile(fname):
-            os.unlink(fname)
-    else:
-        return output
+    return output
+    # if output is None or output == '':
+    #     print("Deleting empty file %s" % fname)
+    #     if os.path.isfile(fname):
+    #         os.unlink(fname)
+    # else:
+    #     return output
 
 def mkscriptpath(scriptdir, fname=None):
     fname = fname or arg(0)
@@ -159,13 +163,13 @@ def mkscript(is_exec, gen, name=None, scriptdir=None, verbose=True):
             if body:
                 f.write(body)
         if verbose:
-            print 'created "%s"' % fname
+            print('created "%s"' % fname)
     else:
         if not os.path.isfile(fname):
             sys.stderr.write('destination is a directory\n')
             sys.exit(2)
         if verbose:
-            print '%s exists, editing' % fname
+            print('%s exists, editing' % fname)
 
     if x:
         chmod_x(fname)
@@ -186,8 +190,8 @@ def tee(logfile_name):
     os.dup2(tee.stdin.fileno(), sys.stdout.fileno())
     os.dup2(tee.stdin.fileno(), sys.stderr.fileno())
     #
-    # print "\nstdout"
-    # print >>sys.stderr, "stderr"
+    # print("\nstdout")
+    # print("stderr", file=sys.stderr)
     #os.spawnve("P_WAIT", "/bin/ls", ["/bin/ls"], {})
     #os.execve("/bin/ls", ["/bin/ls"], os.environ)
 
@@ -266,7 +270,7 @@ def is_iterable(x):
             return False
         xit = iter(x)
         return True
-    except TypeError, te:
+    except TypeError as te:
         return False
 
 def iterable(x):
@@ -306,6 +310,16 @@ def group(n, iterable, fillvalue=None):
     args = [iter(iterable)] * n
     return itertools.izip_longest(*args, fillvalue=fillvalue)
 
+# nice stack overflow, bro
+#def tuples(l, n=2):
+#  return [] if len(l) <= 0 else [l[0:n], *tuples(l[n:], n)]
+
+def tuples(l, n=2):
+  r = []
+  for i in range(0, len(l), n):
+    r.append(l[i:i+n])
+  return r
+
 #===============================================================================
 
 def cmd(cmd, stdin=None, stdout=subprocess.PIPE, stderr=None, shell=False):
@@ -325,7 +339,7 @@ def cmd(cmd, stdin=None, stdout=subprocess.PIPE, stderr=None, shell=False):
     #inputdata = pipes.quote(inputdata)
     if is_str(cmd):
         cmd = cmd.replace('"""', "'")
-    #print cmd
+    #print(cmd)
 
     p = subprocess.Popen(cmd, stdout=stdout, stderr=stderr, stdin=stdin, shell=shell, env=getenv())
     return p.communicate(input=inputdata)
@@ -381,7 +395,7 @@ def ppcmd(cmd):
     return cmd
 
 def prcmd(cmd):
-    print 'system(%s)' % ', '.join(['"%s"' % x for x in cmd])
+    print('system(%s)' % ', '.join(['"%s"' % x for x in cmd]))
 
 def syscmd(cmd, exitcode=1):
     if nostr(cmd):
