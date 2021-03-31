@@ -39,5 +39,5 @@ def sh_gen(is_exec):
 
 fpath = scrap.mkscript(is_exec=sh_is_exec, gen=sh_gen)
 if fpath:
-    scrap.edit(fpath, 'sh')
+    scrap.edit(fpath)
 

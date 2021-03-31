@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 #===============================================================================
 
@@ -546,7 +546,7 @@ def helptext(key, value):
 
 def help_template():
     out = ["Which type of python script you're generating."]
-    for key,v in TEMPLATES.iteritems():
+    for key,v in TEMPLATES.items():
         desc = v['desc'].strip()
         if len(desc) > 0:
             text = desc
@@ -568,7 +568,7 @@ def help_template():
 
 def help_tutorial():
     out = ['Shows a tutorial for the given topic.']
-    for key,v in TUTORIAL.iteritems():
+    for key,v in TUTORIAL.items():
         desc = v['desc'] if 'desc' in v else ''
 
 #==============================================================================
