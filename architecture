@@ -1,0 +1,5 @@
+#!/bin/sh
+
+#$ lipo -info out/Release/obj.target/deps/uv/libuv.a
+#Non-fat file: out/Release/obj.target/deps/uv/libuv.a is architecture: x86_64
+exec lipo -info "$@"
