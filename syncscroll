@@ -1,0 +1,6 @@
+#!/bin/sh
+
+cat <<'EOF'
+window.addEventListener( 'scroll', (e) => { localStorage.setItem('scrollY', scrollY); } );
+window.addEventListener( 'storage', (e) => { if (e.key === "scrollY") { y=parseInt(e.newValue); window.scrollTo(0, y); console.log(y); } } );
+EOF
