@@ -5,5 +5,5 @@ model_dir="${1}"
 shift 1
 model_dir="$(echo $model_dir | rtrim / '\r' '\n')"
 
-gsutil ls "$@" "${model_dir}/model.ckpt-*" | cols -1 ,0:-1 | natsort | cols 1: 0 | grep data | resub '[.]data.*' '' | resub 'NIL[ ]+' '' | uniq
+gsutil ls "$@" "${model_dir}/model[^/]+[.]data" | cols -1 ,0:-1 | natsort | cols 1: 0 | grep data | resub '[.]data.*' '' | resub 'NIL[ ]+' '' | uniq
 
