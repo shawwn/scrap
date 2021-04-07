@@ -48,6 +48,8 @@ def narrow(strings, searches, **kws):
     return len(narrow([strings], searches, **kws)) > 0
   if isinstance(searches, str):
     searches = [searches]
+  if searches is None:
+    searches = []
   for search in searches:
     strings = [s for s in strings if matches(s, search, **kws)]
   return strings
