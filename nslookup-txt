@@ -1,0 +1,16 @@
+#!/bin/sh
+
+url="${1}"
+shift 1
+dns="${1:-8.8.8.8}"
+shift 1
+
+if [ -z "${url}" ]
+then
+    1>&2 echo "usage:"
+    1>&2 echo "  ${0} URL [DNS default=8.8.8.8]"
+    exit 1
+fi
+
+set -e
+nslookup -type=TXT "$url" "$dns" "$@" | rg 'text\s=\s"(.*?)"' -o --replace '$1' --color=never
