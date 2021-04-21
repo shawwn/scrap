@@ -1,0 +1,4 @@
+#!/bin/sh
+
+# brew install smartmontools
+exec sudo smartctl --all /dev/disk0 "$@"
