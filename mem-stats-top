@@ -1,0 +1,5 @@
+#!/bin/sh
+
+# from https://news.ycombinator.com/item?id=26244093
+top -o faults "$@"
+vm_stat
