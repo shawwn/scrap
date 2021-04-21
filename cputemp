@@ -1,3 +1,8 @@
 #!/bin/bash
-iStats cpu temp "$@"
+
+# doesn't work on an M1
+#iStats cpu temp "$@"
+
+# brew install smartmontools
+sudo smartctl --all /dev/disk0 | egrep '^Temperature:' | replace 'Temperature:' '' ' Celsius' 'C' | ltrim
 
