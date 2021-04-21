@@ -83,8 +83,10 @@ def run():
         #indata = sys.stdin.buffer.read()
         parse_tfevents_stream(sys.stdin.buffer)
     # for each arg on cmdline...
+    import tensorflow as tf
     for arg in args.args:
-        print(arg)
+        with tf.io.gfile.GFile(arg, 'rb') as f:
+          parse_tfevents_stream(f)
 
 def main():
     try:
