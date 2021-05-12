@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 set -x
 dir="${1:-env}"
 shift 1
