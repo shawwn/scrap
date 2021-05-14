@@ -1,0 +1,92 @@
+#!/bin/bash
+
+set -e
+set -x
+
+dir="${1}"
+shift 1
+description="${1}"
+shift 1
+
+set +e
+
+name="${1:-$dir}"
+shift 1
+
+python_version="${1:-^3.6}"
+shift 1
+
+license="${1:-MIT}"
+shift 1
+
+author="${1:-Shawn Presser}"
+shift 1
+twitter="${1:-theshawwn}"
+shift 1
+hn="${1:-sillysaurusx}"
+shift 1
+patreon="${1:-shawwn}"
+shift 1
+
+set -e
+
+poetry new --name "$name" "$dir" # --src 
+cd "$dir"
+rm -f pyproject.toml
+poetry init --name "$name" --description "$description" --author "$author" --python "$python_version" --license "$license" --dev-dependency 'pytest@^5.2' --no-interaction
+git init
+#mv README.rst README.md
+rm README.rst
+cat > README.md << EOF
+# ${name}
+
+${description}.
+
+## Quickstart
+
+\`\`\`
+python3 -m pip install -U ${name}
+\`\`\`
+
+(That strange-looking setup command is because I've found it to be the most reliable. The \`pip\` command often aliases to python 2, and \`pip3\` often installs to the wrong Python package directory.)
+
+Once it's installed, you can do this:
+
+\`\`\`py
+import $(echo ${name} | sed s/-/_/g)
+
+print('TODO')
+\`\`\`
+
+... which will print this:
+
+\`\`\`
+TODO
+\`\`\`
+
+## License
+
+${license}
+
+## Contact
+
+A library by ${author}. If you found it useful, please consider [joining my patreon](https://www.patreon.com/${patreon})!
+
+My Twitter DMs are always open; you should [send me one](https://twitter.com/${twitter})! It's the best way to reach me, and I'm always happy to hear from you.
+
+- Twitter: [@${twitter}](https://twitter.com/${twitter})
+- Patreon: [https://www.patreon.com/${patreon}](https://www.patreon.com/${patreon})
+- HN: [${hn}](https://news.ycombinator.com/threads?id=${hn})
+
+EOF
+cat > .gitignore <<'EOF'
+__pycache__
+/.idea
+/venv/
+*.egg-info
+/build/
+/dist/
+.env
+EOF
+git add .
+git commit -m "Initial commit"
