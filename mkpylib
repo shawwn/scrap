@@ -93,7 +93,7 @@ __pycache__
 /build/
 /dist/
 .env
-setup.py
+# setup.py # actually, commit the stub setup.py file so that users can pip3 install -e .
 /.hypothesis/
 EOF
 
