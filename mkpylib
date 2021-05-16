@@ -21,10 +21,25 @@ shift 1
 
 author="${1:-Shawn Presser}"
 shift 1
+
+# Personal website
+website="${1:-https://www.shawwn.com}"
+webname="${1:-shawwn.com}"
+shift 1
+
+# GitHub username
+github="${1:-shawwn}"
+shift 1
+
+# Twitter username
 twitter="${1:-theshawwn}"
 shift 1
+
+# Hacker News username
 hn="${1:-sillysaurusx}"
 shift 1
+
+# Patreon username
 patreon="${1:-shawwn}"
 shift 1
 
@@ -76,13 +91,14 @@ ${license}
 
 ## Contact
 
-A library by ${author}. If you found it useful, please consider [joining my patreon](https://www.patreon.com/${patreon})!
+A library by [${author}](${website}). If you found it useful, please consider [joining my patreon](https://www.patreon.com/${patreon})!
 
 My Twitter DMs are always open; you should [send me one](https://twitter.com/${twitter})! It's the best way to reach me, and I'm always happy to hear from you.
 
 - Twitter: [@${twitter}](https://twitter.com/${twitter})
 - Patreon: [https://www.patreon.com/${patreon}](https://www.patreon.com/${patreon})
 - HN: [${hn}](https://news.ycombinator.com/threads?id=${hn})
+- Website: [${webname}](${website})
 
 EOF
 cat > .gitignore <<'EOF'
@@ -102,7 +118,21 @@ EOF
 
 # add setuptools to build-system requirements.
 # TODO: figure out the not-cursed way to do this.
-cat pyproject.toml | sed 's/"setuptools", //' | sed 's/requires = [\[]\(.*\)[]]/requires = ["setuptools", \1]/g' > pyproject.toml.tmp
+cat pyproject.toml \
+ | sed 's/"setuptools", //' \
+ | sed 's/requires = [\[]\(.*\)[]]/requires = ["setuptools", \1]/g' \
+ | sed "s/\(version.*\)/\1\nreadme = \"README.md\"\nhomepage = \"https:\/\/github.com\/${github}\/${dir}\"/" \
+ > pyproject.toml.tmp
+
+cat >> pyproject.toml.tmp <<EOF
+
+[tool.poetry.urls]
+"${author}'s Website" = "${website}"
+"Support ${author} on Patreon" = "https://www.patreon.com/${patreon}"
+"@${twitter} on Twitter" = "https://www.twitter.com/${twitter}"
+"${hn} on Hacker News" = "https://news.ycombinator.com/threads?id=${hn}"
+EOF
+
 mv pyproject.toml.tmp pyproject.toml
 
 # produce a setup.py file
