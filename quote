@@ -50,7 +50,11 @@ def unquote(x):
     return x
 
 
+import json
+
 def quote(x):
+    if not args.lazy:
+      return json.dumps(x)
     if not is_str(x):
         return x
     if not reg(r' (?<! [\\] ) \s').search(x):
@@ -71,6 +75,14 @@ TODO
 parser.add_argument('-v', '--verbose',
     action="store_true",
     help="verbose output" )
+     
+parser.add_argument('--lazy',
+    action="store_true",
+    help="Maybe don't quote the string if it's unnecessary" )
+     
+parser.add_argument('-l', '--line-based',
+    action="store_true",
+    help="quote each line" )
 
 args = None
 
@@ -78,15 +90,30 @@ args = None
 # Main
 #==============================================================================
 
+def read(file):
+  if file == '-':
+    file = sys.stdin;
+  if isinstance(file, str):
+    with open(file) as f:
+      return f.read()
+  return file.read()
+
+
 def run():
     if args.verbose:
         print args
     if len(args.args) <= 0 and not has_stdin():
         # if there were no args and there was no input, prompt user.
         print 'Enter input (press Ctrl-D when done):'
-    if len(args.args) <= 0 or has_stdin():
-        indata = sys.stdin.read()
-    sys.stdout.write(quote(indata))
+    if has_stdin():
+        args.args = ['-'] + list(args.args)
+    for file in args.args:
+        data = read(file)
+        if args.line_based:
+            for line in data.splitlines():
+                print(quote(line))
+        else:
+            print(quote(data))
 
 def main():
     global args
