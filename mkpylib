@@ -148,7 +148,12 @@ python3 -m pip install -e .
 git add .
 git commit -m "Initial commit"
 
-# automatically create the github repo
-hub create "$dir" --description "$description"
+# automatically create a private github repo. Set private=1 to make
+# the repo private.
+hub create "$dir" --description "$description" ${private+--private}
+
+# to make the repo public:
+#
+#   hub api -Fvisibility=public -XPATCH "/repos/${github}/${dir}" -H 'Accept:application/vnd.github.nebula-preview+json'
 
 git push --set-upstream origin master
