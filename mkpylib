@@ -119,6 +119,6 @@ git add .
 git commit -m "Initial commit"
 
 # automatically create the github repo
-hub create "$name" --description "$description"
+hub create "$dir" --description "$description"
 
 git push --set-upstream origin master
