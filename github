@@ -1,0 +1,4 @@
+#!/bin/sh
+#hub api --flat -i -H 'Accept:application/vnd.github.nebula-preview+json' "/${@:-user}" | tr "\t" "=" | sed 's/^[.]/github./'
+#hub api --flat -H 'Accept:application/vnd.github.nebula-preview+json' "/${@:-user}" | tr "\t" "=" | sed 's/^[.]/github./'
+hub api -H 'Accept:application/vnd.github.nebula-preview+json' "${@:-/user}"

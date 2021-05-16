@@ -1,0 +1,9 @@
+#!/bin/bash
+github --flat "$@" | replace '\t' '="' | sed 's/^[.]/.github./' | sed 's/$/"/' | trim | joinlines ' | ' | replace '.[' '['
+# set -e
+# out="$(github --flat "$@")"
+# paste -d '=' <(printf "%s" "$(echo $out | cut -f 1)") <(printf "%s" "$out" | cut -f 2 | quote -l);
+#   | sed 's/^/.github/' \
+#   | truncate -s-1 - \
+#   | sed 's/[.][[]/[/g' \
+#   | xargs paste -d ' | '
