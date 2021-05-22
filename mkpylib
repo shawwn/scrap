@@ -56,7 +56,7 @@ rm README.rst
 cat > README.md << EOF
 # ${name}
 
-${description}.
+> ${description}
 
 WARNING: This repo is in development. It was automatically generated with [mkpylib](https://github.com/shawwn/scrap/blob/master/mkpylib). If you're reading this message, it means that I use this repo for my own purposes right now. It might not do anything at all; the default functionality is \`print('TODO')\`.
 
@@ -69,8 +69,6 @@ Stay tuned!
 \`\`\`
 python3 -m pip install -U ${name}
 \`\`\`
-
-(That strange-looking setup command is because I've found it to be the most reliable. The \`pip\` command often aliases to python 2, and \`pip3\` often installs to the wrong Python package directory.)
 
 ## Usage
 
