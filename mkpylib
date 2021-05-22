@@ -64,7 +64,7 @@ If you really want to try it out, feel free. I recommend reading through the cod
 
 Stay tuned!
 
-## Quickstart
+## Install
 
 \`\`\`
 python3 -m pip install -U ${name}
