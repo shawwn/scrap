@@ -20,6 +20,7 @@ license="${1:-MIT}"
 shift 1
 
 author="${1:-Shawn Presser}"
+author_short="${1:-Shawn}"
 shift 1
 
 # Personal website
@@ -127,8 +128,8 @@ cat pyproject.toml \
 cat >> pyproject.toml.tmp <<EOF
 
 [tool.poetry.urls]
-"${author}'s Website" = "${website}"
-"Support ${author} on Patreon" = "https://www.patreon.com/${patreon}"
+"${author_short}'s Website" = "${website}"
+"Support me on Patreon" = "https://www.patreon.com/${patreon}"
 "@${twitter} on Twitter" = "https://www.twitter.com/${twitter}"
 "${hn} on Hacker News" = "https://news.ycombinator.com/threads?id=${hn}"
 EOF
