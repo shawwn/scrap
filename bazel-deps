@@ -1,0 +1,8 @@
+#!/bin/sh
+
+target="${1:-//}"
+shift 1
+
+set -x
+exec bazel query "deps(${target})" "$@"
+
