@@ -1,0 +1,4 @@
+#!/bin/sh
+
+exec gcloud alpha compute tpus tpu-vm "$@"
+
