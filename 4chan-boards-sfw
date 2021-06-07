@@ -1,0 +1,3 @@
+#!/bin/sh
+
+4chan-boards | jq 'select(.safe==1)' "$@"
