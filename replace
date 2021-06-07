@@ -15,9 +15,9 @@ while len(params) > 0:
     replacement = params[1] if len(params) >= 2 else b''
     params = params[2:]
     if replacing == b'^':
-      data = b'\n'.join([replacement + x for x in data.splitlines()])
+      data = b'\n'.join([replacement + x for x in data.splitlines()]) + b'\n'
     elif replacing == b'$':
-      data = b'\n'.join([x + replacement for x in data.splitlines()])
+      data = b'\n'.join([x + replacement for x in data.splitlines()]) + b'\n'
     else:
       data = data.replace(replacing, replacement)
 sys.stdout.buffer.write(data)
