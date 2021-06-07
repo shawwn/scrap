@@ -1,0 +1,16 @@
+#!/bin/sh
+
+board="${1}"
+shift 1
+
+if [ -z "${board}" ]
+then
+    # 1>&2 echo "usage:"
+    # 1>&2 echo "  ${0} <board> [<option>]"
+    # exit 1
+    4chan-boards | jq .board -r | exec xargs -n 1 -P 8 4chan-threads
+fi
+
+url="https://boards.4chan.org/${board}"
+curl -fsSL "${url}/threads.json" | jq "\"${url}/thread/\" + (.[].threads[].no | tostring)" -r # | foreach-line echo "https://boards.4chan.org/${board}/thread/\$(cat)"
+
