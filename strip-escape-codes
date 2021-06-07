@@ -1,0 +1,77 @@
+#!/usr/bin/env bash
+
+# # source: https://stackoverflow.com/a/49424643/9919772
+
+# # Strip ANSI escape codes/sequences [$1: input string, $2: target variable]
+# function strip_escape_codes() {
+#     local input="${1//\"/\\\"}" output="" i char escape=0
+#     for (( i=0; i < ${#input}; ++i )); do         # process all characters of input string
+#         char="${input:i:1}"                       # get current character from input string
+#         if (( ${escape} == 1 )); then             # if we're currently within an escape sequence, check if
+#             if [[ "${char}" == [a-zA-Z] ]]; then  # end is reached, i.e. if current character is a letter
+#                 escape=0                          # end reached, we're no longer within an escape sequence
+#             fi
+#             continue                              # skip current character, i.e. do not add to ouput
+#         fi
+#         if [[ "${char}" == $'\e' ]]; then         # if current character is '\e', we've reached the start
+#             escape=1                              # of an escape sequence -> set flag
+#             continue                              # skip current character, i.e. do not add to ouput
+#         fi
+#         output+="${char}"                         # add current character to output
+#     done
+#     eval "$2=\"${output}\""                       # assign output to target variable
+# }
+
+# while read -r line; do
+#     strip_escape_codes "${line}" line_stripped
+#     echo "${line_stripped}"
+# done
+
+
+
+# works well, but it's slow
+
+# # Strips common ANSI codes from a text stream
+
+# shopt -s extglob # Enable Bash Extended Globbing expressions
+# ansi_filter() {
+#   local line
+#   local IFS=
+#   #while read -r line || [[ "$line" ]]; do
+#   while read -r line; do
+#     echo "${line//$'\e'[\[(]*([0-9;])[@-n]/}" #"
+#   done
+# }
+
+# ansi_filter
+
+
+# https://stackoverflow.com/questions/14693701/how-can-i-remove-the-ansi-escape-sequences-from-a-string-in-python
+
+# bingo, this seems bulletproof and blazingly fast.
+
+exec python3 -c '
+import re
+# 7-bit and 8-bit C1 ANSI sequences
+ansi_escape_8bit = re.compile(br"""
+    (?: # either 7-bit C1, two bytes, ESC Fe (omitting CSI)
+        \x1B
+        [@-Z\\-_]
+    |   # or a single 8-bit byte Fe (omitting CSI)
+        [\x80-\x9A\x9C-\x9F]
+    |   # or CSI + control codes
+        (?: # 7-bit CSI, ESC [ 
+            \x1B\[
+        |   # 8-bit CSI, 9B
+            \x9B
+        )
+        [0-?]*  # Parameter bytes
+        [ -/]*  # Intermediate bytes
+        [@-~]   # Final byte
+    )
+""", re.VERBOSE)
+import sys
+for line in sys.stdin.buffer:
+  result = ansi_escape_8bit.sub(b"", line)
+  sys.stdout.buffer.write(result)
+'
