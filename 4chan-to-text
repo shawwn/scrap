@@ -1,0 +1,116 @@
+#!/usr/bin/env python3
+
+#==============================================================================
+# Functionality
+#==============================================================================
+import pdb
+import sys
+import os
+import re
+
+# utility funcs, classes, etc go here.
+
+def asserting(cond):
+    if not cond:
+        pdb.set_trace()
+    assert(cond)
+
+def has_stdin():
+    return not sys.stdin.isatty()
+
+def reg(pat, flags=0):
+    return re.compile(pat, re.VERBOSE | flags)
+
+#==============================================================================
+# Cmdline
+#==============================================================================
+import argparse
+
+parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter, 
+    description="""
+TODO
+""")
+     
+parser.add_argument('-v', '--verbose',
+    action="store_true",
+    help="verbose output" )
+
+args = None
+
+#==============================================================================
+# Main
+#==============================================================================
+
+import sys
+import json
+import html2text
+import ftfy
+from pprint import pprint as pp
+
+h = html2text.HTML2Text()
+h.body_width = 0
+
+
+def process(i, line):
+  post = json.loads(line)
+  if post is None:
+    return
+  text = ''
+  com = post.get("com", '')
+  if com is not None:
+    com = h.handle(com)
+    com = ftfy.fix_text(com)
+  post['com'] = com
+  if 'name' not in post:
+    post['name'] = 'Anonymous'
+  if 'board' not in post:
+    post['board'] = ''
+  else:
+    post['board'] = '/' + post['board'] + '/ '
+  if post.get('filename', None):
+    post['filename'] = post['filename'] + post['ext'] + '\n'
+  else:
+    post['filename'] = ''
+
+  #pp(post)
+  text = """
+{board}{name} {now} No.{no} ▶
+{filename}{com}
+""".format(**post).strip() + '\n'
+  print(text)
+
+
+def run():
+    if args.verbose:
+        print(args)
+    if len(args.args) <= 0 and not has_stdin():
+        # if there were no args and there was no input, prompt user.
+        print('Enter input (press Ctrl-D when done):')
+    if len(args.args) <= 0 or has_stdin():
+        indata = sys.stdin.read()
+        args.args.extend(indata.splitlines())
+    # for each arg on cmdline...
+    for i, arg in enumerate(args.args):
+        process(i, arg)
+
+def main():
+    try:
+        global args
+        if not args:
+            args, leftovers = parser.parse_known_args()
+            args.args = leftovers
+        return run()
+    except IOError:
+        # http://stackoverflow.com/questions/15793886/how-to-avoid-a-broken-pipe-error-when-printing-a-large-amount-of-formatted-data
+        try:
+            sys.stdout.close()
+        except IOError:
+            pass
+        try:
+            sys.stderr.close()
+        except IOError:
+            pass
+
+if __name__ == "__main__":
+    main()
+
