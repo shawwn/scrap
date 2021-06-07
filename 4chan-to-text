@@ -51,9 +51,13 @@ h = html2text.HTML2Text()
 h.body_width = 0
 
 
-def process(i, line):
+def process(line):
   post = json.loads(line)
   if post is None:
+    return
+  if 'posts' in post:
+    for item in post['posts']:
+      process(json.dumps(item))
     return
   text = ''
   com = post.get("com", '')
@@ -91,7 +95,7 @@ def run():
         args.args.extend(indata.splitlines())
     # for each arg on cmdline...
     for i, arg in enumerate(args.args):
-        process(i, arg)
+        process(arg)
 
 def main():
     try:
