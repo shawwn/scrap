@@ -1,0 +1,21 @@
+#!/bin/sh
+
+op="${1}"
+shift 1
+
+if [ -z "${op}" ]
+then
+    1>&2 echo "usage:"
+    1>&2 echo "  ${0} <op> [<id>]"
+    exit 1
+fi
+
+id="${1}"
+shift 1
+if [ -z "$id" ]
+then
+  curl -sSL "https://hacker-news.firebaseio.com/v0/${op}.json?print=pretty"
+else
+  curl -sSL "https://hacker-news.firebaseio.com/v0/${op}/${id}.json?print=pretty"
+fi
+

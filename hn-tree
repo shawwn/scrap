@@ -1,0 +1,22 @@
+#!/bin/bash
+export HN_TREE_DEPTH="$(math ${HN_TREE_DEPTH:--1} + 1)"
+#echo $HN_TREE_DEPTH
+
+echo "$@" | exec xargs -n 1 -P 4 sh -c '
+#python3 -c "import sys; import os; sys.stdout.write(\"  \"*int(os.environ[\"HN_TREE_DEPTH\"]))"
+hn-api item "$1" | jq . -c
+hn-kids "$1" | exec xargs -n 1 -P 4 hn-tree
+' --
+# for id in "$@"
+# do
+#   python3 -c "import sys; sys.stdout.write('  '*${HN_TREE_DEPTH})"
+#   hn-api item "$id" | jq . -c
+#   hn-kids "$id" | xargs hn-tree
+# done
+# # foreach-line '
+# # id="$(cat)"
+# # hn-api item "$id" | jq . -c
+# # hn-kids "$id" | hn-tree
+# # #item="$(hn-api item "$id" | jq . -c)"
+# # #echo "$item" | jq "select(.kids != null) | .kids[]"
+# # '

@@ -1,0 +1,3 @@
+#!/bin/sh
+#hn-api item "$@" | jq "[$@,.kids]" -c
+hn-api item "$@" | jq '(.kids // [])[]' -r
