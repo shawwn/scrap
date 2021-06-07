@@ -49,6 +49,7 @@ from pprint import pprint as pp
 
 h = html2text.HTML2Text()
 h.body_width = 0
+h.emphasis_mark = '*'
 
 
 def process(line):
