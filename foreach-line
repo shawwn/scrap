@@ -1,16 +1,29 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import sys
 import scrap
 import pipes
 
-sys.path.append("%s/bin" % scrap.getenv('HOME'))
+#sys.path.append("%s/bin" % scrap.getenv('HOME'))
+
+import os
+import inspect
+import subprocess
+from io import StringIO
+
+sys.path.append(os.path.dirname(inspect.getfile(scrap)))
 
 cmd = ' '.join([x for x in sys.argv[1:]])
 #cmd = pipes.quote(cmd)
 #print cmd
 #sys.exit()
 
-for line in sys.stdin:
-    scrap.cmd(cmd, stdin=line, shell=True)
+#print(sys.argv[1:])
+
+for line in sys.stdin.buffer:
+  #scrap.cmd(sys.argv[1:], stdin=line)
+  # print(line)
+  # print(cmd)
+  subprocess.run(cmd, shell=True, input=line)
+  #scrap.cmd(cmd, stdin=line, shell=True)
 
