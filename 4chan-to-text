@@ -45,6 +45,7 @@ import sys
 import json
 import html2text
 import ftfy
+import requests
 from pprint import pprint as pp
 
 h = html2text.HTML2Text()
@@ -88,15 +89,19 @@ def process(line):
 def run():
     if args.verbose:
         print(args)
-    if len(args.args) <= 0 and not has_stdin():
-        # if there were no args and there was no input, prompt user.
-        print('Enter input (press Ctrl-D when done):')
-    if len(args.args) <= 0 or has_stdin():
+    for url in args.args:
+      url = url.split('#', 1)[0] # get rid of any anchor
+      url = url.split('.json', 1)[0] # get rid of any .json extension
+      url = url + '.json' # try adding .json and fetch.
+      i = requests.get(url)
+      if not i.ok:
+        i.raise_for_status()
+      else:
+        process(i.text)
+    if has_stdin():
         indata = sys.stdin.read()
-        args.args.extend(indata.splitlines())
-    # for each arg on cmdline...
-    for i, arg in enumerate(args.args):
-        process(arg)
+        for line in indata.splitlines():
+          process(line)
 
 def main():
     try:
