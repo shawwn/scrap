@@ -11,9 +11,14 @@ args = [x.encode('utf8') for x in args]
 data = sys.stdin.buffer.read()
 params = list(args)
 while len(params) > 0:
-    replacing = params[0] if len(params) >= 1 else ''
-    replacement = params[1] if len(params) >= 2 else ''
+    replacing = params[0] if len(params) >= 1 else b''
+    replacement = params[1] if len(params) >= 2 else b''
     params = params[2:]
-    data = data.replace(replacing, replacement)
+    if replacing == b'^':
+      data = b'\n'.join([replacement + x for x in data.splitlines()])
+    elif replacing == b'$':
+      data = b'\n'.join([x + replacement for x in data.splitlines()])
+    else:
+      data = data.replace(replacing, replacement)
 sys.stdout.buffer.write(data)
 
