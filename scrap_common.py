@@ -31,7 +31,7 @@ def no(xs):
 empty=no
 
 def is_str(x):
-    return (type(x) is str) or (type(x) is unicode)
+    return isinstance(x, (str, bytes))
 
 def is_iterable(x):
     try:
@@ -39,7 +39,7 @@ def is_iterable(x):
             return False
         xit = iter(x)
         return True
-    except TypeError, te:
+    except TypeError:
         return False
 
 def listify(x):
@@ -70,7 +70,7 @@ def iswindows():
 
 def wait_any_key():
     if iswindows():
-        print "Press any key to continue..."
+        print("Press any key to continue...")
         import msvcrt as m
         return m.getch()
     else:
@@ -152,11 +152,11 @@ class FileSet(object):
         for filepath in listify(x):
             path = mkpath(filepath)
             if not path.exists:
-                print "Path doesn't exist: %s" % path
+                print("Path doesn't exist: %s" % path)
                 return
             if not path.isfile:
                 pdb.set_trace()
-                print "Path isn't a file: %s" % path
+                print("Path isn't a file: %s" % path)
                 return
             # if it was already added, ignore it.
             if path in self.added:
@@ -203,7 +203,7 @@ def find_files_in(directory, patterns=[], ignore_patterns=[], ignorecase=True, v
     else:
         for root, dirs, files in os.walk(directory):
             if isverbose(verbose):
-                print 'find_files_in(%s): trying %d files' % (repr(root), len(files))
+                print('find_files_in(%s): trying %d files' % (repr(root), len(files)))
             for basename in files:
                 if patmatch(basename, patterns, ignorecase=ignorecase):
                     if not patmatch(basename, ignore_patterns, ignorecase=ignorecase):
@@ -228,10 +228,10 @@ def find_files(paths_or_patterns, patterns=['*'], ignore_patterns=[], ignorecase
         path = mkpath(path)
         # skip bogus dirs.
         if not path.exists:
-            print "find_files(): Doesn't exist: %s" % path
+            print("find_files(): Doesn't exist: %s" % path)
             continue
         if isverbose(verbose):
-            print 'find_files(%s)' % repr(str(path))
+            print('find_files(%s)' % repr(str(path)))
         for filepath in find_files_in(str(path), patterns=patterns, ignore_patterns=ignore_patterns, ignorecase=ignorecase, verbose=verbose):
             if filepath not in found:
                 found.add(filepath)
