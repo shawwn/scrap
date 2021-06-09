@@ -1,4 +1,4 @@
-#!/usr/bin/env pypy
+#!/usr/bin/env python3
 
 #==============================================================================
 # Functionality
@@ -8,6 +8,7 @@ import sys
 import os
 import re
 import scrap_common as scr
+import traceback
 
 # utility funcs, classes, etc go here.
 
@@ -20,7 +21,7 @@ def has_stdin():
     return not sys.stdin.isatty()
 
 def pad(x):
-    asserting(is_str(x))
+    asserting(is_string(x))
     if not x.startswith(' '):
         x = ' ' + x
     if not x.endswith(' '):
@@ -97,6 +98,15 @@ parser.add_argument('-d', '--delim',
 parser.add_argument('-s', '--sep',
     action="append",
     help="define additional column separators." )
+     
+parser.add_argument('-m', '--measure',
+    action="store_true",
+    help="measure the size of each column" )
+     
+parser.add_argument('-j', '--join',
+    default=None,
+    type=str,
+    help="join each column by the specified string" )
 
 args = None
 
@@ -188,13 +198,13 @@ def process(line):
         col = [get(cols, x) for x in args.args]
     else:
         # if no args were specified, then get everything.
-        col = [get(cols, str(i)) for i in xrange(len(cols))]
+        col = [get(cols, str(i)) for i in range(len(cols))]
     if args.verbose:
         print('col:', col)
     return col
 
-def is_str(x):
-    return (type(x) is str) or (type(x) is unicode)
+def is_string(x):
+    return isinstance(x, str)
 
 R1 = re.compile(r'\\(.)')
 R2 = re.compile(r'\\\\')
@@ -206,8 +216,21 @@ def unq_bs(x):
     val = val.replace('~TKTK!TK~', '\\')
     return val
 
+# https://stackoverflow.com/questions/14820429/how-do-i-decodestring-escape-in-python3
+def string_escape(x, encoding='utf-8'):
+  s = x.replace(r'\ ', ' ') # handle DeprecationWarning: invalid escape sequence '\ '
+  try:
+    s = s.encode('latin1')         # To bytes, required by 'unicode-escape'
+    s = s.decode('unicode-escape') # Perform the actual octal-escaping decode
+    s = s.encode('latin1')         # 1:1 mapping back to bytes
+    s = s.decode(encoding)        # Decode original encoding
+    return s
+  except (UnicodeEncodeError, UnicodeDecodeError):
+    return x
+
 def unquote(x):
-    if not is_str(x):
+    if not is_string(x):
+        assert not isinstance(x, bytes)
         return x
     if len(x) < 2:
         return x
@@ -219,10 +242,11 @@ def unquote(x):
             bs += '\\'
             x = x[0:-1]
         #
-        x = x.decode("string_escape")
+        x = string_escape(x)
         #
         x += bs
     except ValueError as e:
+        traceback.print_exc()
         pdb.set_trace()
         asserting(False)
 
@@ -236,12 +260,15 @@ def unquote(x):
 
     return x
 
+import json
+
 def quote(x):
-    if not is_str(x):
+    if not is_string(x):
         return x
     if not reg(r' (?<! [\\] ) \s').search(x):
         return x
-    val = '"%s"' % unquote(x).encode("string_escape").replace('"', r'\"')
+    val = '"%s"' % string_escape(unquote(x)).replace('"', r'\"')
+    #val = json.dumps(x)
     return val
 
 NIL = {'rhs':False, 'unquote':False}
@@ -252,9 +279,9 @@ def process_col(col, flags):
         return ['NIL', NIL]
     asserting(len(col) >= 1)
     col = list(col)
-    for i in xrange(len(col)):
+    for i in range(len(col)):
         col[i] = unquote(col[i])
-    return [quote(unquote(' '.join(col))), flags]
+    return [quote(unquote(string_escape(args.join or ' ').join(col))), flags]
 
 def padstr(s, w, rhs):
     spec = ('%d' % w)
@@ -266,15 +293,57 @@ def padstr(s, w, rhs):
 
 dumpstdin = False
 
+def decode_line(line):
+  if isinstance(line, bytes):
+    try:
+      line = line.decode('utf-8')
+    except UnicodeDecodeError:
+      line = line.decode('latin1')
+  return line
+
 def stdinlines():
     if dumpstdin:
         with open(testfile(), "w") as f:
-            for line in sys.stdin:
+            for line in sys.stdin.buffer:
+                line = decode_line(line)
                 f.write(line)
                 yield line
-    else:
-        for line in sys.stdin:
+    elif False:
+        for line in sys.stdin.buffer:
+            line = decode_line(line)
             yield line
+    else:
+        while True:
+            line = sys.stdin.buffer.readline()
+            if not line:
+              break
+            line = decode_line(line)
+            yield line
+
+def flush(gather):
+    sizes = []
+    for row in gather:
+        while len(row) > len(sizes):
+            sizes += [0]
+        for i in range(len(row)):
+            col = row[i]
+            if len(col[0]) > sizes[i]:
+                sizes[i] = len(col[0])
+    for row in gather:
+        cols = []
+        line = ''
+        for i in range(len(row)):
+            w = sizes[i]
+            col, flags = row[i][0], row[i][1]
+            col = padstr(col, w, rhs=flags['rhs'])
+            if i > 0:
+                line += string_escape(args.join or '  ')
+                #line += '  '
+            line += col
+        sys.stdout.write(line.rstrip() + '\n')
+        sys.stdout.flush()
+    while len(gather) > 0:
+      gather.pop()
     
 def run():
     asserting(rematch(r'(\d+)', 1, " 123 ") == "123")
@@ -284,52 +353,51 @@ def run():
     global dumpstdin
     #dumpstdin = has_stdin()
     dumpstdin = False
+    def read(line):
+      nonlocal gather
+      row = process(line)
+      gather += [row]
+      if not args.measure:
+        flush(gather)
     if not has_stdin():
         if False:
-            gather += [process("foo bar baz wuf")]
+            read("foo bar baz wuf")
         elif True:
             with open(testfile(), 'r') as f:
                 for line in f:
-                    gather += [process(line)]
+                    read(line)
         else:
             # if there was no input, prompt user.
             print('Enter input (press Ctrl-D when done):')
             for line in stdinlines():
-                gather += [process(line)]
+                read(line)
     else:
         for line in stdinlines():
-            gather += [process(line)]
+            read(line)
     # final.
-    sizes = []
-    for row in gather:
-        while len(row) > len(sizes):
-            sizes += [0]
-        for i in xrange(len(row)):
-            col = row[i]
-            if len(col[0]) > sizes[i]:
-                sizes[i] = len(col[0])
-    for row in gather:
-        cols = []
-        line = ''
-        for i in xrange(len(row)):
-            w = sizes[i]
-            col, flags = row[i][0], row[i][1]
-            col = padstr(col, w, rhs=flags['rhs'])
-            if i > 0:
-                line += '  '
-            line += col
-        sys.stdout.write(line.rstrip() + '\n')
-        sys.stdout.flush()
+    flush(gather)
 
 def testfile():
     return os.path.expanduser('~/bin/test.txt')
 
 def main():
-    global args
-    if not args:
-        args, leftovers = parser.parse_known_args()
-        args.args = leftovers
-    return run()
+    try:
+        global args
+        if not args:
+            args, leftovers = parser.parse_known_args()
+            args.args = leftovers
+        return run()
+    except IOError:
+        # http://stackoverflow.com/questions/15793886/how-to-avoid-a-broken-pipe-error-when-printing-a-large-amount-of-formatted-data
+        try:
+            sys.stdout.close()
+        except IOError:
+            pass
+        try:
+            sys.stderr.close()
+        except IOError:
+            pass
+
 
 if __name__ == "__main__":
     main()
