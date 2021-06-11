@@ -99,8 +99,7 @@ def run():
       else:
         process(i.text)
     if has_stdin():
-        indata = sys.stdin.read()
-        for line in indata.splitlines():
+        for line in sys.stdin:
           process(line)
 
 def main():
