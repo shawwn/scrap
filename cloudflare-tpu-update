@@ -12,9 +12,10 @@ fi
 
 set -e
 js="$(pu list -t "$id" --format json)"
+jstxt="$(printf "%s" "$js" | gzip | b64enc)"
 cat <<EOF
 cloudflare-dns --verbose -d "t${id}.*gpt4.org"
-cloudflare-dns --verbose "t${id}.gpt4.org" -k TXT -f <(printf "%s" "$js" | gzip | b64enc)
+cloudflare-dns --verbose "t${id}.gpt4.org" -k TXT -f <(printf "%s" "$jstxt")
 EOF
 
 printf "%s" "$js" | jq '.networkEndpoints[].accessConfig.externalIp' -r | python3 -c 'import sys;
