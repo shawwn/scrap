@@ -2,7 +2,7 @@
 
 url="${1}"
 shift 1
-dns="${1:-8.8.8.8}"
+dns="${1:-1.1.1.1}"
 shift 1
 
 if [ -z "${url}" ]
@@ -13,4 +13,4 @@ then
 fi
 
 set -e
-nslookup -type=TXT "$url" "$dns" "$@" | rg 'text\s=\s"(.*?)"' -o --replace '$1' --color=never
+nslookup -type=TXT "$url" "$dns" "$@" | rg 'text\s=\s(".*")$' -o --replace '$1' --color=never | jq -s '. | join("")' -r
