@@ -1,0 +1,2 @@
+#!/bin/sh
+for i in $(pu list | cols 1 | grep -v INDEX | grep -v '[-]1' | natsort | uniq); do cloudflare-tpu-update $i ; done

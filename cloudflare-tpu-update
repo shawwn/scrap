@@ -1,0 +1,47 @@
+#!/bin/sh
+
+id="${1}"
+shift 1
+
+if [ -z "${id}" ]
+then
+    1>&2 echo "usage:"
+    1>&2 echo "  ${0} <id> [<option>]"
+    exit 1
+fi
+
+set -e
+js="$(pu list -t "$id" --format json)"
+cat <<EOF
+cloudflare-dns --verbose -d "t${id}.*gpt4.org"
+cloudflare-dns --verbose "t${id}.gpt4.org" -k TXT -f <(printf "%s" "$js" | gzip | b64enc)
+EOF
+
+printf "%s" "$js" | jq '.networkEndpoints[].accessConfig.externalIp' -r | python3 -c 'import sys;
+for i, ip in enumerate(sys.stdin):
+  ip = ip.strip()
+  if ip == "null":
+    #ip = "-d"
+    continue
+  else:
+    ip = "-u " + ip
+  print("cloudflare-dns --verbose t%s.%d.gpt4.org %s" % (sys.argv[1], i, ip))
+' "$id"
+
+
+
+printf "%s" "$js" | jq '.networkEndpoints[].ipAddress' -r | python3 -c 'import sys;
+for i, ip in enumerate(sys.stdin):
+  ip = ip.strip()
+  if ip == "null":
+    #ip = "-d"
+    continue
+  else:
+    ip = "-u " + ip
+  print("cloudflare-dns --verbose t%s.%d.ip.gpt4.org %s" % (sys.argv[1], i, ip.strip()))
+' "$id"
+
+
+
+
+
