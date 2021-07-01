@@ -1,0 +1,5 @@
+#!/bin/sh
+
+[ -z "$*" ] && exit 0
+
+is "$@" && exit 1 || exit 0
