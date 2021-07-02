@@ -1,0 +1,9 @@
+#!/bin/sh
+
+set -ex
+dst="${1}"
+shift
+src="${1}"
+shift
+
+exec socat tcp-listen:${dst},reuseaddr,fork tcp:localhost:${src} "$@"
