@@ -1,0 +1,4 @@
+#!/bin/sh
+
+# https://askubuntu.com/questions/335592/how-to-display-time-elapsed-since-last-system-boot-using-uptime
+exec awk '{print int($1/3600)":"int(($1%3600)/60)":"int($1%60)}' /proc/uptime
