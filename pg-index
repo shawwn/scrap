@@ -1,0 +1,8 @@
+#!/bin/sh
+
+function process() {
+   html-beautify | grep '                        <td>' | splitby '<br>' | splitby '<td>' | splitby '</td>' | trim | rmblanks | replace '$' '<br>'
+}
+
+curl -fsSL "paulgraham.com/ind.html" | process;
+for i in {1..28} ; do sleep 0.5 ; curl -fsSL "paulgraham.com/ind_${i}.html" | process ; done
