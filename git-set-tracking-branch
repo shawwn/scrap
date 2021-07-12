@@ -1,0 +1,6 @@
+#!/bin/sh
+# https://devconnected.com/how-to-set-upstream-branch-on-git/
+# $ git branch -u <remote>/<branch>
+
+set -ex
+exec git branch -u "$@"
