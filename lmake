@@ -1,0 +1,2 @@
+#!/bin/sh
+LUMEN_HOST=node exec make "$@"
