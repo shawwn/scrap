@@ -1,0 +1,2 @@
+#!/bin/sh
+BLOCK_SIZE=1 exec du "$@"
