@@ -1,0 +1,18 @@
+#!/bin/sh
+
+dir="${1}"
+shift 1
+
+if [ -z "${dir}" ]
+then
+    1>&2 echo "usage:"
+    1>&2 echo "  ${0} <directory> [<option>]"
+    exit 1
+fi
+
+gsutil acl ch -u AllUsers:R "$dir"
+path="$(echo "$dir" | replace "gs://" "https://storage.googleapis.com/")"
+echo "$path" | pbcopy
+echo "$path" made publicly readable and copied to clipboard.
+
+
