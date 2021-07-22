@@ -103,7 +103,7 @@ __pycache__
 /dist/
 .env
 # setup.py # actually, commit the stub setup.py file so that users can pip3 install -e .
-/.hypothesis/
+.hypothesis/
 EOF
 
 # generate a setup.py file so that `python3 -m install -e .` works.
