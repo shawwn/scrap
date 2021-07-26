@@ -1,0 +1,350 @@
+#!/usr/bin/env python3
+
+#==============================================================================
+# Functionality
+#==============================================================================
+import pdb
+import sys
+import os
+import re
+
+# utility funcs, classes, etc go here.
+
+def asserting(cond):
+    if not cond:
+        pdb.set_trace()
+    assert(cond)
+
+def has_stdin():
+    return not sys.stdin.isatty()
+
+def reg(pat, flags=0):
+    return re.compile(pat, re.VERBOSE | flags)
+
+#==============================================================================
+# Cmdline
+#==============================================================================
+import argparse
+
+parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter, 
+    description="""
+TODO
+""")
+     
+parser.add_argument('-v', '--verbose',
+    action="store_true",
+    help="verbose output" )
+
+args = None
+
+#==============================================================================
+# Main
+#==============================================================================
+
+import json
+from collections import namedtuple
+
+from ansi_styles import ansiStyles as styles
+
+class Renderer:
+  def __init__(self):
+    self.cmds = []
+    self(ansiEscapes.clearScreen)
+    self(ansiEscapes.cursorHide)
+
+  def __call__(self, msg):
+    self.cmds.append(msg)
+
+  def to(self, x, y):
+    self(ansiEscapes.cursorTo(x, y))
+
+  def flush(self):
+    print(''.join(self.cmds), end='', flush=True)
+    self.cmds.clear()
+
+  def viewport(self, w, h):
+    for line in range(h):
+      self(ansiEscapes.cursorTo(w, line) + ansiEscapes.eraseStartLine)
+    self(ansiEscapes.cursorTo(0, 0))
+
+
+class Note(namedtuple('Note', 'index time lineIndex lineLayer type cutDirection'.split())):
+  @property
+  def insignia(self):
+    return "↑↓←→↖↗↙↘∎"[self.cutDirection]
+
+  @property
+  def upwards(self):
+    return "1↓←→11↙↘∎"[self.cutDirection] == "1"
+
+  @property
+  def downwards(self):
+    return "↑1←→↖↗11∎"[self.cutDirection] == "1"
+
+
+  def color(self, opacity=1.0):
+    if self.type == 0:
+      return (1.0, 0, 0, opacity)
+    elif self.type == 1:
+      return (0, 0, 1.0, opacity)
+    else:
+      return (96/255, 100/255, 105/255, opacity)
+
+  @property
+  def w(self):
+    return 3
+
+  @property
+  def h(self):
+    return 1
+
+  def secs(self, bpm):
+    return self.time / bpm * 60
+
+  @property
+  def x(self):
+    return self.lineIndex
+
+  @property
+  def y(self):
+    return 2 - self.lineLayer
+
+class BeatsaberMap:
+  def __init__(self, info='info.dat'):
+    if isinstance(info, str):
+      with open(info) as f:
+        info = json.load(f)
+    self.info = info
+
+  @property
+  def bpm(self):
+    return self.info['_beatsPerMinute']
+
+  def parse(self, file):
+    if isinstance(file, str):
+      with open(file) as f:
+        file = json.load(f)
+    notes = file['_notes']
+    #notes = [list(sorted(x.items())) for x in notes]
+    #notes = [[y[1] for y in x] for x in notes]
+    notes = [Note(index=i, **{k.lstrip('_'): v for k, v in x.items()}) for i, x in enumerate(notes)]
+    #return Track([(n.type, n.c, n.time / self.bpm * 60000, n.x, n.y) for n in notes])
+    return Song(self.bpm, notes)
+
+
+from ansi_escapes import ansiEscapes
+import subprocess
+import vlc
+
+def dovlc(cmd):
+  cmd = cmd.replace('\n', '\n  ')
+  return subprocess.check_output(['osascript', '-e', f"""
+tell application "VLC"
+  {cmd}
+end tell
+""".strip()])
+
+
+def lerp(a, b, t):
+  return (b - a) * t + a
+
+
+def lerprgb(a, b, t):
+  return tuple([lerp(x, y, t) for x, y in zip(a, b)])
+
+def wherebetween(lo, hi, t):
+  return (t - lo) / (hi - lo)
+
+def clamp(lo, hi, t):
+  if t < lo:
+    return lo
+  if t > hi:
+    return hi
+  return t
+
+
+def blend(src, dst=(0.0, 0.0, 0.0, 1.0)):
+  sr, sg, sb, sa = src
+  dr, dg, db, da = dst
+  sr *= sa
+  sg *= sa
+  sb *= sa
+  dr *= (1 - sa)
+  dg *= (1 - sa)
+  db *= (1 - sa)
+  dr += sr * sa
+  dg += sg * sa
+  db += sb * sa
+  return (
+      clamp(0, 255, int(255*dr)),
+      clamp(0, 255, int(255*dg)),
+      clamp(0, 255, int(255*db))
+      )
+
+
+from glob import glob
+
+class Song:
+  def __init__(self, bpm, notes):
+    self.bpm = bpm
+    self.tracks = tuple(list(Track(bpm, tuple(note for note in notes if note.type == i)) for i in range(4)))
+    self.start = 0
+    self.count = 0
+    self.last_period = None
+
+  def play(self):
+    r = Renderer()
+    r.flush()
+    self.player = vlc.MediaPlayer(list(glob('*.egg'))[0])
+    self.player.play()
+    time.sleep(0.05)
+    try:
+      last = self.last_note()
+      while True:
+        #time.sleep(0.005)
+        if self.periodic():
+          self.fix_drift()
+          if not self.player.is_playing():
+            break
+        elapsed = self.get_time()
+        notes = self.gather_notes(elapsed)
+        self.render_notes(r, notes, elapsed)
+        # if elapsed >= totalsecs + 3:
+        #   break
+    finally:
+      self.player.stop()
+
+  def periodic(self):
+    n = int(time.time())
+    if n != self.last_period:
+      self.last_period = n
+      self.count += 1
+      return True
+    else:
+      return False
+
+  def get_time(self):
+    return time.time() - self.start
+
+  def get_song_time(self):
+    return self.player.get_time() / 1000
+
+  def fix_drift(self):
+      self.start -= self.get_song_time() - self.get_time()
+
+  def last_note(self):
+    won = None
+    for kind, track in enumerate(self.tracks):
+      for note in track.notes:
+        if not won or note.time > won.time:
+          won = note
+    return won
+
+
+  def gather_notes(self, elapsed):
+    notes = []
+    for kind, track in enumerate(self.tracks):
+      notes.extend(track.at(elapsed))
+    return notes
+
+  def render_note(self, r, note, elapsed):
+    til = note.secs(self.bpm) - elapsed
+    if -0.05 <= til <= 0.5:
+      r.to(0+note.w*note.x, 1+note.h*note.y)
+      c = note.insignia
+      if til < 0:
+        t = clamp(0.0, 1.0, wherebetween(0, -0.05, til))
+      else:
+        t = clamp(0.0, 1.0, wherebetween(0, 0.5, til))
+      # opacity = lerp(1.5, 0.5, 1 - (1 - t)**8) # good
+      opacity = lerp(1.5, 0.5, 1 - (1 - t)**8) # good
+      # opacity = 1.0
+      rgb = note.color(opacity=opacity)
+      bgColor = blend(rgb)
+      fgColor = blend((1.0,1.0,1.0,opacity), rgb)
+      #fgColor = blend((1.0,1.0,1.0,opacity), (0.5,0.0,-0.5,1.0))
+      bg, bge = styles.bgColor.ansi16m(*bgColor), styles.bgColor.close
+      fg, fge = styles.color.ansi16m(*fgColor), styles.color.close
+      e = '\033[0m'
+      if til > 0:
+        m  = '\033[1m'
+        m += '\033[3m' # italics
+        if note.upwards:
+          m += '\033[4m'
+        r(f'{bg}{fg} {m}{c}{e}{bg} {fge}{bge}')
+      else:
+        if not note.downwards and not note.upwards:
+          m = '\033[9m'
+        else:
+          m = '\033[0m'
+        # m += '\033[3m' # italics
+        r(f'{m}{fg} {c} {fge}{e}')
+
+  def render_notes(self, r, notes, elapsed):
+    r.viewport(16, 8)
+    r(f'{int(elapsed/60.0):02d}m{int(elapsed%60.0):02d}s period {self.count}')
+    for note in sorted(notes, key=lambda x: -x.time):
+      self.render_note(r, note, elapsed)
+    r.flush()
+
+
+ 
+import time
+
+class Track:
+  def __init__(self, bpm, notes):
+    self.bpm = bpm
+    self.notes = notes
+
+  # def before(self, now):
+  #   return tuple(n for n in self.notes if n.secs(self.bpm) <= now)
+
+  def at(self, now):
+    r = []
+    for i, note in enumerate(self.notes):
+      t = note.secs(self.bpm)
+      if abs(now - t) < 2.0:
+        r.append(note)
+    return r
+
+
+
+import random
+
+def run():
+    if args.verbose:
+        print(args)
+    files = list(args.args)
+    while True:
+      # shuffle?
+      for file in files:
+        try:
+          os.chdir(os.path.dirname(file) or '.')
+          file = os.path.basename(file)
+          bs = BeatsaberMap()
+          song = bs.parse(file)
+          song.play()
+        except KeyboardInterrupt:
+          time.sleep(0.5)
+
+def main():
+    try:
+        global args
+        if not args:
+            args, leftovers = parser.parse_known_args()
+            args.args = leftovers
+        return run()
+    except IOError:
+        # http://stackoverflow.com/questions/15793886/how-to-avoid-a-broken-pipe-error-when-printing-a-large-amount-of-formatted-data
+        try:
+            sys.stdout.close()
+        except IOError:
+            pass
+        try:
+            sys.stderr.close()
+        except IOError:
+            pass
+
+if __name__ == "__main__":
+    main()
+
