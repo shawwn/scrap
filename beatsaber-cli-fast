@@ -188,6 +188,12 @@ class Song:
   def __init__(self, bpm, notes):
     self.bpm = bpm
     self.tracks = tuple(list(Track(bpm, tuple(note for note in notes if note.type == i)) for i in range(4)))
+    self.v = (10, 3) # viewport offset
+    size = os.get_terminal_size()
+    self.v = (
+        size.columns // 2 - 3*2,
+        size.lines // 2 - 2)
+    
 
   def play(self):
     pos = (0, 0)
@@ -228,7 +234,7 @@ class Song:
   def render_note(self, r, note, elapsed):
     til = note.secs(self.bpm) - elapsed
     if -0.05 <= til <= 0.5:
-      r.to(0+note.w*note.x, 1+note.h*note.y)
+      r.to(0+note.w*note.x+self.v[0], 1+note.h*note.y+self.v[1])
       c = note.insignia
       if til < 0:
         t = clamp(0.0, 1.0, wherebetween(0, -0.05, til))
@@ -259,7 +265,7 @@ class Song:
         r(f'{m}{fg} {c} {fge}{e}')
 
   def render_notes(self, r, notes, elapsed):
-    r.viewport(16, 8)
+    r.viewport(16 + self.v[0], 8 + self.v[1])
     r(f'{int(elapsed/60.0):02d}m{int(elapsed%60.0):02d}s')
     for note in sorted(notes, key=lambda x: -x.time):
       self.render_note(r, note, elapsed)
