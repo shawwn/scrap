@@ -1,4 +1,16 @@
 #!/usr/bin/env python3
+#
+# beatsaber-cli, by Shawn Presser. July 2021.
+#
+# requirements:
+#
+#   pip3 install ansi-styles ansi-escapes python-vlc 
+#
+# example usage:
+#
+#   beatsaber-cli ~/Downloads/beatsaber/dna/ExpertPlusStandard.dat
+#
+# get songs from https://bsaber.com/
 
 #==============================================================================
 # Functionality
@@ -188,49 +200,33 @@ class Song:
   def __init__(self, bpm, notes):
     self.bpm = bpm
     self.tracks = tuple(list(Track(bpm, tuple(note for note in notes if note.type == i)) for i in range(4)))
-    self.start = 0
-    self.count = 0
-    self.last_period = None
+    self.v = (10, 3) # viewport offset
+    size = os.get_terminal_size()
+    self.v = (
+        size.columns // 2 - 3*2,
+        size.lines // 2 - 2)
+    
 
   def play(self):
-    r = Renderer()
-    r.flush()
+    pos = (0, 0)
     self.player = vlc.MediaPlayer(list(glob('*.egg'))[0])
     self.player.play()
-    time.sleep(0.05)
     try:
+      start = time.time()
+      r = Renderer()
+      r.flush()
       last = self.last_note()
-      while True:
+      totalsecs = last.secs(self.bpm)
+      elapsed = 0
+      while self.player.is_playing() or elapsed < 5:
         #time.sleep(0.005)
-        if self.periodic():
-          self.fix_drift()
-          if not self.player.is_playing():
-            break
-        elapsed = self.get_time()
+        elapsed = (time.time() - start)
         notes = self.gather_notes(elapsed)
         self.render_notes(r, notes, elapsed)
         # if elapsed >= totalsecs + 3:
         #   break
     finally:
       self.player.stop()
-
-  def periodic(self):
-    n = int(time.time())
-    if n != self.last_period:
-      self.last_period = n
-      self.count += 1
-      return True
-    else:
-      return False
-
-  def get_time(self):
-    return time.time() - self.start
-
-  def get_song_time(self):
-    return self.player.get_time() / 1000
-
-  def fix_drift(self):
-      self.start -= self.get_song_time() - self.get_time()
 
   def last_note(self):
     won = None
@@ -250,7 +246,7 @@ class Song:
   def render_note(self, r, note, elapsed):
     til = note.secs(self.bpm) - elapsed
     if -0.05 <= til <= 0.5:
-      r.to(0+note.w*note.x, 1+note.h*note.y)
+      r.to(0+note.w*note.x+self.v[0], 1+note.h*note.y+self.v[1])
       c = note.insignia
       if til < 0:
         t = clamp(0.0, 1.0, wherebetween(0, -0.05, til))
@@ -281,8 +277,8 @@ class Song:
         r(f'{m}{fg} {c} {fge}{e}')
 
   def render_notes(self, r, notes, elapsed):
-    r.viewport(16, 8)
-    r(f'{int(elapsed/60.0):02d}m{int(elapsed%60.0):02d}s period {self.count}')
+    r.viewport(16 + self.v[0], 8 + self.v[1])
+    r(f'{int(elapsed/60.0):02d}m{int(elapsed%60.0):02d}s')
     for note in sorted(notes, key=lambda x: -x.time):
       self.render_note(r, note, elapsed)
     r.flush()
@@ -309,12 +305,10 @@ class Track:
 
 
 
-import random
-
 def run():
     if args.verbose:
         print(args)
-    files = list(args.args)
+    files = [os.path.realpath(file) for file in args.args]
     while True:
       # shuffle?
       for file in files:
@@ -325,7 +319,7 @@ def run():
           song = bs.parse(file)
           song.play()
         except KeyboardInterrupt:
-          time.sleep(0.5)
+          time.sleep(1.0)
 
 def main():
     try:
@@ -347,4 +341,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
