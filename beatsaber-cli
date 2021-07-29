@@ -80,10 +80,13 @@ class Renderer:
     self(ansiEscapes.cursorTo(0, 0))
 
 
+#arrows = "↑↓←→◜◝◟◞∎"
+arrows = "↑↓←→↖↗↙↘∎"
+
 class Note(namedtuple('Note', 'index time lineIndex lineLayer type cutDirection'.split())):
   @property
   def insignia(self):
-    return "↑↓←→↖↗↙↘∎"[self.cutDirection]
+    return arrows[self.cutDirection]
 
   @property
   def upwards(self):
@@ -92,6 +95,30 @@ class Note(namedtuple('Note', 'index time lineIndex lineLayer type cutDirection'
   @property
   def downwards(self):
     return "↑1←→↖↗11∎"[self.cutDirection] == "1"
+
+  @property
+  def leftwards(self):
+    return "↑↓1→1↗1↘∎"[self.cutDirection] == "1"
+
+  @property
+  def rightwards(self):
+    return "↑↓←1↖1↙1∎"[self.cutDirection] == "1"
+
+  @property
+  def left(self):
+    return "↑↓1→↖↗↙↘∎"[self.cutDirection] == "1"
+
+  @property
+  def right(self):
+    return "↑↓←1↖↗↙↘∎"[self.cutDirection] == "1"
+
+  @property
+  def up(self):
+    return "1↓←→↖↗↙↘∎"[self.cutDirection] == "1"
+
+  @property
+  def down(self):
+    return "↑1←→↖↗↙↘∎"[self.cutDirection] == "1"
 
 
   def color(self, opacity=1.0):
@@ -128,10 +155,6 @@ class BeatsaberMap:
         info = json.load(f)
     self.info = info
 
-  @property
-  def bpm(self):
-    return self.info['_beatsPerMinute']
-
   def parse(self, file):
     if isinstance(file, str):
       with open(file) as f:
@@ -141,7 +164,7 @@ class BeatsaberMap:
     #notes = [[y[1] for y in x] for x in notes]
     notes = [Note(index=i, **{k.lstrip('_'): v for k, v in x.items()}) for i, x in enumerate(notes)]
     #return Track([(n.type, n.c, n.time / self.bpm * 60000, n.x, n.y) for n in notes])
-    return Song(self.bpm, notes)
+    return Song(self.info, notes)
 
 
 from ansi_escapes import ansiEscapes
@@ -197,34 +220,60 @@ def blend(src, dst=(0.0, 0.0, 0.0, 1.0)):
 from glob import glob
 
 class Song:
-  def __init__(self, bpm, notes):
-    self.bpm = bpm
-    self.tracks = tuple(list(Track(bpm, tuple(note for note in notes if note.type == i)) for i in range(4)))
-    self.v = (10, 3) # viewport offset
+  def __init__(self, info, notes):
+    self.info = info
+    self.tracks = tuple(list(Track(self.bpm, tuple(note for note in notes if note.type == i)) for i in range(4)))
+    self.viewport_offset = (5, 5)
+    self.reset_viewport_offset()
+    
+  @property
+  def bpm(self):
+    return self.info['_beatsPerMinute']
+    
+  @property
+  def song_path(self):
+    return self.info['_songFilename']
+
+  def reset_viewport_offset(self):
     size = os.get_terminal_size()
-    self.v = (
+    prev_offset = self.viewport_offset
+    self.viewport_offset = (
         size.columns // 2 - 3*2,
         size.lines // 2 - 2)
-    
+    return prev_offset != self.viewport_offset
+
+  def resync(self, start):
+    elapsed_vlc = self.player.get_time()
+    while True:
+      time.sleep(0.001)
+      now = time.time()
+      now_vlc = self.player.get_time()
+      if elapsed_vlc != now_vlc:
+        return start - (now - start) + (now_vlc / 1000)
+
+  def resync_incremental(self, now, start, elapsed_vlc):
+    now_vlc = self.player.get_time()
+    if now_vlc != elapsed_vlc:
+      start += (now - start) - (now_vlc / 1000)
+      if self.reset_viewport_offset():
+        self.renderer(ansiEscapes.clearScreen)
+        self.renderer(ansiEscapes.cursorHide)
+    return now, start, now_vlc
 
   def play(self):
-    pos = (0, 0)
-    self.player = vlc.MediaPlayer(list(glob('*.egg'))[0])
+    self.player = vlc.MediaPlayer(self.song_path)
     self.player.play()
     try:
-      start = time.time()
-      r = Renderer()
-      r.flush()
-      last = self.last_note()
-      totalsecs = last.secs(self.bpm)
-      elapsed = 0
-      while self.player.is_playing() or elapsed < 5:
+      self.renderer = Renderer()
+      self.renderer.flush()
+      start = self.resync(time.time())
+      elapsed_vlc = self.player.get_time()
+      while self.player.is_playing():
         #time.sleep(0.005)
-        elapsed = (time.time() - start)
+        now, start, elapsed_vlc = self.resync_incremental(time.time(), start, elapsed_vlc)
+        elapsed = (now - start)
         notes = self.gather_notes(elapsed)
-        self.render_notes(r, notes, elapsed)
-        # if elapsed >= totalsecs + 3:
-        #   break
+        self.render_notes(self.renderer, notes, elapsed)
     finally:
       self.player.stop()
 
@@ -245,44 +294,87 @@ class Song:
 
   def render_note(self, r, note, elapsed):
     til = note.secs(self.bpm) - elapsed
-    if -0.05 <= til <= 0.5:
-      r.to(0+note.w*note.x+self.v[0], 1+note.h*note.y+self.v[1])
+    before = 0.5 # notes show up this many seconds in advance
+    linger = -0.05 # notes hang around this many seconds after dying
+    if linger <= til <= before:
+      nx = 0+note.w*note.x+self.viewport_offset[0]
+      ny = 0+note.h*note.y+self.viewport_offset[1]
       c = note.insignia
       if til < 0:
-        t = clamp(0.0, 1.0, wherebetween(0, -0.05, til))
+        t = clamp(0.0, 1.0, wherebetween(0, linger, til))
       else:
-        t = clamp(0.0, 1.0, wherebetween(0, 0.5, til))
+        t = clamp(0.0, 1.0, wherebetween(0, before, til))
       # opacity = lerp(1.5, 0.5, 1 - (1 - t)**8) # good
-      opacity = lerp(1.5, 0.5, 1 - (1 - t)**8) # good
+      opacity = lerp(1.5, 0.5, 1 - (1 - t)**10)
       # opacity = 1.0
       rgb = note.color(opacity=opacity)
       bgColor = blend(rgb)
-      fgColor = blend((1.0,1.0,1.0,opacity), rgb)
+      # fgBlend = (1.0, 1.0, 1.0, opacity)
+      fgBlend = (rgb[0] + 0.4, rgb[1] + 0.4, rgb[2] + 0.4, opacity)
+      fgColor = blend(fgBlend, rgb)
       #fgColor = blend((1.0,1.0,1.0,opacity), (0.5,0.0,-0.5,1.0))
       bg, bge = styles.bgColor.ansi16m(*bgColor), styles.bgColor.close
       fg, fge = styles.color.ansi16m(*fgColor), styles.color.close
       e = '\033[0m'
-      if til > 0:
-        m  = '\033[1m'
+      m = ''
+      nx += 1
+      if til > 0.0:
+        # m += '\033[1m'
         m += '\033[3m' # italics
+        # if note.upwards:
+        #   m += '\033[4m' # underline
+        r.to(nx, ny)
+        r(f'{fg}{bg}{m}{c}{e}{fge}{bge}')
+      elif til > 0:
+        # m  += '\033[1m'
+        #m += '\033[3m' # italics
         if note.upwards:
           m += '\033[4m'
-        r(f'{bg}{fg} {m}{c}{e}{bg} {fge}{bge}')
+        r.to(nx, ny)
+        r(f'{bg}{fg}{m}{c}{e}{bg}{fge}{bge}')
       else:
         if not note.downwards and not note.upwards:
-          m = '\033[9m'
-        else:
-          m = '\033[0m'
+          m += '\033[9m'
         # m += '\033[3m' # italics
-        r(f'{m}{fg} {c} {fge}{e}')
+        dx = 0
+        dy = 0
+        if note.left:
+          dx -= 1
+        elif note.right:
+          dx += 1
+        elif note.up:
+          dy -= 1
+        elif note.down:
+          dy += 1
+        else:
+          if note.rightwards:
+            dx += 1
+          if note.leftwards:
+            dx -= 1
+          if note.upwards:
+            dy -= 1
+            dx *= 2
+          if note.downwards:
+            dy += 1
+            dx *= 2
+          if not note.upwards and not note.downwards and not note.leftwards and not note.rightwards:
+            dx += 1
+        r.to(nx + dx, ny + dy)
+        r(f'{m}{fg}{c}{fge}{e}')
 
   def render_notes(self, r, notes, elapsed):
-    r.viewport(16 + self.v[0], 8 + self.v[1])
-    r(f'{int(elapsed/60.0):02d}m{int(elapsed%60.0):02d}s')
-    for note in sorted(notes, key=lambda x: -x.time):
+    r.viewport(16 + self.viewport_offset[0], 8 + self.viewport_offset[1])
+    songname = ellipsize(os.path.basename(os.path.dirname(os.path.realpath(self.song_path))))
+    r(f'{songname}\n{int(elapsed/60.0):02d}m{int(elapsed%60.0):02d}s')
+    for note in sorted(notes, key=lambda x: x.time):
       self.render_note(r, note, elapsed)
     r.flush()
 
+
+def ellipsize(s, n=30):
+  if len(s) > n:
+    return s[:(n-3)] + '...'
+  return s
 
  
 import time
