@@ -1,0 +1,14 @@
+#!/bin/sh
+
+set -ex
+
+poetry version "$@"
+version="$(poetry version -s)"
+
+git add .
+git commit -m "Version ${version}"
+git tag "${version}"
+git push
+git push --tags
+poetry build
+poetry publish
