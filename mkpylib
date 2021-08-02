@@ -133,6 +133,7 @@ __pycache__
 .env
 # setup.py # actually, commit the stub setup.py file so that users can pip3 install -e .
 .hypothesis/
+/poetry.lock
 EOF
 
 # generate a setup.py file so that `python3 -m install -e .` works.
