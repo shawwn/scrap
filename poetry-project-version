@@ -1,0 +1,11 @@
+#!/bin/sh
+
+set -e
+
+  poetry version `# prints a string like: libname 0.1.0` \
+                 `# (or it prints an error message to stdout; handle it)` \
+| egrep -o '\b\S+$' `# match the last word on the line` \
+| egrep '[.]\S+[.]' `# verify it contains a semver (i.e. exclude error messages)`
+
+
+
