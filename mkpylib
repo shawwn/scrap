@@ -171,6 +171,12 @@ python3 -m pip install -e .
 git add .
 git commit -m "Initial commit"
 
+# try an initial publish. (It's impossible to know ahead of time
+# whether any given name is forbidden on PyPi; no such API exists,
+# so this is the best we can do.
+poetry build
+poetry publish
+
 # automatically create a private github repo. Set private=1 to make
 # the repo private.
 hub create "$dir" --description "$description" ${private+--private}
