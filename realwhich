@@ -1,0 +1,3 @@
+#!/bin/bash
+# self-explanatory.
+exec realpath $(which "$@")
