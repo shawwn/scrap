@@ -1,9 +1,19 @@
 #!/bin/sh
 # ttyname shows the tty of the current process:
 #
+# Mac M1 Big Sur:
 # $ tty
 # /dev/ttys022
 # $ ttyname
 # ttys022
+#
+# Ubuntu:
+# $ tty
+# /dev/pts/0
+# $ ttyname
+# pts/0
 
-tty "$@" | exec egrep -o '[^/]+$'
+# trim off /dev/ from the left. Is this the corrct tty name in all
+# cases? Seems correct on Linux and Mac, at least.
+
+tty "$@" | exec sed 's/^\/dev\///' 
