@@ -61,12 +61,13 @@ def run():
     if len(args.args) <= 0 and not has_stdin():
         # if there were no args and there was no input, prompt user.
         print('Enter input (press Ctrl-D when done):')
-    # if len(args.args) <= 0 or has_stdin():
-    #     indata = sys.stdin.read()
 
+    exitcode = 1
     for line in sys.stdin:
         if narrow.narrow(line, args.args, case=args.case, verbose=args.verbose):
-            sys.stdout.write(line)
+            print(line, end='')
+            exitcode = 0
+    sys.exit(exitcode)
 
 def main():
     try:
