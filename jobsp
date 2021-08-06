@@ -1,0 +1,35 @@
+#!/bin/sh
+#
+# `jobsp` returns the PID of all suspended fg processes:
+#
+#    $ python3
+#    ...press ctrl-Z...
+#    $ jobsp
+#    60690
+#    $ python3
+#    ...press ctrl-Z...
+#    $ jobsp
+#    60690
+#    60722
+#
+# It's handy when your REPL freezes and you need to kill it:
+#
+#    $ kill -9 `jobsp`; fg
+#    [2]  - continued  python3
+#    zsh: killed     python3
+#    [1]  + killed     python3
+#    $ fg
+#    fg: no current job
+#
+# It's named `jobsp` because normally you can get these PIDs by running
+# `jobs -p`. But unfortunately that option doesn't seem to be
+# supported properly on the new M1 macs (or ever? not sure). `jobs -l`
+# seems reliable, so I decided to parse that.
+#
+# While writing this, I decided to filter the list by "suspended"
+# processes rather than all processes. I'm not sure if this is
+# correct, but I don't care enough right now to investigate.
+
+set -e
+
+jobs -l "$@" | egrep -o '[0-9]+\bsuspended' | egrep -o '^[0-9]+\b'
