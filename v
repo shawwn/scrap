@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # Executes either macvim or vim in a cross-platform way.
 if [ `uname` == Darwin ]
 then
