@@ -1,0 +1,27 @@
+#!/bin/sh
+
+sep="\n"
+
+if [ "$1" = "-n" ]
+then
+  sep=" "
+  shift
+fi
+
+function quote () {
+  printf "'"
+  replace "'" "\"'\""
+  printf "'${sep}"
+}
+
+if [ $# = 0 ]
+then
+  quote
+else
+  while [ ! -z "$*" ]
+  do
+    printf "%s" "${1}" | quote
+    shift
+  done
+fi
+
