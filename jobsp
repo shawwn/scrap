@@ -36,7 +36,7 @@
 # EDIT: Ok, filtering by "suspended" was a terrible idea. On Linux,
 # it's called "Stopped". I'll return all PIDs instead.
 
-set -e
+# set -e # aha; it was also a terrible idea to set -e.
 
 jobs -l | egrep '^\S+[^0-9]+?\b[0-9]+\b' -o | egrep -o '[0-9]+$'
 
