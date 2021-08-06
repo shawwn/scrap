@@ -1,0 +1,9 @@
+#!/bin/sh
+# ttyname shows the tty of the current process:
+#
+# $ tty
+# /dev/ttys022
+# $ ttyname
+# ttys022
+
+tty "$@" | exec egrep -o '[^/]+$'
