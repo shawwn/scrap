@@ -30,6 +30,13 @@
 # processes rather than all processes. I'm not sure if this is
 # correct, but I don't care enough right now to investigate.
 
+
+# jobs -l "$@" | egrep -o '[0-9]+\bsuspended' | egrep -o '^[0-9]+\b'
+
+# EDIT: Ok, filtering by "suspended" was a terrible idea. On Linux,
+# it's called "Stopped". I'll return all PIDs instead.
+
 set -e
 
-jobs -l "$@" | egrep -o '[0-9]+\bsuspended' | egrep -o '^[0-9]+\b'
+jobs -l | egrep '^\S+[^0-9]+?\b[0-9]+\b' -o | egrep -o '[0-9]+$'
+
