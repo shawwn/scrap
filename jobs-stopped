@@ -1,0 +1,8 @@
+#!/bin/sh
+# jobs-stopped shows backgrounded jobs:
+#
+#    $ python3
+#    ...press ctrl-Z...
+#    $ jobs-stopped
+
+ps -ao state,pid,user,tty,comm | grep '^T\b' | sed -E 's/^T[ \t]+//' | narrow "$@"
