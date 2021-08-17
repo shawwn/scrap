@@ -1,0 +1,23 @@
+#!/bin/bash
+
+dirname="$(cat pyproject.toml | tomlq 2>/dev/null '.tool.poetry.packages[].include' -r)"
+if [ -z "$dirname" ]
+then
+  dirname="$(poetry version | splitby ' ' | first | replace '-' '_')"
+fi
+
+dir="${1:-${dirname}/__init__.py}"
+shift 1
+
+if [ -z "${dir}" ]
+then
+    1>&2 echo "usage:"
+    1>&2 echo "  ${0} <file> [<option>]"
+    exit 1
+fi
+
+
+set -e
+
+cat "${dir}" | sed "s/^__version__ =.*/__version__ = '$(poetry version | cut -d\  -f 2)'/" | sponge "${dir}"
+
