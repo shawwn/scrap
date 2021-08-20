@@ -1,0 +1,29 @@
+#!/bin/bash
+
+# pip3 install --pre -U tpunicorn
+# sudo apt install jq
+
+i="${1}"
+shift 1
+
+if [ -z "${i}" ]
+then
+    echo "usage:"
+    echo "  ${0} <i> [<option>]"
+    exit 1
+fi
+
+#set -x
+version="${TPU_VERSION:-v2-alpha}" # see also: v2-alpha-pod, v2-nightly-cos
+#range="--range 10.48.${i}.0/29" # doesn't seem to work. Report to TPU team?
+#flags="--ssh-flag=-L 1234:localhost:80' --ssh-flag=-vvv" # port forwarding, etc
+flags=""
+
+set -e
+json="$(pu list -t ${i} --format json "$@")"
+proj="$(printf "%s" "$json" | jq .name -r | egrep -o '[^/]+[/][^/]+' | grep '^project' | egrep '[^/]+$' -o)"
+zone="$(printf "%s" "$json" | jq .name -r | egrep -o '[^/]+[/][^/]+' | grep '^location' | egrep '[^/]+$' -o)"
+name="$(printf "%s" "$json" | jq .name -r | egrep -o '[^/]+[/][^/]+' | grep '^node' | egrep '[^/]+$' -o)"
+set -x
+exec gcloud alpha compute tpus tpu-vm ssh "$name" --zone "$zone" --project "$proj" $flags "$@"
+
