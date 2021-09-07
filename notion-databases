@@ -1,0 +1,4 @@
+#!/bin/bash
+exec curl 'https://api.notion.com/v1/databases' \
+  -H 'Authorization: Bearer '"$NOTION_API_KEY"'' \
+  -H 'Notion-Version: 2021-08-16' "$@"
