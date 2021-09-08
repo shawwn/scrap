@@ -1,0 +1,12 @@
+#!/bin/bash
+# https://api.notion.com/v1/users
+
+if [ -z "$NOTION_API_KEY" ]
+then
+    1>&2 echo "NOTION_API_KEY not set"
+    exit 2
+fi
+
+exec curl 'https://api.notion.com/v1/users' \
+  -H 'Authorization: Bearer '"$NOTION_API_KEY"'' \
+  -H "Notion-Version: 2021-08-16" "$@"
