@@ -1,0 +1,50 @@
+#!/bin/bash
+# https://developers.notion.com/reference/post-database-query
+
+id="${1}"
+shift 1
+
+if [ -z "${id}" ]
+then
+    1>&2 echo "usage:"
+    1>&2 echo "  ${0} <id> [<option>]"
+    exit 1
+fi
+
+if [ -z "$NOTION_API_KEY" ]
+then
+    1>&2 echo "NOTION_API_KEY not set"
+    exit 2
+fi
+
+#set -x
+
+exec curl -fsSL -X POST "https://api.notion.com/v1/databases/${id}/query" \
+  -H 'Authorization: Bearer '"$NOTION_API_KEY"'' \
+  -H 'Notion-Version: 2021-08-16' \
+  -H "Content-Type: application/json" "$@"
+	# --data '{
+	#   "filter": {
+	#     "or": [
+	#       {
+	#         "property": "In stock",
+	# 				"checkbox": {
+	# 					"equals": true
+	# 				}
+	#       },
+	#       {
+	# 				"property": "Cost of next trip",
+	# 				"number": {
+	# 					"greater_than_or_equal_to": 2
+	# 				}
+	# 			}
+	# 		]
+	# 	},
+	#   "sorts": [
+	#     {
+	#       "property": "Last ordered",
+	#       "direction": "ascending"
+	#     }
+	#   ]
+	# }'
+
