@@ -1,0 +1,15 @@
+#!/bin/bash
+
+rsa="${1}"
+shift 1
+
+if [ -z "${rsa}" ]
+then
+    1>&2 echo "usage:"
+    1>&2 echo "  ${0} <rsa> [<option>]"
+    exit 1
+fi
+
+set -x
+
+exec openssl rsa -modulus -noout -in "$rsa" "$@"
