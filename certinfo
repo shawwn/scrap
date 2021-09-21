@@ -1,0 +1,15 @@
+#!/bin/bash
+
+crt="${1}"
+shift 1
+
+if [ -z "${crt}" ]
+then
+    1>&2 echo "usage:"
+    1>&2 echo "  ${0} <crt> [<option>]"
+    exit 1
+fi
+
+set -x
+
+exec openssl req -text -noout -verify -in "$crt"
