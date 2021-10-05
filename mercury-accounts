@@ -1,0 +1,3 @@
+#!/bin/bash
+
+mercury-api accounts | jq '.accounts[]' -c
