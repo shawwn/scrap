@@ -1,0 +1,7 @@
+#!/bin/bash
+
+mercury-api accounts |
+  jq -r '.accounts[].id' |
+  xargs -P 10 -n 1 -I {} mercury-api 'account/{}/cards?limit=999999' |
+  jq -c '.cards[]'
+
