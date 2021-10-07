@@ -1,15 +1,15 @@
 #!/bin/sh
 
-dir="${1}"
+lib="${1}"
 shift 1
 
-if [ -z "${dir}" ]
+if [ -z "${lib}" ]
 then
     1>&2 echo "usage:"
-    1>&2 echo "  ${0} <directory> [<option>]"
+    1>&2 echo "  ${0} <libname> [<option>]"
     exit 1
 fi
 
 set -e
 
-curl -fsSL "https://pypi.org/pypi/${dir}/json" | exec yq "$@"
+curl -fsSL "https://pypi.org/pypi/${lib}/json" | exec jq "$@"
