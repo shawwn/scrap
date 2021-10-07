@@ -1,0 +1,14 @@
+#!/bin/bash
+
+libname="${1}"
+shift 1
+
+if [ -z "${libname}" ]
+then
+    1>&2 echo "usage:"
+    1>&2 echo "  ${0} <libname> [<option>]"
+    exit 1
+fi
+
+set -e
+pypi-json "$libname" '.info | {name, version, home_page, docs_url, summary}' "$@"
