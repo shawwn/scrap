@@ -1,0 +1,2 @@
+#!/bin/sh
+curl -fsSL 'https://pypi.org/simple' | egrep '>([^<]+)' -o | egrep '[^>]+' -o | narrow "$@"
