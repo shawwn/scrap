@@ -12,4 +12,4 @@ fi
 
 set -e
 
-curl -fsSL "https://pypi.org/pypi/${dir}/json" | exec jq "$@"
+curl -fsSL "https://pypi.org/pypi/${dir}/json" | exec yq "$@"
