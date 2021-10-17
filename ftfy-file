@@ -17,7 +17,11 @@ try:
   from tensorflow import io
   gfile = io.gfile
 except:
-  from tensorflow import gfile
+  try:
+    from tensorflow import gfile
+  except ImportError:
+    gfile = None
+    from smart_open import open
 import time
 
 def file_size(f):
@@ -37,7 +41,7 @@ def file_size(f):
     return pos
 
 def try_open(filename, *args, **kws):
-  if filename.startswith("gs://"):
+  if gfile is not None and filename.startswith("gs://"):
     try:
       from tensorflow import io
       gfile = io.gfile
