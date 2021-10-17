@@ -1,0 +1,9 @@
+#!/bin/bash
+name="${1:-patch}"
+branch="$(localdate)/${name}"
+shift
+
+set -x
+#hub fork
+#git checkout master || exit 1
+git checkout "${branch}" || git checkout -b "${branch}" || exit 1
