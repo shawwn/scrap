@@ -110,6 +110,22 @@ parser.add_argument('infile', metavar='PATH', type=str, help='Input file, direct
 parser.add_argument('--outfile', default="-", type=str, help='Output file path, or - for stdout')
 parser.add_argument('--silent', action='store_true', help="Don't show progress bar")
 
+def fix(line):
+  if '\x04' in line:
+    return '\x04'.join([fix(part) for part in line.split('\x04')])
+  else:
+    fixed = fix_text(line)
+    # replace unicode … with ... which ftfy doesn't do by default
+    # NOTE: this departs from openai's convention of calling
+    # ftfy.fix_text() with default arguments. In particular,
+    # OpenAI's GPT-2 models do generate unicode ellipses.
+    # Nonetheless, we replace unicdoe ellipses with ... to
+    # increase the chances of semantic understanding.
+    fixed = fixed.replace(' …', '...') # first pass: convert "foo  …" to "foo..."
+    #fixed = fixed.replace(' …', '...') # second pass: convert "foo …" to "foo..."
+    fixed = fixed.replace('…', '...') # final pass: convert "foo…" to "foo..."
+    return fixed
+
 def main():
     args = parser.parse_args()
     out = sys.stdout if args.outfile == '-' else open(args.outfile, "w")
@@ -118,16 +134,7 @@ def main():
     i = 0
     with (open(args.infile) if args.infile != '-' else sys.stdin) as f:
       for i, line in for_each_line(f, silent=args.silent):
-        fixed = fix_text(line)
-        # replace unicode … with ... which ftfy doesn't do by default
-        # NOTE: this departs from openai's convention of calling
-        # ftfy.fix_text() with default arguments. In particular,
-        # OpenAI's GPT-2 models do generate unicode ellipses.
-        # Nonetheless, we replace unicdoe ellipses with ... to
-        # increase the chances of semantic understanding.
-        fixed = fixed.replace(' …', '...') # first pass: convert "foo  …" to "foo..."
-        #fixed = fixed.replace(' …', '...') # second pass: convert "foo …" to "foo..."
-        fixed = fixed.replace('…', '...') # final pass: convert "foo…" to "foo..."
+        fixed = fix(line)
         out.write(fixed)
         i += 1
         if i % 100 == 0:
