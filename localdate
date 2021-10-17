@@ -1,9 +1,17 @@
 #!/bin/bash
 
-time="${1:-$(utcnow)}"
+#time="${1:-$(utcnow)}"
+time="${1}"
 format="${2:-"+%Y-%m-%d"}"
 shift
 shift
 
-set -x
-exec date "$@" -r "${time}" "${format}"
+if [ -z "$time" ]
+then
+  set -x
+  exec date "$@" "${format}"
+else
+  # doesn't seem to work on Ubuntu
+  set -x
+  exec date "$@" -r "${time}" "${format}"
+fi
