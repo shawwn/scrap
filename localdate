@@ -1,9 +1,9 @@
-#!/bin/sh
+#!/bin/bash
 
 time="${1:-$(utcnow)}"
 format="${2:-"+%Y-%m-%d"}"
-shift 1
-shift 1
+shift
+shift
 
 set -x
 exec date "$@" -r "${time}" "${format}"
