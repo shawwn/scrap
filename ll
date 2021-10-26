@@ -1,4 +1,4 @@
 #!/bin/sh
 # exec ls -la "$@"
-exec ls -lah "$@"
+exec ls -lah -G "$@"
 
