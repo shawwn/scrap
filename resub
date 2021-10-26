@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python3
 
 #==============================================================================
 # Functionality
@@ -76,7 +76,7 @@ def try_groups(m, repl):
 if __name__ == "__main__":
     args = parser.parse_args()
     # print args
-    sep = args.separator.decode('unicode-escape')
+    sep = args.separator.encode('utf8').decode('unicode-escape')
 
     trim_newline = re.compile("\r?\n$")
 

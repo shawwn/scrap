@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python3
 
 #==============================================================================
 # Functionality
@@ -89,25 +89,25 @@ def process(patterns, data):
     for pat in patterns:
         pat = r' [\s]+ (%s) \b' % pat
         if args.verbose:
-            print 'pat:', pat
+            print('pat:', pat)
         for m in re.compile(pat, flags=reflags()).finditer(data):
             yield m.group(1)
 
 def run():
     if args.verbose:
-        print args
+        print(args)
     found = set()
     wrote = False
     data = sys.stdin.read()
     if args.verbose:
-        print 'stdin:', data.rstrip()
+        print('stdin:', data.rstrip())
     pats = terms()
     if args.verbose:
-        print 'pats:', str(pats)
+        print('pats:', str(pats))
     # if no terms provided, just print everything.
     if len(pats) <= 0:
         if args.verbose:
-            print 're: no patterns provided, printing everything'
+            print('re: no patterns provided, printing everything')
         sys.stdout.write(data)
         sys.stdout.flush()
     else:
@@ -121,7 +121,7 @@ def run():
             wrote = True
             sys.stdout.write(' ' + flag)
             if args.verbose:
-                print ''
+                print('')
         if wrote:
             sys.stdout.write('\n')
         
