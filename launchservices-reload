@@ -1,0 +1,5 @@
+#!/bin/bash
+
+# http://www.thexlab.com/faqs/resetlaunchservices.html
+set -x
+find /System/Library/Frameworks -type f -name "lsregister" -exec {} -kill -seed -r \;
