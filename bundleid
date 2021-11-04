@@ -1,0 +1,15 @@
+#!/bin/bash
+app="${1}"
+shift 1
+
+if [ -z "${app}" ]
+then
+    1>&2 echo "usage:"
+    1>&2 echo "  ${0} <SomeApplication.app> [<option>]"
+    exit 1
+fi
+
+set -x
+
+exec /usr/libexec/PlistBuddy -c 'Print CFBundleIdentifier' "$app"/Contents/Info.plist
+
