@@ -53,7 +53,7 @@ rm -f pyproject.toml
 poetry init --name "$name" --description "$description" --author "$author" --python "$python_version" --license "$license" --dev-dependency 'pytest@^5.2' --no-interaction
 git init
 #mv README.rst README.md
-rm README.rst
+rm -f README.rst
 cat > README.md << EOF
 # ${name}
 
@@ -128,6 +128,7 @@ __pycache__
 /.idea
 /venv/
 *.egg-info
+/.eggs/
 /build/
 /dist/
 .env
