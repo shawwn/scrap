@@ -1,0 +1,77 @@
+#!/bin/bash
+
+# Invoke this (monstrosity) as follows:
+#
+# brew install clion
+#
+#  git clone https://github.com/tensorflow/tensorflow
+#  cd tensorflow
+#  name="tensorflow" cmake-gen-globs > CMakeLists.txt
+#  clion .
+#
+# you'll eventually discover that you need to add extra include
+# directories for CLion to function properly. For example,
+# Emacs has code like #include <config.h>, and config.h
+# lives underneath ./src.
+#
+# Here's how to generate the emacs CMakeLists.txt I currently use:
+#
+#  git clone https://github.com/emacs-mirror/emacs
+#  cd emacs
+#  name="emacs" cmake-gen-globs src lib > CMakeLists.txt
+#  clion .
+
+export name="${name:-$(basename "$(pwd)")}"
+
+cat <<EOF
+cmake_minimum_required(VERSION 3.14)
+project($name)
+
+set(CMAKE_CXX_STANDARD 14)
+
+include_directories(\${CMAKE_SOURCE_DIR})
+
+EOF
+
+for include_directory in "$@"
+do
+  cat <<EOF
+include_directories(\${CMAKE_SOURCE_DIR}/${include_directory})
+EOF
+done
+
+cat <<EOF
+
+
+EOF
+
+
+for op in and or
+do
+  #rgfiles -tc -tcpp -tobjc . . "$@" \
+  find "${@:-.}" -type f -name '*.c' -or -name '*.cc' -or -name '*.cpp' -or -name '*.cxx' -or -name '*.mm' -or -name '*.m' \
+    | sort | rg '[/][^/]+[.]([a-zA-Z]+)' --replace '/*.$1' | sort | uniq | python3 -c 'import sys, os; [print(f"{x}", flush=True) for x in sys.stdin for x in [x.strip().lstrip("./")] for x in [(os.environ["name"]+"_"+"".join([c if c.isalnum() else "_" for c in x]), x)] for (key, path) in [x] for x in [rf"""file(GLOB {key} "${{CMAKE_SOURCE_DIR}}/{path}")"""] for x in ["        ${"+key+"}"] '$op' [x]]'
+
+  case $op in
+    and)
+    cat <<EOF
+
+add_library( # Sets the name of the library.
+        ${name}
+
+        # Sets the library as a shared library.
+        SHARED
+
+EOF
+    ;;
+    esac
+
+done
+
+cat <<EOF
+        )
+
+target_link_libraries( # Specifies the target library.
+        ${name}
+        )
+EOF
