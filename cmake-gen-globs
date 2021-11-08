@@ -49,7 +49,7 @@ EOF
 for op in and or
 do
   #rgfiles -tc -tcpp -tobjc . . "$@" \
-  find "${@:-.}" -type f -name '*.c' -or -name '*.cc' -or -name '*.cpp' -or -name '*.cxx' -or -name '*.mm' -or -name '*.m' \
+  find . -type f -name '*.c' -or -name '*.cc' -or -name '*.cpp' -or -name '*.cxx' -or -name '*.mm' -or -name '*.m' \
     | sort | rg '[/][^/]+[.]([a-zA-Z]+)' --replace '/*.$1' | sort | uniq | python3 -c 'import sys, os; [print(f"{x}", flush=True) for x in sys.stdin for x in [x.strip().lstrip("./")] for x in [(os.environ["name"]+"_"+"".join([c if c.isalnum() else "_" for c in x]), x)] for (key, path) in [x] for x in [rf"""file(GLOB {key} "${{CMAKE_SOURCE_DIR}}/{path}")"""] for x in ["        ${"+key+"}"] '$op' [x]]'
 
   case $op in
