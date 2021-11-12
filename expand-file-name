@@ -1,0 +1,104 @@
+#!/usr/bin/env python3
+
+#==============================================================================
+# Functionality
+#==============================================================================
+import pdb
+import sys
+import os
+import re
+
+# utility funcs, classes, etc go here.
+
+def asserting(cond):
+    if not cond:
+        pdb.set_trace()
+    assert(cond)
+
+def has_stdin():
+    return not sys.stdin.isatty()
+
+def reg(pat, flags=0):
+    return re.compile(pat, re.VERBOSE | flags)
+
+#==============================================================================
+# Cmdline
+#==============================================================================
+import argparse
+
+parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter, 
+    description="""This script converts filename to an absolute file
+    name. If directory is supplied, it is the default directory to
+    start with if filename is relative and does not start with ‘~’.
+    (The value of directory should itself be an absolute directory
+    name or directory file name; it may start with ‘~’.) Otherwise,
+    os.getcwd() is used.
+
+See https://www.gnu.org/software/emacs/manual/html_node/elisp/File-Name-Expansion.html
+""")
+     
+parser.add_argument('-v', '--verbose',
+    action="store_true",
+    help="verbose output" )
+     
+parser.add_argument('-0', '--print0',
+    action="store_true",
+    help="Prints \\0 after each result rather than newline" )
+     
+parser.add_argument('-d', '--directory', type=str,
+    help="""If directory is supplied, it is the default directory to
+    start with if filename is relative and does not start with ‘~’.
+    (The value of directory should itself be an absolute directory
+    name or directory file name; it may start with ‘~’.) Otherwise,
+    os.getcwd() is used.""" )
+
+args = None
+
+#==============================================================================
+# Main
+#==============================================================================
+
+def expand_file_name(filename, directory=None):
+  if directory is None:
+    directory = os.getcwd()
+  else:
+    directory = expand_file_name(directory)
+  return os.path.normpath(os.path.join(os.path.expanduser(directory), os.path.expanduser(filename)))
+
+def run():
+    if args.directory is None:
+        args.directory = os.getcwd()
+    if args.verbose:
+        print(args)
+    if len(args.args) <= 0 and not has_stdin():
+        # if there were no args and there was no input, prompt user.
+        print('Enter input (press Ctrl-D when done):')
+    if len(args.args) <= 0 or has_stdin():
+        indata = sys.stdin.read()
+        args.args.extend(indata.split('\0') if '\0' in indata else indata.splitlines())
+    # for each arg on cmdline...
+    for arg in args.args:
+        filename = expand_file_name(arg, directory=args.directory)
+        print(filename, end='\0' if args.print0 else '\n')
+
+def main():
+    try:
+        global args
+        if not args:
+            args, leftovers = parser.parse_known_args()
+            args.args = leftovers
+        return run()
+    except IOError:
+        # http://stackoverflow.com/questions/15793886/how-to-avoid-a-broken-pipe-error-when-printing-a-large-amount-of-formatted-data
+        try:
+            sys.stdout.close()
+        except IOError:
+            pass
+        try:
+            sys.stderr.close()
+        except IOError:
+            pass
+
+if __name__ == "__main__":
+    main()
+
