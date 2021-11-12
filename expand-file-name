@@ -26,6 +26,8 @@ def reg(pat, flags=0):
 # https://stackoverflow.com/a/56090741
 def import_path(path):
     module_name = os.path.basename(path).replace('-', '_')
+    if module_name in sys.modules:
+        return sys.modules[module_name]
     spec = importlib.util.spec_from_loader(
         module_name,
         importlib.machinery.SourceFileLoader(module_name, os.path.join(os.path.dirname(__file__), path))
@@ -36,8 +38,16 @@ def import_path(path):
     return module
 
 def function(path, name=None):
+    if callable(path):
+        return path
+    if path.startswith('lambda') and ':' in path:
+        f = eval(compile(path, '<lambda>', mode='eval'))
+        f.__name__ = path
+        f.__qualname__ = f'function(' + repr(path) + ')'
+        return f
     module = import_path(path)
     return getattr(module, module.__name__ if name is None else name)
+
 
 def expand_file_name(filename, directory=None):
   """This function converts filename to an absolute file name. If
@@ -63,8 +73,6 @@ import argparse
 
 parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter, 
     description=re.sub('^[ \t]*', '  ', expand_file_name.__doc__))
-    #description=textwrap.indent('\n\n'.join([textwrap.fill(re.sub('^\s+', '', x, flags=re.MULTILINE), width=70) for x in re.split(r'\n[\s]*?\n+', expand_file_name.__doc__, flags=re.MULTILINE)]), '  '))
-    #description=textwrap.indent(re.sub('^[ ]+', '', expand_file_name.__doc__, flags=re.MULTILINE), '  '))
      
 parser.add_argument('-v', '--verbose',
     action="store_true",
