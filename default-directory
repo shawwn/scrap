@@ -1,0 +1,35 @@
+#!/usr/bin/env python3
+
+#==============================================================================
+# Functionality
+#==============================================================================
+import sys
+import os
+import re
+from pprint import pprint as pp
+sys.path += [os.path.join(os.path.dirname(__file__), 'deps', 'argh')]
+import argh
+
+@argh.arg('-L', '--logical', action="store_true", help="Display the logical current working directory.")
+@argh.arg('-P', '--physical', action="store_true", help="Display the physical current working directory (all symbolic links resolved).")
+def default_directory(logical=False, physical=False):
+  """
+  The current working directory. $HOME is substituted with ~. The
+  value is always a string ending with a slash.
+
+  If no options are specified, the -L option is assumed.
+
+  See https://www.gnu.org/software/emacs/manual/html_node/elisp/File-Name-Expansion.html"""
+  # https://stackoverflow.com/questions/1542803/is-there-a-version-of-os-getcwd-that-doesnt-dereference-symlinks
+  path = os.getcwd() if physical else os.getenv('PWD')
+  path = re.sub('^'+re.escape(os.path.expanduser('~')), '~', path)
+  path = os.path.normpath(path) + os.path.sep
+  return path
+
+#==============================================================================
+# Cmdline
+#==============================================================================
+
+if __name__ == "__main__":
+    argh.dispatch_command(default_directory)
+
