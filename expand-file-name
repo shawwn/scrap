@@ -8,6 +8,7 @@ import sys
 import os
 import re
 import textwrap
+import importlib
 
 # utility funcs, classes, etc go here.
 
@@ -22,19 +23,35 @@ def has_stdin():
 def reg(pat, flags=0):
     return re.compile(pat, re.VERBOSE | flags)
 
+# https://stackoverflow.com/a/56090741
+def import_path(path):
+    module_name = os.path.basename(path).replace('-', '_')
+    spec = importlib.util.spec_from_loader(
+        module_name,
+        importlib.machinery.SourceFileLoader(module_name, os.path.join(os.path.dirname(__file__), path))
+    )
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    sys.modules[module_name] = module
+    return module
+
+def function(path, name=None):
+    module = import_path(path)
+    return getattr(module, module.__name__ if name is None else name)
+
 def expand_file_name(filename, directory=None):
   """This function converts filename to an absolute file name. If
   directory is supplied, it is the default directory to start with if
   filename is relative and does not start with ‘~’.  (The value of
   directory should itself be an absolute directory name or directory
-  file name; it may start with ‘~’.) Otherwise, os.getcwd() is used.
+  file name; it may start with ‘~’.) Otherwise, `default-directory`) is used.
 
   See https://www.gnu.org/software/emacs/manual/html_node/elisp/File-Name-Expansion.html"""
   if directory is None:
-    directory = os.getcwd()
+    directory = function('default-directory')()
   else:
     directory = expand_file_name(directory)
-  return os.path.normpath(os.path.join(os.path.expanduser(directory), os.path.expanduser(filename)))
+  return os.path.normpath(os.path.join(os.path.expanduser(directory), os.path.expanduser(filename))) + (os.path.sep if filename.endswith(os.path.sep) else '')
 
 #==============================================================================
 # Cmdline
@@ -59,7 +76,7 @@ parser.add_argument('-d', '--directory', type=str,
 start with if filename is relative and does not start with ‘~’.
 (The value of directory should itself be an absolute directory
 name or directory file name; it may start with ‘~’.) Otherwise,
-os.getcwd() is used.""")
+`default-directory`) is used.""")
 
 args = None
 
@@ -68,8 +85,6 @@ args = None
 #==============================================================================
 
 def run():
-    if args.directory is None:
-        args.directory = os.getcwd()
     if args.verbose:
         print(args)
     if len(args.args) <= 0 and not has_stdin():
