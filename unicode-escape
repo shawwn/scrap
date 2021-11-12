@@ -1,0 +1,115 @@
+#!/usr/bin/env python3
+
+#==============================================================================
+# Functionality
+#==============================================================================
+import pdb
+import sys
+import os
+import re
+
+# utility funcs, classes, etc go here.
+
+def asserting(cond):
+    if not cond:
+        pdb.set_trace()
+    assert(cond)
+
+def has_stdin():
+    return not sys.stdin.isatty()
+
+def reg(pat, flags=0):
+    return re.compile(pat, re.VERBOSE | flags)
+
+
+# https://stackoverflow.com/a/56090741
+def import_path(path):
+    module_name = os.path.basename(path).replace('-', '_')
+    spec = importlib.util.spec_from_loader(
+        module_name,
+        importlib.machinery.SourceFileLoader(module_name, os.path.join(os.path.dirname(__file__), path))
+    )
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    sys.modules[module_name] = module
+    return module
+
+def function(path, name=None):
+    module = import_path(path)
+    return getattr(module, module.__name__ if name is None else name)
+
+def unicode_escape(arg):
+  """TODO
+
+  """
+  if isinstance(arg, str):
+    try:
+      return arg.encode().decode('unicode-escape')
+    except (UnicodeEncodeError, UnicodeDecodeError):
+      pass
+  elif isinstance(arg, tuple):
+    return tuple([unicode_escape(x) for x in arg])
+  elif isinstasnce(arg, list):
+    return [unicode_escape(x) for x in arg]
+  else:
+    return arg
+
+#==============================================================================
+# Cmdline
+#==============================================================================
+import argparse
+
+def get_parser(parser=None):
+    if parser is None:
+        parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter, 
+            description=unicode_escape.__doc__.strip())
+    parser.add_argument('-v', '--verbose',
+        action="store_true",
+        help="verbose output" )
+         
+    parser.add_argument('-0', '--print0',
+        action="store_true",
+        help="Prints \\0 after each result rather than newline" )
+    return parser
+
+args = None
+
+#==============================================================================
+# Main
+#==============================================================================
+
+def run():
+    if args.verbose:
+        print(args, file=sys.stderr)
+    if len(args.args) <= 0 and not has_stdin():
+        # if there were no args and there was no input, prompt user.
+        print('Enter input (press Ctrl-D when done):')
+    if len(args.args) <= 0 or has_stdin():
+        indata = sys.stdin.read()
+        args.args.extend(indata.split('\0') if '\0' in indata else indata.splitlines())
+    # for each arg on cmdline...
+    for arg in args.args:
+        result = unicode_escape(arg)
+        print(result, end='\0' if args.print0 else '\n')
+
+def main():
+    try:
+        global args
+        if not args:
+            args, leftovers = get_parser().parse_known_args()
+            args.args = leftovers
+        return run()
+    except IOError:
+        # http://stackoverflow.com/questions/15793886/how-to-avoid-a-broken-pipe-error-when-printing-a-large-amount-of-formatted-data
+        try:
+            sys.stdout.close()
+        except IOError:
+            pass
+        try:
+            sys.stderr.close()
+        except IOError:
+            pass
+
+if __name__ == "__main__":
+    main()
+
