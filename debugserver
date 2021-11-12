@@ -1,0 +1,5 @@
+#!/bin/bash
+
+# See https://github.com/go-delve/delve/issues/986#issuecomment-394632928
+# and https://youtrack.jetbrains.com/issue/GO-5239
+exec /Applications/Xcode.app/Contents/SharedFrameworks/LLDB.framework/Versions/A/Resources/debugserver "$@"
