@@ -53,17 +53,17 @@ def function(path, name=None):
 def is_cloud_path(x):
     return bool(re.match('^.+?://', x))
 
-def file_name_directory(x):
+def file_name_directory(filename):
     """Return the directory component in file name FILENAME.
 
 Return nil if FILENAME does not include a directory.
 Otherwise return a directory name.
 
 Given a Unix syntax file name, returns a string ending in slash."""
-    sep = '/' if is_cloud_path(x) else os.path.sep
-    if x.endswith(sep):
-        return x
-    return os.path.dirname(x) + sep
+    sep = '/' if is_cloud_path(filename) else os.path.sep
+    if filename.endswith(sep):
+        return filename
+    return os.path.dirname(filename) + sep
 
 
 #==============================================================================

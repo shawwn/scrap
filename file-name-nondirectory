@@ -7,6 +7,9 @@ import pdb
 import sys
 import os
 import re
+import json
+import importlib
+from pprint import pprint as pp
 
 # utility funcs, classes, etc go here.
 
@@ -21,22 +24,67 @@ def has_stdin():
 def reg(pat, flags=0):
     return re.compile(pat, re.VERBOSE | flags)
 
+
+# https://stackoverflow.com/a/56090741
+def import_path(path):
+    module_name = os.path.basename(path).replace('-', '_')
+    if module_name in sys.modules:
+        return sys.modules[module_name]
+    spec = importlib.util.spec_from_loader(
+        module_name,
+        importlib.machinery.SourceFileLoader(module_name, os.path.join(os.path.dirname(__file__), path))
+    )
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    sys.modules[module_name] = module
+    return module
+
+def function(path, name=None):
+    if callable(path):
+        return path
+    if path.startswith('lambda') and ':' in path:
+        f = eval(compile(path, '<lambda>', mode='eval'))
+        f.__name__ = path
+        f.__qualname__ = f'function(' + repr(path) + ')'
+        return f
+    module = import_path(path)
+    return getattr(module, module.__name__ if name is None else name)
+
+def is_cloud_path(x):
+    return bool(re.match('^.+?://', x))
+
+def file_name_nondirectory(filename):
+    """Return file name FILENAME sans its directory.
+
+For example, in a Unix-syntax file name, this is everything after the
+last slash, or the entire name if it contains no slash."""
+    sep = '/' if is_cloud_path(filename) else os.path.sep
+    if filename.endswith(sep):
+        return ''
+    return os.path.basename(filename)
+
 #==============================================================================
 # Cmdline
 #==============================================================================
 import argparse
 
-parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter, 
-    description="""
-TODO
-""")
+def get_parser(parser=None):
+    if parser is None:
+        parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter, 
+            description=file_name_nondirectory.__doc__.strip())
+
+    parser.add_argument('-v', '--verbose',
+        action="store_true",
+        help="verbose output" )
+
+    parser.add_argument('-0', '--print0',
+        action="store_true",
+        help="Prints \\0 after each result rather than newline" )
      
-parser.add_argument('-v', '--verbose',
-    action="store_true",
-    help="verbose output" )
-     
-parser.add_argument('-a', '--append', type=str, default="",
-    help="Append a string to the paths" )
+    parser.add_argument('-a', '--append', type=str, default="",
+        help="Append this string to the end of each path" )
+
+    return parser
 
 args = None
 
@@ -44,39 +92,31 @@ args = None
 # Main
 #==============================================================================
 
-def is_cloud_path(x):
-  return bool(re.match('^.+?://', x))
-
-
-def file_name_nondirectory(x):
-  sep = '/' if is_cloud_path(x) else os.path.sep
-  if x.endswith(sep):
-    return ''
-  return os.path.basename(x)
-
-
 def run():
     if args.verbose:
-        print(args)
+        print(args, file=sys.stderr)
     if len(args.args) <= 0 and not has_stdin():
         # if there were no args and there was no input, prompt user.
         print('Enter input (press Ctrl-D when done):')
     if len(args.args) <= 0 or has_stdin():
         indata = sys.stdin.read()
-        args.args.extend(indata.splitlines())
+        args.args.extend(indata.split('\0') if '\0' in indata else indata.splitlines())
     # for each arg on cmdline...
     for arg in args.args:
-        print(file_name_nondirectory(arg)+args.append)
+        result = file_name_nondirectory(arg) + args.append
+        print(result, end='\0' if args.print0 else '\n')
 
 def main():
     try:
         global args
         if not args:
-            args, leftovers = parser.parse_known_args()
+            args, leftovers = get_parser().parse_known_args()
             args.args = leftovers
         return run()
     except IOError:
         # http://stackoverflow.com/questions/15793886/how-to-avoid-a-broken-pipe-error-when-printing-a-large-amount-of-formatted-data
+        if e.errno != 32:
+            raise
         try:
             sys.stdout.close()
         except IOError:
