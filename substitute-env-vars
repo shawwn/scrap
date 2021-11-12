@@ -1,0 +1,157 @@
+#!/usr/bin/env python3
+
+#==============================================================================
+# Functionality
+#==============================================================================
+import pdb
+import sys
+import os
+import re
+import json
+import importlib
+from pprint import pprint as pp
+
+# utility funcs, classes, etc go here.
+
+def asserting(cond):
+    if not cond:
+        pdb.set_trace()
+    assert(cond)
+
+def has_stdin():
+    return not sys.stdin.isatty()
+
+def reg(pat, flags=0):
+    return re.compile(pat, re.VERBOSE | flags)
+
+
+# https://stackoverflow.com/a/56090741
+def import_path(path):
+    module_name = os.path.basename(path).replace('-', '_')
+    spec = importlib.util.spec_from_loader(
+        module_name,
+        importlib.machinery.SourceFileLoader(module_name, os.path.join(os.path.dirname(__file__), path))
+    )
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    sys.modules[module_name] = module
+    return module
+
+def function(path, name=None):
+    if callable(path):
+        return path
+    if path.startswith('lambda') and ':' in path:
+        f = eval(compile(path, '<lambda>', mode='eval'))
+        f.__name__ = path
+        f.__qualname__ = f'function(' + repr(path) + ')'
+        return f
+    module = import_path(path)
+    return getattr(module, module.__name__ if name is None else name)
+
+def substitute_env_vars(string, when_undefined=None):
+  """Substitute environment variables referred to in STRING.
+`$FOO' where FOO is an environment variable name means to substitute
+the value of that variable.  The variable name should be terminated
+with a character not a letter, digit or underscore; otherwise, enclose
+the entire variable name in braces.  For instance, in `ab$cd-x',
+`$cd' is treated as an environment variable.
+
+If WHEN-UNDEFINED is omitted or nil, references to undefined
+environment variables are replaced by the empty string; if it is a
+function, the function is called with the variable's name as argument,
+and should return the text with which to replace it, or nil to leave
+it unchanged.  If it is non-nil and not a function, references to
+undefined variables are left unchanged."""
+  rx = reg(r'[$]  (?P<name> [$] | [\w\d_]+ |  {(?P<name2>[^}]*?)} )')
+  def subst(m):
+    matches = m.groupdict()
+    name = matches.get('name2') or matches.get('name')
+    if args and args.verbose:
+      pp(dict(name=name, string=m.string, groupdict=matches))
+    if name == '$':
+      return '$'
+    if name in os.environ:
+      return os.environ[name]
+    if isinstance(when_undefined, str) and when_undefined not in ['nil', 't', '']:
+      return function(when_undefined)(name)
+    elif not when_undefined or when_undefined == 'nil':
+      return ''
+    else:
+      return m.group(0)
+  return re.sub(rx, subst, string)
+
+
+#==============================================================================
+# Cmdline
+#==============================================================================
+import argparse
+
+def get_parser(parser=None):
+    if parser is None:
+        parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter, 
+            description=substitute_env_vars.__doc__.strip())
+
+    parser.add_argument('-v', '--verbose',
+        action="store_true",
+        help="verbose output" )
+     
+    parser.add_argument('-u', '--when-undefined', nargs='?', default='',
+    help="""\
+If WHEN-UNDEFINED is omitted or nil, references to undefined
+environment variables are replaced by the empty string; if it is a
+function, the function is called with the variable's name as argument,
+and should return the text with which to replace it, or nil to leave
+it unchanged.  If it is non-nil and not a function, references to
+undefined variables are left unchanged.""" )
+
+    return parser
+
+args = None
+
+#==============================================================================
+# Main
+#==============================================================================
+
+def process(string):
+    print(substitute_env_vars(string, when_undefined=args.when_undefined), end='', flush=True)
+
+def run():
+    if args.when_undefined is None:
+        args.when_undefined = True
+    if args.verbose:
+        print(args, file=sys.stderr)
+    if len(args.args) <= 0 and not has_stdin():
+        # if there were no args and there was no input, prompt user.
+        print('Enter input (press Ctrl-D when done):')
+    if len(args.args) <= 0 or has_stdin():
+        indata = sys.stdin.read()
+        process(indata)
+    # for each arg on cmdline...
+    for arg in args.args:
+        with open(arg, 'r') as f:
+          indata = f.read()
+        process(indata)
+
+def main():
+    try:
+        global args
+        if not args:
+            args, leftovers = get_parser().parse_known_args()
+            args.args = leftovers
+        return run()
+    except IOError as e:
+        # http://stackoverflow.com/questions/15793886/how-to-avoid-a-broken-pipe-error-when-printing-a-large-amount-of-formatted-data
+        if e.errno != 32:
+            raise
+        try:
+            sys.stdout.close()
+        except IOError:
+            pass
+        try:
+            sys.stderr.close()
+        except IOError:
+            pass
+
+if __name__ == "__main__":
+    main()
+
