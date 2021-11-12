@@ -1,0 +1,114 @@
+~~~~~~~~~
+Changelog
+~~~~~~~~~
+
+Version 0.26.3-dev
+------------------
+
+Backward incompatible changes:
+
+- Dropped support for Python 2.6.
+
+Enhancements:
+
+- Added support for Python 3.5.
+- Support introspection of function signature behind the `@wraps` decorator
+  (issue #111).
+
+Fixed bugs:
+
+- When command function signature contained ``**kwargs`` *and* positionals
+  without defaults and with underscores in their names, a weird behaviour could
+  be observed (issue #104).
+
+Other changes:
+
+- Include the license files in manifest (PR #112).
+
+Version 0.26.2
+--------------
+
+- Removed official support for Python 3.4, added for 3.5.
+- Various tox-related improvements for development.
+- Improved documentation.
+
+Version 0.26.1
+--------------
+
+Fixed bugs:
+
+- The undocumented (and untested) argument `dispatch(..., pre_call=x)`
+  was broken; fixing because at least one important app depends on it
+  (issue #63).
+
+Version 0.26
+------------
+
+This release is intended to be the last one before 1.0.  Therefore a major
+cleanup was done.  This **breaks backward compatibility**.  If your code is
+really outdated, please read this list carefully and grep your code.
+
+- Removed decorator `@alias` (deprecated since v.0.19).
+
+- Removed decorator `@plain_signature` (deprecated since v.0.20).
+
+- Dropped support for old-style functions that implicitly expected namespace
+  objects (deprecated since v.0.21).  The `@expects_obj` decorator is now
+  mandatory for such functions.
+
+- Removed decorator `@command` (deprecated since v.0.21).
+
+- The `@wrap_errors` decorator now strictly requires that the error classes
+  are given as a list (old behaviour was deprecated since v.0.22).
+
+- The `allow_warnings` argument is removed from
+  `argh.completion.autocomplete()`.  Debug-level logging is used instead.
+  (The warnings were deprecated since v.0.25).
+
+Some more stuff has been scheduled **to be purged before 1.0**:
+
+- Deprecated arguments `title`, `help` and `description` in `add_commands()`
+  helper function.  See documentation and issue #60.
+
+Other changes:
+
+- Improved representation of default values in the help.
+
+- Dispatcher can be configured to skip unknown arguments (issue #57).
+
+- Added `add_subcommands()` helper function (a convenience wrapper
+  for `add_commands()`).
+
+- `EntryPoint` now stores kwargs for the parser.
+
+- Added support for default command *with* nested commands (issue #78).
+
+  This only works with Python 3.4+ due to incorrect behaviour or earlier
+  versions of Argparse (including the stand-alone one as of 1.2.1).
+
+  Due to argparse peculiarities the function assignment technique relies
+  on a special `ArghNamespace` object.  It is used by default in `ArghParser`
+  and the shortcuts, but if you call the vanilla `ArgumentParser.parse_args()`
+  method, you now *have* to supply the proper namespace object.
+
+Fixed bugs:
+
+- Help formatter was broken for arguments with empty strings as default values
+  (issue #76).
+
+Version 0.25
+------------
+
+- Added EntryPoint class as another way to assemble functions (issue #59).
+
+- Added support for Python 3.4; dropped support for Python 3.3
+  (this doesn't mean that Argh is necessarily broken under 3.3, 
+  it's just that I'm not testing against it anymore).
+
+- Shell completion warnings are now deprecated in favour of `logging`.
+
+- The command help now displays default values of all arguments (issue #64).
+
+- Function docstrings are now displayed verbatim in the help (issue #64).
+
+- Argh's dispatching now should work properly in Cython.

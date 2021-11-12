@@ -1,0 +1,28 @@
+## Ignored stuff
+
+# temp files
+*$
+*.pyc
+*.pyo
+.ropeproject/
+
+# testing
+.tox/
+
+# coverage
+.coverage
+cover/*
+*,cover
+htmlcov/
+
+# packaging
+build/
+dist/
+docs/_build
+nbproject/
+*.egg-info/
+.directory
+
+# packaging: Debian
+debian/python-argh
+debian/python-module-stampdir
