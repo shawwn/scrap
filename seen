@@ -1,0 +1,13 @@
+#!/bin/bash
+
+# Only prints each line if it hasn't already been printed.
+# It's a brilliant solution, stolen from:
+# https://unix.stackexchange.com/questions/658655/why-doesnt-uniq-unique-remove-all-duplicate-lines#comment1239955_658656
+
+
+if [ -t 0 ] && [ ! -z "$*" ]
+then
+  cat "$@" | exec "$0"
+else
+  awk '!a[$0]++'
+fi
