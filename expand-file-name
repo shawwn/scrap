@@ -7,6 +7,7 @@ import pdb
 import sys
 import os
 import re
+import textwrap
 
 # utility funcs, classes, etc go here.
 
@@ -21,21 +22,29 @@ def has_stdin():
 def reg(pat, flags=0):
     return re.compile(pat, re.VERBOSE | flags)
 
+def expand_file_name(filename, directory=None):
+  """This function converts filename to an absolute file name. If
+  directory is supplied, it is the default directory to start with if
+  filename is relative and does not start with ‘~’.  (The value of
+  directory should itself be an absolute directory name or directory
+  file name; it may start with ‘~’.) Otherwise, os.getcwd() is used.
+
+  See https://www.gnu.org/software/emacs/manual/html_node/elisp/File-Name-Expansion.html"""
+  if directory is None:
+    directory = os.getcwd()
+  else:
+    directory = expand_file_name(directory)
+  return os.path.normpath(os.path.join(os.path.expanduser(directory), os.path.expanduser(filename)))
+
 #==============================================================================
 # Cmdline
 #==============================================================================
 import argparse
 
 parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter, 
-    description="""This script converts filename to an absolute file
-    name. If directory is supplied, it is the default directory to
-    start with if filename is relative and does not start with ‘~’.
-    (The value of directory should itself be an absolute directory
-    name or directory file name; it may start with ‘~’.) Otherwise,
-    os.getcwd() is used.
-
-See https://www.gnu.org/software/emacs/manual/html_node/elisp/File-Name-Expansion.html
-""")
+    description=re.sub('^[ \t]*', '  ', expand_file_name.__doc__))
+    #description=textwrap.indent('\n\n'.join([textwrap.fill(re.sub('^\s+', '', x, flags=re.MULTILINE), width=70) for x in re.split(r'\n[\s]*?\n+', expand_file_name.__doc__, flags=re.MULTILINE)]), '  '))
+    #description=textwrap.indent(re.sub('^[ ]+', '', expand_file_name.__doc__, flags=re.MULTILINE), '  '))
      
 parser.add_argument('-v', '--verbose',
     action="store_true",
@@ -47,23 +56,16 @@ parser.add_argument('-0', '--print0',
      
 parser.add_argument('-d', '--directory', type=str,
     help="""If directory is supplied, it is the default directory to
-    start with if filename is relative and does not start with ‘~’.
-    (The value of directory should itself be an absolute directory
-    name or directory file name; it may start with ‘~’.) Otherwise,
-    os.getcwd() is used.""" )
+start with if filename is relative and does not start with ‘~’.
+(The value of directory should itself be an absolute directory
+name or directory file name; it may start with ‘~’.) Otherwise,
+os.getcwd() is used.""")
 
 args = None
 
 #==============================================================================
 # Main
 #==============================================================================
-
-def expand_file_name(filename, directory=None):
-  if directory is None:
-    directory = os.getcwd()
-  else:
-    directory = expand_file_name(directory)
-  return os.path.normpath(os.path.join(os.path.expanduser(directory), os.path.expanduser(filename)))
 
 def run():
     if args.directory is None:
