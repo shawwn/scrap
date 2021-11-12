@@ -89,7 +89,7 @@ def get_parser(parser=None):
         help="Prints \\0 after each result rather than newline" )
 
     parser.add_argument('-a', '--append', default='',
-        help="This string is appended to the end of each path" )
+        help="Append this string to the end of each path" )
     return parser
 
 args = None
