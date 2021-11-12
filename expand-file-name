@@ -51,7 +51,10 @@ def expand_file_name(filename, directory=None):
     directory = function('default-directory')()
   else:
     directory = expand_file_name(directory)
-  return os.path.normpath(os.path.join(os.path.expanduser(directory), os.path.expanduser(filename))) + (os.path.sep if filename.endswith(os.path.sep) else '')
+  result = os.path.normpath(os.path.join(os.path.expanduser(directory), os.path.expanduser(filename)))
+  if filename.endswith(os.path.sep) and not result.endswith(os.path.sep):
+    result += os.path.sep
+  return result
 
 #==============================================================================
 # Cmdline
