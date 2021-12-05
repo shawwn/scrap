@@ -1,0 +1,15 @@
+#!/bin/bash
+
+dir="${1}"
+shift 1
+
+if [ -z "${dir}" ]
+then
+    1>&2 echo "usage:"
+    1>&2 echo "  ${0} <directory> [-force]"
+    exit 1
+fi
+
+set -x
+exec hdiutil eject "$dir" "$@"
+

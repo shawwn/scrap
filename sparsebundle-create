@@ -1,0 +1,8 @@
+#!/bin/bash
+
+set -ex
+
+name=$1
+shift 1
+
+exec hdiutil create -size 4096G -fs HFS+J -type SPARSEBUNDLE -volname "$name" -encryption AES-128 "${name}.sparsebundle" "$@"

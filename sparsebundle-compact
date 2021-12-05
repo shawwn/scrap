@@ -1,0 +1,14 @@
+#!/bin/bash
+
+bundle="${1}"
+shift 1
+
+if [ -z "${bundle}" ]
+then
+    1>&2 echo "usage:"
+    1>&2 echo "  ${0} <foo.sparsebundle> [<option>]"
+    exit 1
+fi
+
+set -x
+exec hdiutil compact "$bundle" "$@"

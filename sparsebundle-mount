@@ -1,0 +1,22 @@
+#!/bin/bash
+
+bundle="${1}"
+shift
+mountdir="${1}"
+shift
+
+if [ -z "${bundle}" ]
+then
+    1>&2 echo "usage:"
+    1>&2 echo "  ${0} <foo.sparsebundle> [mountdir]"
+    exit 1
+fi
+
+if [ ! -z "$mountdir" ]
+then
+  set -x
+  exec hdiutil attach -mountpoint "$mountdir" "$bundle" "$@"
+else
+  set -x
+  exec hdiutil attach "$bundle" "$@"
+fi
