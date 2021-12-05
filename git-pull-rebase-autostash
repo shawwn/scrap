@@ -1,0 +1,4 @@
+#!/bin/bash
+# https://stackoverflow.com/questions/4157189/how-to-git-pull-while-ignoring-local-changes
+set -ex
+exec git pull --rebase --autostash "$@"
