@@ -1,0 +1,18 @@
+#!/usr/bin/env y
+
+(y-do
+
+(define untabify-file (filename)
+  (with-temp-buffer
+    (insert-file-contents-literally filename)
+    (untabify (point-min) (point-max))
+    (buffer-string)))
+
+(if command-line-args-left
+    (each filename command-line-args-left
+      (princ (untabify-file filename)))
+  (princ (untabify-file "/dev/stdin")))
+
+
+)
+
