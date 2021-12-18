@@ -1,0 +1,7 @@
+#!/usr/bin/env y
+(y-do
+  (add-to-list 'load-path "~/ml/emacspy")
+  (load "~/ml/emacspy/emacspy" nil t)
+  (let (script (hd command-line-args-left)
+        args (tl command-line-args-left))
+    (exec-python (read-file script))))
