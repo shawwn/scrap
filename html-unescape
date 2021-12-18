@@ -43,13 +43,12 @@ args = None
 import html
 
 def process(line):
-  print(html.unescape(line))
+  print(html.unescape(line), end='')
 
 def run():
     if args.verbose:
         print(args)
-    for line in sys.stdin:
-      process(line)
+    process(sys.stdin.read())
 
 def main():
     try:
