@@ -1,7 +1,36 @@
 #!/usr/bin/env y
+(add-to-list 'load-path "~/ml/emacspy")
+(load "~/ml/emacspy/emacspy" nil t)
 (y-do
-  (add-to-list 'load-path "~/ml/emacspy")
-  (load "~/ml/emacspy/emacspy" nil t)
-  (let (script (hd command-line-args-left)
-        args (tl command-line-args-left))
-    (exec-python (read-file script))))
+
+(define runtime "
+import emacspy as el
+from emacspy import V, F, Q, S, L, E
+
+def el_configure():
+  import site
+  import rlcompleter
+  import readline
+  import sys
+  readline.parse_and_bind('tab: complete')
+  site.enablerlcompleter()
+  readline.clear_history()
+  sys.__interactivehook__()
+
+def el_repl(ns=globals()):
+  import code
+  el_configure()
+  code.interact('*interactive*', local=ns)
+
+")
+
+(define empy-read-script (filename)
+  (concat runtime (read-file filename)))
+
+(let (argv     (or command-line-args-left
+                   (list "~/ml/emacspy/emacspy_repl.py"))
+      script   (hd argv))
+  (let command-line-args-left (tl argv)
+    (exec-python (empy-read-script script))))
+
+)
