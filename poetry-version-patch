@@ -1,0 +1,11 @@
+#!/bin/bash
+set -ex
+poetry version patch
+poetry-setup-py
+git add pyproject.toml setup.py
+git commit -m "Version $(poetry-project-version)"
+git tag "$(poetry-project-version)"
+git push
+git push --tags
+poetry build
+poetry publish
