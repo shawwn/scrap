@@ -1,0 +1,11 @@
+#!/bin/bash
+
+c=""
+for n in "$@"
+do
+  n=$((n+1))
+  args="${args}${c}\$$n"
+  c=', '
+done
+
+awk "{ print ${args}; }"
