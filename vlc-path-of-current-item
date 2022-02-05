@@ -1,0 +1,18 @@
+#!/bin/sh
+
+if [ ! -z "${VERBOSE}" ]
+then
+  set -x
+fi
+
+osa() {
+  osascript -e "${1}" 2>&1
+}
+
+script='
+tell application "VLC"
+    -- log (get name of current item)
+    log (get path of current item)
+end tell'
+
+osa "${script}" | replace "`pwd`/" ""
