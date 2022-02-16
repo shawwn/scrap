@@ -1,0 +1,8 @@
+#!/bin/bash
+
+# see git diff --help:
+#
+#   --patch-with-stat
+#                output a patch and prepend its diffstat.
+#
+exec git diff --patch-with-stat "$@"

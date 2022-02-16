@@ -1,2 +1,3 @@
 #!/bin/bash
-exec git diff --cached "$@"
+#exec git diff --cached "$@"
+exec scrap-git-diff --cached "$@"

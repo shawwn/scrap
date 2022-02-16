@@ -10,5 +10,6 @@ then
 fi
 
 set -x
-exec git diff "${commit}~1" "${commit}" "$@"
+#exec git diff "${commit}~1" "${commit}" "$@"
+exec scrap-git-diff "${commit}~1" "${commit}" "$@"
 

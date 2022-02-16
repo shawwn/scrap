@@ -1,0 +1,8 @@
+#!/bin/bash
+
+# Customizable git diff settings.
+
+# exec git diff "$@"
+
+# Passthrough to git-diff-with-stat, to show nice statistics.
+exec git-diff-with-stat "$@"
