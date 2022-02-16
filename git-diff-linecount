@@ -1,0 +1,12 @@
+#!/bin/bash
+
+# Adapted from https://stackoverflow.com/questions/9933325/is-there-a-way-of-having-git-show-lines-added-lines-changed-and-lines-removed
+
+git diff --numstat "$@" | sort -n
+addcount="$(git diff --numstat "$@" | awk '{print $1;}' | paste -s -d+ - | bc)"
+remcount="$(git diff --numstat "$@" | awk '{print $2;}' | paste -s -d+ - | bc)"
+if [ ! -z "$addcount" ]
+then
+  echo "+${addcount} -${remcount}"
+fi
+
