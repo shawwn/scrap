@@ -1,0 +1,19 @@
+#!/bin/bash
+
+# Requires https://github.com/newren/git-filter-repo
+
+# See https://stackoverflow.com/a/60511341/17290907 for usage info:
+#
+# > git filter-repo --replace-text expressions.txt
+# >
+# > expressions.txt is a file filled with lines like
+# > literal:OLD_NAME==>NEW_NAME (it's possible to use Python's RE with
+# > regex: or glob with glob:).
+
+set -uex
+
+src="${1}"
+dst="${2}"
+git filter-repo --partial --path-rename "${src}:${dst}" "${@:3}"
+
+git fetch
