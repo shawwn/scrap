@@ -16,6 +16,7 @@ def path(to):
 
 def ev(x):
   x = re.sub(r'^(.+?)\s*[#].*$', r'\1', x) # strip inline comments
+  x = re.sub(r'[{]\s*([^\s=]+)\s*=\s*', r"{'\1': ", x) # convert toml dict to python dict
   return False if x == 'false' else True if x == 'true' else ast.literal_eval(x)
 
 config = configparser.ConfigParser()
@@ -23,6 +24,7 @@ config.read(path('pyproject.toml'))
 config = {k.lower(): {k1.lower(): ev(v1) for k1, v1 in v.items()} for k, v in config.items()}
 
 info = config['tool.poetry']
+package = info['name'].replace('-', '_')
 author, author_email = re.findall(r"^(.+?)\s*(?:[<](.+?)[>])?$", info['authors'][0])[0]
 
 
@@ -47,7 +49,7 @@ package_dir = \
 {'': 'src'}
 
 packages = \
-[info['name']]
+[package]
 
 package_data = \
 {'': ['*']}
@@ -74,6 +76,6 @@ setup_kwargs = {
     'package_data': package_data,
     'install_requires': install_requires,
 $(tar -xvf dist/*-`poetry version -s`.tar.gz -O '*/setup.py' | grep python_requires)
-    **base_kwargs,
+    **(globals().get('base_kwargs')),
 }" > setup.py # | tee setup.py
 
