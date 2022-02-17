@@ -79,3 +79,6 @@ $(tar -xvf dist/*-`poetry version -s`.tar.gz -O '*/setup.py' | grep python_requi
     **(globals().get('base_kwargs')),
 }" > setup.py # | tee setup.py
 
+# save requirements.txt, since pip in pyenv is sometimes frustrating
+poetry export -f requirements.txt > requirements.txt
+
