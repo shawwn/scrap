@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import sys
 import fileinput
@@ -8,5 +8,5 @@ import subprocess
 if __name__ == "__main__":
     p = subprocess.Popen(["xxd", "-p"], stdout=subprocess.PIPE, stdin=sys.stdin)
     out, err = p.communicate()
-    sys.stdout.write(out.replace('\n','').replace('\r','').strip())
+    sys.stdout.buffer.write(out.replace(b'\n',b'').replace(b'\r',b'').strip())
 
