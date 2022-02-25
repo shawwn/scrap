@@ -51,6 +51,35 @@ import natsort
 #     args = parser.parse_args()
 #     main()
 
+
+# https://stackoverflow.com/questions/14693701/how-can-i-remove-the-ansi-escape-sequences-from-a-string-in-python
+
+import re
+# 7-bit and 8-bit C1 ANSI sequences
+ansi_escape_8bit = re.compile(br"""
+    (?: # either 7-bit C1, two bytes, ESC Fe (omitting CSI)
+        \x1B
+        [@-Z\\-_]
+    |   # or a single 8-bit byte Fe (omitting CSI)
+        [\x80-\x9A\x9C-\x9F]
+    |   # or CSI + control codes
+        (?: # 7-bit CSI, ESC [ 
+            \x1B\[
+        |   # 8-bit CSI, 9B
+            \x9B
+        )
+        [0-?]*  # Parameter bytes
+        [ -/]*  # Intermediate bytes
+        [@-~]   # Final byte
+    )
+""", re.VERBOSE)
+
+# import sys
+# for line in sys.stdin.buffer:
+#   result = ansi_escape_8bit.sub(b"", line)
+#   sys.stdout.buffer.write(result)
+
+
 def run():
     if args.verbose:
         print(args)
@@ -59,12 +88,28 @@ def run():
     #     print 'Enter input (press Ctrl-D when done):'
     # if len(args.args) <= 0 or has_stdin():
     #     indata = sys.stdin.read()
-    lines = [line for line in sys.stdin]
-    alg = 0
+    # lines = [line for line in sys.stdin]
+    # lines = sys.stdin.buffer.read().splitlines(keepends=True)
+    lines = sys.stdin.buffer
+    # alg = 0
+    # alg = natsort.ns.LOCALE
+    alg = natsort.ns.LOCALE | natsort.ns.PATH
     if args.ignore_case:
-        alg = natsort.ns.IGNORECASE
-    for line in natsort.natsorted(lines, reverse=args.reverse, alg=alg):#, alg=natsort.ns.REAL): # caused problems with lltime
-        sys.stdout.write(line)
+        alg |= natsort.ns.IGNORECASE
+    else:
+        alg |= natsort.ns.CAPITALFIRST
+    def sortkey(line):
+      # strip terminal escape codes (colorization, etc).
+      line = ansi_escape_8bit.sub(b"", line)
+      # decode as string. Try UTF-8 first, then fall back to latin1 if we get an error.
+      try:
+        line = line.decode('utf-8')
+      except UnicodeDecodeError:
+        line = line.decode('latin1')
+      # use this as the sort key.
+      return line
+    for line in natsort.natsorted(lines, reverse=args.reverse, key=sortkey, alg=alg):#, alg=natsort.ns.REAL): # caused problems with lltime
+        sys.stdout.buffer.write(line)
 
 def main():
     try:
