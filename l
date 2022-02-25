@@ -94,10 +94,15 @@ args = None
 #==============================================================================
 
 def errcheck(out, err):
-    # if err or (out.find('error opening') >= 0):
-    #     sys.stderr.write(err or out)
-    #     sys.exit(1)
-    pass
+    # # if err or (out.find('error opening') >= 0):
+    # #     sys.stderr.write(err or out)
+    # #     sys.exit(1)
+    # if out.find(b'error opening') >= 0:
+    #   print(out, file=sys.stderr.buffer, flush=True)
+    #   out = b''
+    # if err:
+    #   print(err, file=sys.stderr.buffer, flush=True)
+    return out
 
 def cmd(progs, paths, baseprog="lltree"):
     progs = list(progs)
@@ -122,17 +127,17 @@ def cmd(progs, paths, baseprog="lltree"):
         print('scrap.system(%s, %s) | %s' % (repr(baseprog), repr(flags + progflags + paths), ' | '.join(progs)))
     input = b''
     for path in paths:
-        out, err = scrap._system(baseprog, flags + progflags + [path], check=True, text=None)
-        errcheck(out, err)
+        out, err = scrap._system(baseprog, flags + progflags + [path], check=False, text=None)
+        out = errcheck(out, err)
         input += out
     for prog in progs:
-        out, err = scrap._system(prog, progflags, stdin=input, check=True, text=None)
-        errcheck(out, err)
+        out, err = scrap._system(prog, progflags, stdin=input, check=False, text=None)
+        out = errcheck(out, err)
         input = out
     if args.only_paths:
-        #out, err = scrap._system('cols', [',3:'], stdin=input, check=True)
-        out, err = scrap._system('l-1', [], stdin=input, check=True, text=None)
-        errcheck(out, err)
+        #out, err = scrap._system('cols', [',3:'], stdin=input, check=False)
+        out, err = scrap._system('l-1', [], stdin=input, check=False, text=None)
+        out = errcheck(out, err)
         input = out
     out = input
     if out:
