@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 #==============================================================================
 # Functionality
@@ -36,7 +36,7 @@ def unquote(x):
     if (x[0] == x[-1]) and (x[0] == '"'):
         x = x[1:-1]
     try:
-        x = x.decode("string_escape")
+        x = x.decode("unicode_escape")
     except ValueError as e:
         pdb.set_trace()
         asserting(False)
@@ -59,7 +59,7 @@ def quote(x):
         return x
     if not reg(r' (?<! [\\] ) \s').search(x):
         return x
-    val = '"%s"' % x.encode("string_escape").replace('"', r'\"')
+    val = '"%s"' % x.encode("unicode_escape").replace('"', r'\"')
     return val
 
 #==============================================================================
@@ -101,10 +101,10 @@ def read(file):
 
 def run():
     if args.verbose:
-        print args
+        print(args)
     if len(args.args) <= 0 and not has_stdin():
         # if there were no args and there was no input, prompt user.
-        print 'Enter input (press Ctrl-D when done):'
+        print('Enter input (press Ctrl-D when done):')
     if has_stdin():
         args.args = ['-'] + list(args.args)
     for file in args.args:
