@@ -99,6 +99,8 @@ def run():
     else:
         alg |= natsort.ns.CAPITALFIRST
     def sortkey(line):
+      # strip leading whitespace.
+      line = line.lstrip()
       # strip terminal escape codes (colorization, etc).
       line = ansi_escape_8bit.sub(b"", line)
       # decode as string. Try UTF-8 first, then fall back to latin1 if we get an error.
