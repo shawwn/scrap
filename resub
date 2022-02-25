@@ -78,25 +78,26 @@ if __name__ == "__main__":
     # print args
     sep = args.separator.encode('utf8').decode('unicode-escape')
 
-    trim_newline = re.compile("\r?\n$")
+    trim_newline = re.compile(b"\r?\n$")
 
-    indata = sys.stdin.read()
-    lines = [trim_newline.sub('', line) for line in indata]
+    indata = sys.stdin.buffer.read()
+    #lines = [trim_newline.sub('', line) for line in indata]
+    lines = indata.splitlines(keepends=False)
 
     flags = 0
     if args.verbose:
         flags |= re.VERBOSE
     if args.multiline:
         flags |= re.MULTILINE | re.DOTALL
-        lines = ['\n'.join(lines) + '\n']
+        lines = [b'\n'.join(lines) + b'\n']
 
-    rx = re.compile(args.pattern, flags)
+    rx = re.compile(args.pattern.encode('utf-8'), flags)
 
     if args.find:
         for m in re.finditer(rx, indata):
-            sys.stdout.write(try_groups(m, args.replacement))
+            sys.stdout.buffer.write(try_groups(m, args.replacement.encode('utf-8')))
             if len(sep) > 0:
-                sys.stdout.write(sep)
+                sys.stdout.buffer.write(sep.encode('utf-8'))
             if not args.global_:
                 break
         """
@@ -110,5 +111,5 @@ if __name__ == "__main__":
             pos = m.end(0)+1
         """
     else:
-        sys.stdout.write(re.sub(rx, args.replacement, indata, count=0 if args.global_ else 1))
+        sys.stdout.buffer.write(re.sub(rx, args.replacement.encode('utf-8'), indata, count=0 if args.global_ else 1))
 
