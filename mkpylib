@@ -13,7 +13,9 @@ set +e
 name="${1:-$dir}"
 shift 1
 
-python_version="${1:-^3.6}"
+lib="$(echo ${name} | sed s/-/_/g)"
+
+python_version="${1:-^3.8}"
 shift 1
 
 year="${year:-$(date +%Y)}"
@@ -22,6 +24,9 @@ shift 1
 
 author="${1:-Shawn Presser}"
 author_short="${1:-Shawn}"
+shift 1
+
+email="${1:-shawnpresser@gmail.com}"
 shift 1
 
 # Personal website
@@ -47,10 +52,10 @@ shift 1
 
 set -e
 
-poetry new --name "$name" "$dir" # --src 
+poetry new --name "$name" "$dir" --src 
 cd "$dir"
 rm -f pyproject.toml
-poetry init --name "$name" --description "$description" --author "$author" --python "$python_version" --license "$license" --dev-dependency 'pytest@^5.2' --no-interaction
+poetry init --name "$name" --description "$description" --author "$author <${email}>" --python "$python_version" --license "$license" --dev-dependency "pytest" --dev-dependency "pytest-cov" --dev-dependency "python-semantic-release" --no-interaction
 git init
 #mv README.rst README.md
 rm -f README.rst
@@ -61,27 +66,35 @@ cat > README.md << EOF
 
 WARNING: This repo is in development. It was automatically generated with [mkpylib](https://github.com/shawwn/scrap/blob/master/mkpylib). If you're reading this message, it means that I use this repo for my own purposes right now. It might not do anything at all; the default functionality is \`print('TODO')\`.
 
-If you really want to try it out, feel free. I recommend reading through the code and commit history to see if it does what you need, or [ask me](#contact) for status updates.
+If you really want to try it out, feel free. I recommend reading through the [tests](/tests/test_basic.py) and commit history to see if it does what you need, or [ask me](#contact) for status updates.
 
 Stay tuned!
 
 ## Install
 
 \`\`\`
-python3 -m pip install -U ${name}
+pip3 install -U ${name}
+\`\`\`
+
+Or develop locally:
+
+\`\`\`
+git clone https://github.com/${github}/${dir} ~/${dir}
+cd ~/${dir}
+python3 setup.py develop
 \`\`\`
 
 ## Usage
 
 \`\`\`py
-import $(echo ${name} | sed s/-/_/g)
+import ${lib}
 
 print('TODO')
 \`\`\`
 
 ## License
 
-${license}
+${license}. See [LICENSE](/LICENSE) file.
 
 ## Contact
 
@@ -134,7 +147,7 @@ __pycache__
 .env
 # setup.py # actually, commit the stub setup.py file so that users can pip3 install -e .
 .hypothesis/
-/poetry.lock
+# /poetry.lock # actually, commit poetry.lock
 EOF
 
 # generate a setup.py file so that `python3 -m install -e .` works.
@@ -143,10 +156,10 @@ EOF
 # add setuptools to build-system requirements.
 # TODO: figure out the not-cursed way to do this.
 cat pyproject.toml \
- | sed 's/"setuptools", //' \
- | sed 's/requires = [\[]\(.*\)[]]/requires = ["setuptools", \1]/g' \
- | sed "s/\(version.*\)/\1\nreadme = \"README.md\"\nhomepage = \"https:\/\/github.com\/${github}\/${dir}\"/" \
- > pyproject.toml.tmp
+ `#| sed 's/"setuptools", //'` \
+ `#| sed 's/requires = [\[]\(.*\)[]]/requires = ["setuptools", \1]/g'` \
+ `| sed "s/\(version.*\)/\1\nhomepage = \"https:\/\/github.com\/${github}\/${dir}\"/"` \
+ | grep -v 'include = ' > pyproject.toml.tmp
 
 cat >> pyproject.toml.tmp <<EOF
 
@@ -155,9 +168,42 @@ cat >> pyproject.toml.tmp <<EOF
 "Support me on Patreon" = "https://www.patreon.com/${patreon}"
 "@${twitter} on Twitter" = "https://www.twitter.com/${twitter}"
 "${hn} on Hacker News" = "https://news.ycombinator.com/threads?id=${hn}"
+
+[tool.semantic_release]
+version_toml = "pyproject.toml:tool.poetry.version"
+branch = "main"
+include_additional_files = "setup.py"
+major_on_zero = false
+build_command = "poetry build"              # build dists
+dist_path = "dist/"                         # where to put dists
+upload_to_pypi = false                      # don't auto-upload to PyPI
+remove_dist = false                         # don't remove dists
 EOF
 
 mv pyproject.toml.tmp pyproject.toml
+
+cat >> src/${lib}/__init__.py <<EOF
+# read version from installed package
+from importlib.metadata import version
+__version__ = version(__name__)
+del version
+EOF
+
+cat >> tests/test_basic.py <<EOF
+import unittest
+
+import ${lib}
+
+class TestCase(unittest.TestCase):
+  def test_basic(self):
+    self.assertEqual(1, 1)
+
+if __name__ == '__main__':
+  unittest.main()
+EOF
+
+# update the poetry.lock file.
+poetry update
 
 # produce a setup.py file
 poetry build --format sdist
@@ -167,7 +213,11 @@ tar -xvf dist/*-`poetry version -s`.tar.gz -O '*/setup.py' > setup.py
 python3 -m pip uninstall "${name}" -y
 
 # install it locally, for development
-python3 -m pip install -e .
+# python3 -m pip install -e .
+python3 setup.py develop
+
+# update setup.py file
+poetry-gen-setup-py
 
 git add .
 git commit -m "Initial commit"
@@ -176,7 +226,9 @@ git commit -m "Initial commit"
 # whether any given name is forbidden on PyPi; no such API exists,
 # so this is the best we can do.
 poetry build
-poetry publish
+# poetry publish
+
+cat <<EOF
 
 # automatically create a private github repo. Set private=1 to make
 # the repo private.
@@ -186,4 +238,5 @@ hub create "$dir" --description "$description" ${private+--private}
 #
 #   hub api -Fvisibility=public -XPATCH "/repos/${github}/${dir}" -H 'Accept:application/vnd.github.nebula-preview+json'
 
-git push --set-upstream origin master
+git push --set-upstream origin main
+EOF
