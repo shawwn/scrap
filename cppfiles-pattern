@@ -1,0 +1,2 @@
+#!/bin/bash
+echo "[.](cpp|cc|cxx|c|h|hpp|hxx|hh|m|mm|in)$"
