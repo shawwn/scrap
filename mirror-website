@@ -3,4 +3,4 @@
 
 # https://stackoverflow.com/questions/18225548/mirroring-a-website-and-maintaining-url-structure
 set -x
-exec wget -r -l inf -k -nc -nH -p -E -e robots=off "$@"
+exec wget -r -l inf -k -nc -nH --no-parent -p -E -e robots=off "$@"
