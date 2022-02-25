@@ -2,12 +2,13 @@
 
 getexts () {
   #splitext | sort | uniq -c
-  grep -E ".*\.[a-zA-Z0-9]*$" | sed -e 's/.*\(\.[a-zA-Z0-9]*\)$/\1/' | sort | uniq -c | sort -n
+  #grep -E ".*\.[a-zA-Z0-9]*$" | sed -e 's/.*\(\.[a-zA-Z0-9]*\)$/\1/' | sort | uniq -c | sort -n
+  path '$ext' | sort | uniq -c | sort -n
 }
 
 listfiles () {
   #l lltype -1
-  find "$@" -type f
+  find "${@:-.}" -type f
 }
 
 if [ -z "$*" ]; then
