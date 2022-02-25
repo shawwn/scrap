@@ -10,7 +10,7 @@ if len(args) <= 0:
     pass
 
 getcol1 = re.compile(rb'^ (?P<match> [\d.]+ ) \s (?P<rest> .*)', re.VERBOSE)
-r = re.compile(rb' (?P<num> [0-9][0-9]+ )[.][0-9]+ (?P<suffix> [\w])', re.VERBOSE)
+r = re.compile(rb' (?P<num> [0-9]+ )[.](?P<digits> [0-9]+) (?P<suffix> [\w])', re.VERBOSE)
 
 for line in fileinput.input(mode='rb'):
     orig = line
@@ -21,8 +21,18 @@ for line in fileinput.input(mode='rb'):
         rest = m.expand(rb'\g<rest>')
 
         outp = humanbytes.bytes2human(inp.decode('utf-8'), format='%(value)0.1f%(symbol)s').encode('utf-8')
-        if r.search(outp):
-            outp = re.sub(r, b'\g<num>\g<suffix>', outp)
+        # if r.search(outp):
+        #     outp = re.sub(r, b'\g<num>.\g<digits>\g<suffix>', outp)
+
+        # if there are multiple leading digits, strip off the decimals.
+        outp = re.sub(rb'([0-9][0-9]+)[.][0-9]+', rb'\1', outp)
+
+        # show bytes as plain numbers.
+        outp = re.sub(rb'([0-9]+)(?:[.][0-9]*)?\s*B', rb'\1', outp)
+
+        # add some padding.
+        outp = outp.rjust(4)
+
         #sys.stdout.write("%s %s\n" % (outp, rest))
         #sys.stdout.buffer.write("%b %b\n" % (outp, rest))
         sys.stdout.buffer.write(outp)
