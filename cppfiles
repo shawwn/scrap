@@ -1,2 +1,10 @@
-#!/bin/sh
-find "${1:-.}" -type f | egrep "[.](cpp|cc|cxx|c|h|hpp|hxx|hh|m|mm)$" | sort -r
+#!/bin/bash
+if [ -t 0 ]
+then
+  find "${@:-.}" -type f | sed 's/^[.][/]//g' | exec "${0}"
+  #shift 1
+  #rgfiles "$@" | exec "${0}"
+else
+  egrep "[.](cpp|cc|cxx|c|h|hpp|hxx|hh|m|mm|in)$"
+fi
+ 
