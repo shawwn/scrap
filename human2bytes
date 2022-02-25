@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import fileinput
 import sys
@@ -9,24 +9,30 @@ args = sys.argv[1:]
 if len(args) <= 0:
     pass
 
-suffix = r'[bBkKmMgGtTpP]'
+suffix = rb'[bBkKmMgGtTpP]'
 
-getcol1 = re.compile(r'^ (?P<prefix> [\s\[]* ) (?P<match> [\d.]+[\s]?' + suffix + r'? ) \s (?P<rest> .*)', re.VERBOSE)
+getcol1 = re.compile(rb'^ (?P<prefix> [\s\[]* ) (?P<match> [\d.]+[\s]?' + suffix + rb'? ) \s (?P<rest> .*)', re.VERBOSE)
 
-for line in fileinput.input():
+for line in fileinput.input(mode='rb'):
     orig = line
     line = line.strip()
     m = getcol1.search(line)
     if m:
-        prefix = m.expand(r'\g<prefix>')
-        inp = m.expand(r'\g<match>')
+        prefix = m.expand(rb'\g<prefix>')
+        inp = m.expand(rb'\g<match>')
         # add suffix if it doesn't exist.
         if not re.compile(suffix, re.VERBOSE).search(inp):
-            inp = inp + 'B'
-        rest = m.expand(r'\g<rest>')
-        outp = humanbytes.human2bytes(inp)
-        prefix = '' # HACK: disabling this for `tree`
-        sys.stdout.write("%s %s %s\n" % (prefix, outp, rest))
+            inp = inp + b'B'
+        rest = m.expand(rb'\g<rest>')
+        outp = humanbytes.human2bytes(inp.decode('utf-8'))
+        #prefix = b'' # HACK: disabling this for `tree`
+        #sys.stdout.buffer.write(b"%s %s %s\n" % (prefix, outp, rest))
+        #sys.stdout.buffer.write(b"%b %d %b\n" % (prefix, outp, rest))
+        sys.stdout.buffer.write(b"%d" % outp)
+        sys.stdout.buffer.write(b" ")
+        sys.stdout.buffer.write(rest)
+        sys.stdout.buffer.write(b"\n")
+        sys.stdout.buffer.flush()
     else:
-        sys.stdout.write(orig)
+        sys.stdout.buffer.write(orig)
 
