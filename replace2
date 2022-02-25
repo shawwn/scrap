@@ -7,9 +7,9 @@ if [ ! -z "${pattern}${replacement}" ]
 then
   # input="$(cat)"
   # x="$(echo "$input" | perl -p -e "s/$pattern/$replacement/g")"
-  cat | resub -m "$pattern" "$replacement" | replace2 "$@"
+  cat | resub --no-verbose -m "$pattern" "$replacement" | exec replace2 "$@"
 else
-  cat
+  exec cat
 fi
 
 
