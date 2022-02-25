@@ -1,4 +1,4 @@
 #!/bin/bash
 
-ps aux | narrow "$@"
+(ps aux | sponge) | narrow '!(ps-find|narrow)' "$@"
 
