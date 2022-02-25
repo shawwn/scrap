@@ -35,11 +35,12 @@ parser.add_argument('-v', '--verbose',
     action="store_true",
     help="verbose output" )
      
-parser.add_argument('start', type=str)
-parser.add_argument('stop', type=str, nargs='?')
-parser.add_argument('step', type=str, nargs='?')
-parser.add_argument('-w', '--width', type=int, default=None)
-parser.add_argument('-e', '--exclusive', action='store_true')
+parser.add_argument('start', type=float)
+parser.add_argument('stop', type=float, nargs='?')
+parser.add_argument('step', type=float, nargs='?')
+parser.add_argument('format', type=str, nargs='?', default='')
+parser.add_argument('-i', '--inclusive', action='store_true')
+parser.add_argument('-s', '--sep', '--separator', type=str, default=r'\n')
 
 args = None
 
@@ -49,11 +50,13 @@ args = None
 
 
 def is_integer(x):
-  return np.can_cast(x, np.int32)
+  #return np.can_cast(x, np.int32)
+  return isinstance(x, int)
 
 
 def is_float(x):
-  return np.can_cast(x, np.float32)
+  #return np.can_cast(x, np.float32)
+  return isinstance(x, float)
 
 
 def is_exact(x):
@@ -62,7 +65,7 @@ def is_exact(x):
 
 def number(x):
   if isinstance(x, str):
-    if re.match('[-]?[0-9]+', x):
+    if re.fullmatch('[-]?[0-9]+', x):
       return int(x)
     else:
       return float(x)
@@ -70,18 +73,33 @@ def number(x):
 
 
 def run():
+    args.sep = args.sep.encode().decode('unicode-escape')
     if args.verbose:
         print(args)
-    if args.stop is None:
-      args.stop = args.start
-      args.start = '0'
-    if args.step is None:
-      args.step = '1'
-    if args.width is None:
-      args.width = len(args.start)
-    args.start = number(args.start)
-    args.stop = number(args.stop)
-    args.step = number(args.step)
+    if args.step is None and args.stop is None:
+      args.start, args.stop, args.step = 0, args.start, 1
+    elif args.step is None:
+      args.step = 1
+    args.start = float(args.start)
+    args.stop = float(args.stop)
+    args.step = float(args.step)
+    if is_exact(args.start) and is_exact(args.stop) and is_exact(args.step):
+      args.start = int(args.start)
+      args.stop = int(args.stop)
+      args.step = int(args.step)
+
+    if args.inclusive:
+      args.stop += args.step
+
+    c = ''
+    while args.start < args.stop if args.step > 0 else args.stop < args.start:
+      #sys.stdout.write(c + f"%0{args.width}d" % i)
+      print(f"{c}{args.start:{args.format}}", end='')
+      args.start += args.step
+      c = args.sep
+    print('')
+    return
+
     c = ''
     for i in range(args.start, args.stop + (0 if args.exclusive else 1), args.step):
       sys.stdout.write(c + f"%0{args.width}d" % i)
