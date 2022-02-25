@@ -1,0 +1,21 @@
+#!/bin/bash
+
+if [ -t 0 ]
+then
+
+  dir="${1}"
+  shift
+  exts="$@"
+
+  if [ -z "${dir}" ] || [ -z "${exts}" ]
+  then
+      1>&2 echo "usage:"
+      1>&2 echo "  ${0} <directory> <ext..>"
+      exit 1
+  fi
+
+  find $dir -type f | exec "${0}" "$@"
+else
+  natsort | narrow "$@" | file-name-directory  | uniq -c | sort -n
+fi
+
