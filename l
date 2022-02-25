@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python3
 
 #==============================================================================
 # Functionality
@@ -94,9 +94,10 @@ args = None
 #==============================================================================
 
 def errcheck(out, err):
-    if err or (out.find('error opening') >= 0):
-        sys.stderr.write(err or out)
-        sys.exit(1)
+    # if err or (out.find('error opening') >= 0):
+    #     sys.stderr.write(err or out)
+    #     sys.exit(1)
+    pass
 
 def cmd(progs, paths, baseprog="lltree"):
     progs = list(progs)
@@ -105,7 +106,7 @@ def cmd(progs, paths, baseprog="lltree"):
       paths += ['.']
     #paths = ['"%s"' % x for x in paths]
     if args.verbose:
-        print 'progs=%s, paths=%s, baseprog=%s' % (repr(progs), repr(paths), repr(baseprog))
+        print('progs=%s, paths=%s, baseprog=%s' % (repr(progs), repr(paths), repr(baseprog)))
     flags = []
     progflags = []
     if args.reverse:
@@ -118,30 +119,30 @@ def cmd(progs, paths, baseprog="lltree"):
     if args.dirs_only:
         flags += ['-d']
     if args.verbose:
-        print 'scrap.system(%s, %s) | %s' % (repr(baseprog), repr(flags + progflags + paths), ' | '.join(progs))
-    input = ''
+        print('scrap.system(%s, %s) | %s' % (repr(baseprog), repr(flags + progflags + paths), ' | '.join(progs)))
+    input = b''
     for path in paths:
-        out, err = scrap._system(baseprog, flags + progflags + [path])
+        out, err = scrap._system(baseprog, flags + progflags + [path], check=True, text=None)
         errcheck(out, err)
         input += out
     for prog in progs:
-        out, err = scrap._system(prog, progflags, stdin=input)
+        out, err = scrap._system(prog, progflags, stdin=input, check=True, text=None)
         errcheck(out, err)
         input = out
     if args.only_paths:
-        #out, err = scrap._system('cols', [',3:'], stdin=input)
-        out, err = scrap._system('l-1', [], stdin=input)
+        #out, err = scrap._system('cols', [',3:'], stdin=input, check=True)
+        out, err = scrap._system('l-1', [], stdin=input, check=True, text=None)
         errcheck(out, err)
         input = out
     out = input
     if out:
-        sys.stdout.write(out)
+        sys.stdout.buffer.write(out)
     return input
 
 
 def run():
     if args.verbose:
-        print args
+        print(args)
     cmd(args.prog, args.args + args.path)
 
 def remove_all_in(lst, x):
