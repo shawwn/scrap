@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import fileinput
 import sys
 
@@ -34,6 +34,6 @@ if len(args) <= 0:
 
 
 
-for line in sys.stdin:
-    sys.stdout.write(line.rstrip()[::-1] + '\n')
+for line in sys.stdin.buffer:
+    sys.stdout.buffer.write(line.rstrip()[::-1] + b'\n')
 
