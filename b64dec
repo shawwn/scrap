@@ -10,7 +10,7 @@ if len(args) <= 0:
 
 indata = ''.join([line for line in fileinput.input()])
 outdata = b64decode(indata.replace('\n', ''))
-sys.stdout.write(outdata)
-sys.stdout.flush()
+sys.stdout.buffer.write(outdata)
+sys.stdout.buffer.flush()
 
 
