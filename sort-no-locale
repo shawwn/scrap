@@ -1,0 +1,4 @@
+#!/bin/bash
+
+# https://stackoverflow.com/questions/19242275/re-error-illegal-byte-sequence-on-mac-os-x
+LC_ALL=C exec sort "$@"
