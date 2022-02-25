@@ -1,4 +1,11 @@
 #!/bin/bash
 
-find . -type f | narrow "$@"
+exec find "${@:-.}" -type f
+
+pat="${1:-*}"
+shift
+dir="${1:-.}"
+shift
+
+echo "$pat" | resub -f '([^,\s]+)' '-name *\1' | rtrim | joinlines ' -or ' | xargs find -L "$dir" -type f "$@"
 
