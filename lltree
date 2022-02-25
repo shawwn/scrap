@@ -25,6 +25,20 @@ fi
 # tree -l -D -h -i -f --ignore-case --noreport --dirsfirst --timefmt "%Y-%m-%d %T" $opts "$@"
 # EOF
 
+tree -a -l -D -h -i -f --ignore-case --noreport --dirsfirst --timefmt "%Y-%m-%d %T" $opts "$@" \
+  `# skip the first line, since it's always "."` \
+  | skip-n-lines 1 \
+  `# tree surrounds the first column with square brackets. Strip these, for easier parsing later on.` \
+  | resub '\[ (.*?) \] (.*)' '\1\2'
+
+# We're done!
+exit 0
+
+# The rest of this file was my previous solution (before Feb 25 2022).
+# Rather than delete it, I'll leave it here as a no-op.  (I like
+# re-reading my old solutions, if only to be reminded of what didn't
+# work!)
+
 read -r -d '' output <<EOF
 `tree -a -l -D -h -i -f --ignore-case --noreport --dirsfirst --timefmt "%Y-%m-%d %T" $opts "$@"`
 EOF
