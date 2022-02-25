@@ -328,7 +328,7 @@ def cmd(cmd, stdin=None, stdout=subprocess.PIPE, stderr=None, shell=False):
     stdin=None
 
     if inputdata:
-        if type(inputdata) is str:
+        if isinstance(inputdata, str):
             stdin = subprocess.PIPE
         elif hasattr(inputdata, 'read'):
             stdin = subprocess.PIPE
@@ -345,37 +345,46 @@ def cmd(cmd, stdin=None, stdout=subprocess.PIPE, stderr=None, shell=False):
     return p.communicate(input=inputdata)
 command=cmd
 
-def _stdin(stdin):
-    if type(stdin) is str:
-        return subprocess.PIPE, stdin
-    else:
-        return stdin, None
+_unset = object()
 
-def _popen(cmd, stdout, stdin, shell):
-    stdin, input = _stdin(stdin)
+def _stdin(stdin, text=_unset):
+    if isinstance(stdin, str):
+        return subprocess.PIPE, stdin, 'utf-8' if text is _unset else text
+    elif isinstance(stdin, bytes):
+        return subprocess.PIPE, stdin, None if text is _unset else text
+    elif stdin is None:
+        return None, None, 'utf-8' if text is _unset else text
+    else:
+        raise NotImplementedError()
+
+def _popen(cmd, stdout, stdin, shell, check=False, text=_unset):
+    stdin, input, text = _stdin(stdin, text)
     #sys.stderr.write('_popen() %s\n' % repr(cmd))
-    p = subprocess.Popen(cmd, stdout=stdout, stdin=stdin, shell=shell, env=getenv())
+    p = subprocess.Popen(cmd, stdout=stdout, stdin=stdin, shell=shell, env=getenv(), text=text)
     out, err = p.communicate(input=input)
+    if check:
+      if p.returncode != 0:
+        raise subprocess.CalledProcessError(p.returncode, cmd, out, err)
     return out, err
 
 # call system function.
-def _system(cmd, args, stdin=None, stdout=subprocess.PIPE):
-    out, err = _popen([cmd] + flatten(args), stdout=stdout, stdin=stdin, shell=False)
+def _system(cmd, args, stdin=None, stdout=subprocess.PIPE, check=False, text=_unset):
+    out, err = _popen([cmd] + flatten(args), stdout=stdout, stdin=stdin, shell=False, check=check, text=text)
     return out, err
 
-def system(cmd, args, stdin=None, stdout=subprocess.PIPE):
-    out, err = _system(cmd, args, stdin=stdin, stdout=stdout)
+def system(cmd, args, stdin=None, stdout=subprocess.PIPE, check=False, text=_unset):
+    out, err = _system(cmd, args, stdin=stdin, stdout=stdout, check=check, text=text)
     return out
 
 #
 # Careful with _shell() and shell().
 #
-def _shell(cmd, stdin=None, stdout=subprocess.PIPE):
-    out, err = _popen(cmd, stdout=stdout, stdin=stdin, shell=True)
+def _shell(cmd, stdin=None, stdout=subprocess.PIPE, check=False, text=_unset):
+    out, err = _popen(cmd, stdout=stdout, stdin=stdin, shell=True, check=check, text=text)
     return out, err
 
-def shell(cmd, stdin=None, stdout=subprocess.PIPE):
-    out, err = _shell(cmd, stdin=stdin, stdout=stdout)
+def shell(cmd, stdin=None, stdout=subprocess.PIPE, check=False, text=_unset):
+    out, err = _shell(cmd, stdin=stdin, stdout=stdout, check=check, text=text)
     return out
 
 def verbose():
