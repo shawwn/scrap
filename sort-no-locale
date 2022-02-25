@@ -1,4 +1,13 @@
 #!/bin/bash
 
 # https://stackoverflow.com/questions/19242275/re-error-illegal-byte-sequence-on-mac-os-x
+
+# e.g. to reproduce a case where this is necessary:
+#
+#   l 1 llsize | human2bytes | sort-no-locale -n
+#
+# if we try using sort -n rather than sort-no-locale -n, we'll get
+# an error: "sort: Illegal byte sequence"
+
+
 LC_ALL=C exec sort "$@"
