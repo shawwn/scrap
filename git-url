@@ -1,3 +1,7 @@
 #!/bin/bash
 
-exec git remote get-url "$(git remote)" "$@"
+remote="${1:-$(git remote)}"
+
+shift 1
+
+exec git remote get-url "${remote}" "$@"
