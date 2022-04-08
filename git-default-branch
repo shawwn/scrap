@@ -1,0 +1,9 @@
+#!/bin/bash
+
+# https://davidwalsh.name/get-default-branch-name
+
+url="${1:-$(git-url)}"
+shift 1
+
+git remote show "${url}" | grep 'HEAD branch' | cut -d' ' -f5
+
