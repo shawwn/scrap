@@ -1,0 +1,19 @@
+#!/bin/bash
+onnx="${1}"
+shift 1
+
+if [ -z "${onnx}" ]
+then
+    1>&2 echo "usage:"
+    1>&2 echo "  ${0} <foo.onnx> [<option>]"
+    exit 1
+fi
+
+set -x
+
+dir="${onnx%.*}"
+mkdir -p "$dir"
+
+exec python3 -m onnxconverter_common.onnx2py "${onnx}" "${dir}/model.py"
+
+
