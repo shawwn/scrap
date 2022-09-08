@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 #==============================================================================
 # Functionality
@@ -30,7 +30,7 @@ def main():
     #print args
     lo = int(args.min) if args.min else 0
     hi = int(args.max)
-    print randint(lo, hi)
+    print(randint(lo, hi))
 
 if __name__ == "__main__":
     args = parser.parse_args()
