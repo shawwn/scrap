@@ -5,6 +5,6 @@ then
   #shift 1
   #rgfiles "$@" | exec "${0}"
 else
-  egrep "[.](cpp|cc|cxx|c|h|hpp|hxx|hh|m|mm|in)$"
+  egrep "[.](cpp|cc|cxx|c|h|hpp|hxx|hh|m|mm|in)$" | grep -v 'cmake-build-debug'
 fi
  
