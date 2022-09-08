@@ -1,0 +1,4 @@
+#!/bin/bash
+# https://unix.stackexchange.com/questions/4847/make-find-show-slash-after-directories/4849#4849
+exec gfind "${@:-.}" \( -type d -printf "%p/\n" , ! -type d -print \)
+
