@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import fileinput
 import sys
 import os
@@ -22,10 +22,11 @@ for filename in args:
         sys.stderr.write('not a file: %s\n' % filename)
         continue
 
-    with open(filename) as f:
-        text = f.read().replace('\r', '')
+    with open(filename, 'rb') as f:
+        text = f.read()#.replace('\r', '')
         if len(text) > 0 or not skip_empty:
-            sys.stdout.write('"%%file: %s"\n' % filename)
-            sys.stdout.write('%s\n' % text)
+            sys.stdout.buffer.write(b'"%%file: %s"\n' % filename.encode('utf-8'))
+            sys.stdout.buffer.write(text)
+            sys.stdout.buffer.write(b'\n')
             sys.stdout.flush()
 
