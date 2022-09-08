@@ -1,2 +1,2 @@
 #!/bin/bash
-exec rgp -g '*.l' -g '*.arc' -g '*.el' -g '*.scm' -g '*.rkt' "$@"
+exec rgp -g '*.l' -g '*.arc' -g '*.el' -g '*.scm' -g '*.rkt' -g '*.e' -g '*.elf' "$@"
