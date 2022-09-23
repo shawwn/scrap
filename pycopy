@@ -1,0 +1,5 @@
+#!/bin/bash
+
+#( pbpaste | rmblanks ; echo ''; echo ''; echo '') | replace '\nclass' '\n\n\nclass' | replace '\ndef' '\n\n\ndef' | pbcopy
+( ( [ -t 0 ] && pbpaste || cat ) | rmblanks ; echo ''; echo ''; echo '') | resub -m '\n ( [^\s\}\]\)] )' '\n\n\n\1' | resub -m '\n([@#].*?)\n(\n+)' '\n\1\n' | resub -m '\bprint\s+([^(].*?)\n' 'print(\1)\n' | resub -m '\n\n\n+' '\n\n' | resub -m '^(@[^\n]+)\s*' '\1\n' | pbcopy
+pbpaste
