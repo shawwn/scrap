@@ -45,7 +45,7 @@ import urllib.parse
 
 def process(line):
   # print(html.escape(line), end='')
-  print(urllib.parse.quote_plus(line), end='')
+  print(urllib.parse.quote_plus(line).replace("+", "%20"), end='')
 
 def run():
     if args.verbose:
