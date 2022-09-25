@@ -40,10 +40,12 @@ args = None
 #==============================================================================
 # Main
 #==============================================================================
-import html
+# import html
+import urllib.parse
 
 def process(line):
-  print(html.unescape(line), end='')
+  # print(html.unescape(line), end='')
+  print(urllib.parse.unquote_plus(line), end='')
 
 def run():
     if args.verbose:
