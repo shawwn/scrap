@@ -1,5 +1,11 @@
 #!/bin/bash
-# See bottom of this file for a usage example.
+#
+# Example:
+#
+#   socat-forward-https-to-local-port news.ycombinator.com 8080
+#
+# Now you can open http://localhost:8080 in Chrome, and you should be
+# browsing Hacker News.
 
 url="${1}"
 shift 1
@@ -7,37 +13,33 @@ shift 1
 if [ -z "${url}" ]
 then
     1>&2 echo "usage:"
-    1>&2 echo "  ${0} <url> [localport=8080]"
+    1>&2 echo "  ${0} <url> [port=8080]"
     exit 1
 fi
 
 port="${1:-8080}"
 shift 1
 
-set -x
+echo ""
+echo "Try browsing to:"
+echo ""
+echo "  http://localhost:${port}"
+echo ""
+echo ""
 
+
+# This doesn't work:
+# exec socat "ssl:${url}:443" "TCP-LISTEN:${port},reuseaddr,fork"
+
+# Spin loop instead.
 while true
 do
-  socat "ssl:${url}:443" "TCP-LISTEN:${port},reuseaddr"
-  sleep 0.15
+  for i in {0..1}
+  do
+    set -x
+    socat "ssl:${url}:443" "TCP-LISTEN:${port},reuseaddr"
+    set +x
+  done
+  sleep 0.1
 done
-exit 0
 
-
-# Usage example:
-#
-# After running...
-#
-#   socat-forward-https-to-local-port news.ycombinator.com 8080
-#
-# ... open a new terminal, then run this:
-
-
-body="GET / HTTP/1.1
-Host: news.ycombinator.com
-User-Agent: curl/7.64.1
-Accept: */*
-
-"
-
-echo -n "$body" | nc localhost 8080
