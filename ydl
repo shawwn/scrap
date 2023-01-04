@@ -1,0 +1,2 @@
+#!/bin/bash
+pbpaste | xargs youtube-dl
