@@ -1,0 +1,2 @@
+#!/bin/bash
+2>/dev/null files ~ | narrow "$USER/[.]" '!_sessions' '![.]git/' '![.]vim/bundle' '![.]DS_Store' '![.]CFUser' '![.]json$' '![.]bak$' '!_history$'
