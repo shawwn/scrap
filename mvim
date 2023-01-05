@@ -1,0 +1,20 @@
+#!/bin/sh
+set -e
+
+file="$1"
+
+# Does the specified file already exist?
+if [ -f "$file" ]
+then
+  # Are we opening mvim without any extra args?
+  if [ -z "$2" ]
+  then
+    # Then try to open the existing file in an existing MacVim editor,
+    # instead of spawning a new one.
+    exec open -a MacVim "$@"
+  fi
+fi
+
+# Otherwise fall back to the standard mvim script.
+exec mvim-std "$@"
+
