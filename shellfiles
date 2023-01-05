@@ -1,0 +1,2 @@
+#!/bin/bash
+dotfiles | narrow '((profile|rc)$)' '!vim' '!htop' '!tldr'
