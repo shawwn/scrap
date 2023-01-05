@@ -1,0 +1,4 @@
+#!/bin/sh
+
+# Maybe someday fall back to something else.
+exec mvim "$@"
