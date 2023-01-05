@@ -1,68 +1,13 @@
-#!/usr/bin/env python3
+#!/bin/sh
+set -e
 
-#==============================================================================
-# Functionality
-#==============================================================================
-import pdb
-import sys
-import os
-import re
-import scrap
-
-# utility funcs, classes, etc go here.
-
-def asserting(cond):
-    if not cond:
-        pdb.set_trace()
-    assert(cond)
-
-def has_stdin():
-    return not sys.stdin.isatty()
-
-def rx(pat, flags=0):
-    return re.compile(pat, re.VERBOSE | flags)
-
-#==============================================================================
-# Cmdline
-#==============================================================================
-import argparse
-
-parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter, 
-    description="""
-TODO
-""")
-     
-parser.add_argument('-v', '--verbose',
-    action="store_true",
-    help="verbose output" )
-
-args = None
-
-#==============================================================================
-# Main
-#==============================================================================
-
-def run():
-    if args.verbose:
-        print(args)
-    if len(args.args) <= 0 and not has_stdin():
-        # if there were no args and there was no input, prompt user.
-        print('Enter input (press Ctrl-D when done):')
-    if len(args.args) <= 0 or has_stdin():
-        indata = sys.stdin.read()
-    # for each arg on cmdline...
-    for arg in args.args:
-        if os.fork() == 0:
-            scrap.shell("mvim %s &" % arg)
-            sys.exit(0)
-
-def main():
-    global args
-    if not args:
-        args, leftovers = parser.parse_known_args()
-        args.args = leftovers
-    return run()
-
-if __name__ == "__main__":
-    main()
-
+for file in "$@"
+do
+  mvim "$file"
+  # if [ -f "$file" ]
+  # then
+  #   open -a MacVim "$file"
+  # else
+  #   mvim-std "$file"
+  # fi
+done
