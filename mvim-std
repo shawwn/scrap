@@ -30,6 +30,11 @@ then
 	exit 1
 fi
 binary="$VIM_APP_DIR/MacVim.app/Contents/MacOS/Vim"
+if [ ! -x "$binary" ]
+then
+	echo "Sorry, your VIM_APP_DIR variable is set, but $binary doesn't exist.  Try setting the VIM_APP_DIR environment variable to the directory containing MacVim.app."
+	exit 1
+fi
 
 # Next, peek at the name used to invoke this script, and set options
 # accordingly.
