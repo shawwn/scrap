@@ -1,4 +1,8 @@
 #!/bin/sh
 
 # Maybe someday fall back to something else.
-exec mvim "$@"
+#exec mvim "$@"
+
+# Turns out the above wasn't suitable for writing commit messages.
+# https://superuser.com/questions/628390/making-macvim-gvim-block-the-terminal-until-closed
+exec mvim -f "$@"
