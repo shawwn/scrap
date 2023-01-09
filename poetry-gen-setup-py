@@ -34,6 +34,7 @@ base_kwargs = {
     'version': info['version'],
     'description': info.get('description'),
     'long_description': open(path(info.get('readme', 'README.md'))).read(),
+    'long_description_content_type': 'text/markdown',
     'author': author,
     'author_email': author_email,
     'url': info.get('homepage'),
