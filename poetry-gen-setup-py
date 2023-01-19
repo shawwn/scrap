@@ -70,7 +70,7 @@ def path(to):
 
 exec(compile(open(path("setup_info.py")).read(), path("setup_info.py"), "exec"))
 ' \
-  | resub -m 'setup_kwargs\s*=\s*[{].*?[}]' "
+  | resub -m 'setup_kwargs\s*=\s*[{].*?^[}]' "
 setup_kwargs = {
     'package_dir': package_dir,
     'packages': packages,
