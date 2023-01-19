@@ -1,0 +1,7 @@
+#!/bin/bash
+if [ -z "$1" ]
+then
+  sudo fs_usage -f filesys
+else
+  sudo fs_usage -f filesys | rg -i "$@"
+fi
