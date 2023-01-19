@@ -1,4 +1,7 @@
 #!/bin/bash
+
+# e.g. `watchfs plist` will find all disk activity related to .plist files
+
 if [ -z "$1" ]
 then
   sudo fs_usage -f filesys
