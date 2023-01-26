@@ -3,4 +3,4 @@
 # quit unless it's an executable.
 which "$1" 1>/dev/null || exit 1
 
-exec dirname "$(whereis "$1")"
+exec dirname "$(wherepath "$1")"
