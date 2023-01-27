@@ -1,4 +1,4 @@
 #!/bin/sh
 
-scale=4 # results will print to the 4th decimal
+scale=${scale:-4} # results will print to the 4th decimal
 echo "scale=$scale; $@" | bc -l
