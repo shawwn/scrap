@@ -1,4 +1,8 @@
 #!/bin/bash
+if [ -x /usr/bin/watch ]
+then
+  exec /usr/bin/watch "$@"
+fi
 
 while true
 do
