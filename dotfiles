@@ -9,4 +9,4 @@
 2>/dev/null files /etc/ | natsort | replace '//' '/' | narrow '(rc|profile)' '(bash|zsh|csh|profile)' '!Apple_Terminal'
 
 # dotfiles under home dir.
-2>/dev/null files ~ | narrow "$USER/[.]" '!_sessions' '![.]git/' '![.]vim/bundle' '![.]DS_Store' '![.]CFUser' '![.]json$' '![.]bak$' '!_history$'
+2>/dev/null files ~ | narrow "$USER/[.]" '!_sessions' '![.]git/' '![.]vim/bundle' '![.]DS_Store' '![.]CFUser' '![.]json$' '![.]bak$' '!_history$' '!/[.]triton' '!/[.]ipython/' '!/[.]py$' '!/[.]tldrc' '!/[.]rustup/' '!/[.]cargo/' '!/[.]cache/' '!/[.]npm/'
