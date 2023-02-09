@@ -9,7 +9,7 @@ args = sys.argv[1:]
 if len(args) <= 0:
     pass
 
-getcol1 = re.compile(rb'^ (?P<match> [\d.]+ ) \s (?P<rest> .*)', re.VERBOSE)
+getcol1 = re.compile(rb'^ (?P<match> [\d.]+ ) \s? (?P<rest> .*$)', re.VERBOSE)
 r = re.compile(rb' (?P<num> [0-9]+ )[.](?P<digits> [0-9]+) (?P<suffix> [\w])', re.VERBOSE)
 
 for line in fileinput.input(mode='rb'):
