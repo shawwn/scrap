@@ -1,0 +1,3 @@
+#!/bin/bash
+
+mediafiles | natsort | narrow '![.]part([.]|$)' | print0 | xargs -0 mkvlc

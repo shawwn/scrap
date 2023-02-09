@@ -1,0 +1,9 @@
+#!/bin/bash
+set -e
+
+echo '#EXTM3U'
+for x in "$@"
+do
+  echo "#EXTINF:310,$(basename "$x")"
+  echo "$x" | urlencode
+done
