@@ -1,0 +1,16 @@
+#!/bin/bash
+
+img="${1}"
+shift 1
+
+if [ -z "${img}" ]
+then
+    1>&2 echo "usage:"
+    1>&2 echo "  ${0} <img> [<option>]"
+    exit 1
+fi
+
+
+set -ex
+json2img "$img"
+open "${img}.png"
