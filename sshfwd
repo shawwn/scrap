@@ -3,6 +3,8 @@
 PORT=$1
 shift 1
 
-echo ssh -L $PORT:localhost:$PORT $*
-     ssh -L $PORT:localhost:$PORT $*
+local="${local:-$PORT}"
+
+echo ssh -L $local:localhost:$PORT $*
+     ssh -L $local:localhost:$PORT $*
 
