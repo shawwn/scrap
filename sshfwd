@@ -1,10 +1,10 @@
 #!/bin/sh
 
-PORT=$1
+port="$1"
 shift 1
 
-local="${local:-$PORT}"
+local="${local:-$port}"
 
-echo ssh -L $local:localhost:$PORT $*
-     ssh -L $local:localhost:$PORT $*
+echo ssh -L  $local:localhost:$port  "$@"
+exec ssh -L "$local:localhost:$port" "$@"
 
