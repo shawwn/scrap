@@ -35,27 +35,58 @@ parser.add_argument('-v', '--verbose',
     action="store_true",
     help="verbose output" )
 
+parser.add_argument('-l', '--left',
+    action="store_true",
+    help="Trim only the left side" )
+
+parser.add_argument('-r', '--right',
+    action="store_true",
+    help="Trim only the right side" )
+
 args = None
 
 #==============================================================================
 # Main
 #==============================================================================
 
+def strip(x, *arg):
+  if not args.left and not args.right:
+    return x.strip(*arg)
+  if args.left:
+    x = x.lstrip(*arg)
+  if args.right:
+    x = x.rstrip(*arg)
+  return x
+
+def trim(s, *choices):
+  if not choices:
+    return strip(s)
+  s1 = s
+  while True:
+    for choice in choices:
+      s = strip(s, choice)
+    if s1 == s:
+      return s
+    s1 = s
+
+def split_newline(full):
+  line, = full.splitlines()
+  return line, full[len(line):]
+
 def run():
     if args.verbose:
-        print(args)
-    if len(args.args) <= 0 and not has_stdin():
-        # if there were no args and there was no input, prompt user.
-        print('Enter input (press Ctrl-D when done):')
-    if len(args.args) <= 0 or has_stdin():
-        for line in sys.stdin:
-            print(line.strip())
+        print(args, file=sys.stderr)
+    for line in sys.stdin:
+        line, endl = split_newline(line)
+        line = trim(line, *args.args)
+        print(line, end=endl)
 
 def main():
     global args
     if not args:
         args, leftovers = parser.parse_known_args()
         args.args = leftovers
+        args.args = [x.encode('utf-8').decode('unicode-escape') for x in args.args]
     return run()
 
 if __name__ == "__main__":
