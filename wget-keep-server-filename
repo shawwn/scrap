@@ -1,0 +1,4 @@
+#!/bin/bash
+
+# https://unix.stackexchange.com/questions/453465/wget-how-to-download-a-served-file-keeping-its-name
+exec wget --content-disposition "$@"
