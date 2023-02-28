@@ -1,0 +1,3 @@
+#!/bin/bash
+
+print0 | xargs -0 -P 16 -n 1 -I {} sh -c 'echo "$1"; untabify "$1" | sponge "$1"' -- "{}"
