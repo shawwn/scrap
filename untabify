@@ -2,6 +2,8 @@
 
 (y-do
 
+(setq-default tab-width 4) ; defaults to 8
+
 (define untabify-file (filename)
   (with-temp-buffer
     (insert-file-contents-literally filename)
