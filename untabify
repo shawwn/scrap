@@ -8,7 +8,10 @@
   (with-temp-buffer
     (insert-file-contents-literally filename)
     (untabify (point-min) (point-max))
-    (buffer-string)))
+    ;(buffer-string)
+    ; https://stackoverflow.com/questions/43987299/utf-8-bytes-to-string
+    (decode-coding-region (point-min) (point-max) 'utf-8 t)
+    ))
 
 (if command-line-args-left
     (each filename command-line-args-left
