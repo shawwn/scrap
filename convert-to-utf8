@@ -1,0 +1,9 @@
+#!/bin/bash
+
+# https://superuser.com/questions/151981/converting-the-encoding-of-a-text-file-mac-os-x
+
+# example:
+#
+#  find . -type f -name '*.txt' | convert-to-utf8
+
+print0 | xargs -0 -n 1 -I {} sh -c 'iconv -f iso-8859-1 -t utf-8 < "$1" | sponge "$1"' -- "{}"
