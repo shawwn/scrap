@@ -1,0 +1,5 @@
+#!/bin/bash
+set -x
+# https://stackoverflow.com/questions/13541615/how-to-remove-files-that-are-listed-in-the-gitignore-but-still-on-the-repositor
+exec git clean -xdn "$@"
+
