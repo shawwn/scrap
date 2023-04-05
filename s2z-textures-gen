@@ -1,0 +1,26 @@
+#!/bin/bash
+set -ex
+
+s2z="${1:-textures.s2z}"
+shift 1
+
+if [ -z "${s2z}" ]
+then
+    1>&2 echo "usage:"
+    1>&2 echo "  ${0} <textures.s2z> [<option>]"
+    exit 1
+fi
+
+
+if [ ! -d textures ]
+then
+  mkdir -p textures
+  cd textures
+  7zz x ../"${s2z}" 1>&2
+  cd ..
+fi
+
+echo 'set -ex'
+files textures | natsort | narrow dds$ | resub -m '^(textures/[0]+[0-6]/)(.*?/)([^/]+)[.]dds$' 'mkdir -p "\2"' | natsort | uniq
+files textures | natsort | narrow dds$ | resub -m '^(textures/[0]+[0-6]/)(.*?)[.]dds$' 'convert "\1\2.dds" "\2.tga"' | natsort -r
+
