@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import fileinput
 import sys
@@ -13,8 +13,8 @@ if len(args) > 0:
     n = int(args[0])
 
 if n >= 0:
-    sys.stdout.write(sys.stdin.read(n))
+    sys.stdout.buffer.write(sys.stdin.buffer.read(n))
 else:
-    data = sys.stdin.read()
-    sys.stdout.write(data[0:n])
+    data = sys.stdin.buffer.read()
+    sys.stdout.buffer.write(data[0:n])
 
