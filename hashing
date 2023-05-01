@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import sys
 import argparse
 import hashlib
@@ -10,6 +10,6 @@ parser.add_argument('infile', nargs='?', type=argparse.FileType('r'),
 args = parser.parse_args()
 
 m = hashlib.new(args.hashname)
-m.update(args.infile.read())
-print m.hexdigest()
+m.update(args.infile.buffer.read())
+print(m.hexdigest())
 
