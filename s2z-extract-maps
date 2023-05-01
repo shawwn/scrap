@@ -1,0 +1,5 @@
+#!/bin/bash
+# usage:
+#   cd game/maps ; s2z-extract-maps
+
+files . | narrow s2z$ | xargs -I {} -n 1 sh -c 'map="$(basename "{}" .s2z)"; set -ex; mkdir -p "$map"; cd "$map"; yes n | 7x ../"$map.s2z"'
