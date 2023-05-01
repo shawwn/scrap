@@ -1,0 +1,3 @@
+#!/bin/bash
+
+files | narrow '_rxgb[.]tga$' | natsort | resub -m '^(.*?)_rxgb[.]tga$' 'echo img-merge-alpha "\1_rxgb.tga" "\1_s.tga" "\1.tga" ; img-merge-alpha "\1_rxgb.tga" "\1_s.tga" "\1.tga"'
