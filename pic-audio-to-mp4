@@ -1,0 +1,20 @@
+#!/bin/sh
+
+pic="${1}"
+wav="${2}"
+out="${3}"
+
+if [ -z "${out}" ]
+then
+    echo "usage:"
+    echo "  ${0} foo.png foo.wav foo.mp4"
+    exit 1
+fi
+
+set -ex
+shift 1
+shift 1
+shift 1
+
+
+exec ffmpeg -loop 1 -y -i "${pic}" -i "${wav}" -shortest "${out}"
