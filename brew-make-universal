@@ -1,0 +1,33 @@
+#!/bin/bash
+
+keg="${1}"
+shift 1
+
+if [ -z "${keg}" ]
+then
+    1>&2 echo "usage:"
+    1>&2 echo "  ${0} <keg> [<option>]"
+    exit 1
+fi
+
+if [ -d "${keg}" ]
+then
+    1>&2 echo "${dir} exists"
+    exit 1
+fi
+
+
+set -ex
+
+root_x64="/usr/local/opt/${keg}"
+root_arm64="/opt/homebrew/opt/${keg}"
+
+rsync -Pa "${root_arm64}/" ${keg}/
+cd ${keg}
+
+for lib in $(ls -1 lib/{*.a,*.1.dylib})
+do
+   lipo -create -output $lib ${root_x64}/$lib ${root_arm64}/$lib
+done
+
+
