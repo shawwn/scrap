@@ -1,0 +1,17 @@
+#!/bin/bash
+
+# semicolon delimited file which makes import to spreadsheet easier
+# printf is access date, access time, modify date, modify time,
+# create date, create time, permissions, user id, user name,
+# group id, group name, file size, filename and then line feed
+# if you want nice column labels in your spreadsheet, paste the following
+# line (minus #) at start of your CSV file
+#Access Date;Access Time;Modify Date;Modify Time;Create Date;Create Time;Permissions;UID;Username;GID;Groupname;Size;File
+
+if [[ "$OSTYPE" == "darwin"* ]]; then
+  # brew install findutils
+  exec gfind "${1:-.}" -printf "%Ax;%AT;%Tx;%TT;%Cx;%CT;%m;%U;%u;%G;%g;%s;%p\n"
+else
+  exec find "${1:-.}" -printf "%Ax;%AT;%Tx;%TT;%Cx;%CT;%m;%U;%u;%G;%g;%s;%p\n"
+fi
+
