@@ -1,0 +1,15 @@
+#!/bin/bash
+
+user="${1}"
+shift 1
+
+if [ -z "${user}" ]
+then
+    1>&2 echo "usage:"
+    1>&2 echo "  ${0} <user> [<option>]"
+    exit 1
+fi
+
+set -x
+exec gpg --output - --armor --export "$user" "$@"
+
