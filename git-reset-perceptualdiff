@@ -1,0 +1,22 @@
+#!/bin/bash
+
+LOCAL="${1}"
+shift
+REMOTE="${1}"
+shift
+
+if [ -z "${REMOTE}" ]
+then
+    1>&2 echo "usage:"
+    1>&2 echo "  ${0} <LOCAL> <REMOTE>"
+    1>&2 echo ""
+    1>&2 echo "try:"
+    1>&2 echo "  git difftool -yx git-reset-perceptualdiff"
+    exit 1
+fi
+
+set -e
+
+perceptualdiff "$LOCAL" "$REMOTE" "$@"
+git restore "$REMOTE"
+
