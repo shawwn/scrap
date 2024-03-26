@@ -1,27 +1,16 @@
 #!/bin/bash
 set -e
 
-sep="\n"
-
-if [ "$1" = "-n" ]
-then
-  sep=" "
-  shift
-fi
-
-function quote () {
-  printf "'"
-  replace "'" "\"'\""
-  printf "'${sep}"
-}
+# https://unix.stackexchange.com/questions/445469/shell-quote-string-with-single-quotes-rather-than-backslashes
+quote () { printf %s\\n "$1" | sed "s/'/'\\\\''/g;1s/^/'/;\$s/\$/'/" ; }
 
 if [ $# = 0 ]
 then
-  quote
+  quote "$(cat)"
 else
   while [ ! -z "$*" ]
   do
-    printf "%s" "${1}" | quote
+    quote "${1}"
     shift
   done
 fi
