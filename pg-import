@@ -1,0 +1,16 @@
+#!/bin/bash
+
+url="${1}"
+shift 1
+
+if [ -z "${url}" ]
+then
+    1>&2 echo "usage:"
+    1>&2 echo "  ${0} <url>"
+    exit 1
+fi
+
+curl -fsSL "${url}" \
+  | replace '<br /><br />' '\n\n' \
+  | resub -m '.*?^[<]font[ ]size="2"[ ]face="verdana"[>]' '' \
+  | resub -m '[<]/font[>][<]/td[>][<]/tr[>][<]/table[>].*?\Z' ''
