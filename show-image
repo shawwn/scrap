@@ -1,0 +1,22 @@
+#!/bin/bash
+
+if [ -z "${1}" ]
+then
+    1>&2 echo "usage:"
+    1>&2 echo "  ${0} <img> [<img>...]"
+    exit 1
+fi
+
+export PATH="${PATH}:${HOME}/.iterm2"
+
+set -e
+
+while [ ! -z "$*" ]
+do
+  [ -f "${1}" ] && imgcat ${args} "${1}"
+  [ -f "${1}" ] || imgcat -u -p ${args} "${1}"
+  [ -f "${1}" ] && file "${1}"
+  shift 1
+done
+  
+
