@@ -1,0 +1,7 @@
+#!/bin/bash
+
+# html-beautify | grep '                        <td>' | splitby '<br>' | splitby '<td>' | splitby '</td>' | trim | rmblanks | replace '$' '<br>'
+data="$(cat)"
+printf "%s" "$data" | resub -f '<a[ ]href=["][^"]+["]>.*?</a>' | grep -v '<img src' # | grep -v 'href="ind[_.]'
+
+
