@@ -1,0 +1,66 @@
+#!/usr/bin/env python3
+# taken from http://www.piware.de/2011/01/creating-an-https-server-in-python/
+# generate server.xml with the following command:
+#    openssl req -new -x509 -keyout server.pem -out server.pem -days 365 -nodes
+# run as follows:
+#    python3-http-server-https
+# then in your browser, visit:
+#    https://localhost:4443
+
+from http.server import HTTPServer, BaseHTTPRequestHandler, ThreadingHTTPServer, SimpleHTTPRequestHandler
+import ssl, socket
+
+class CORSRequestHandler (SimpleHTTPRequestHandler):
+    def end_headers (self):
+        self.send_header('Access-Control-Allow-Origin', '*')
+        # also disable caching.
+        self.send_header('Cache-Control', 'no-store, must-revalidate')
+        self.send_header('Expires', '0')
+        SimpleHTTPRequestHandler.end_headers(self)
+
+def _get_best_family(*address):
+    infos = socket.getaddrinfo(
+        *address,
+        type=socket.SOCK_STREAM,
+        flags=socket.AI_PASSIVE,
+    )
+    family, type, proto, canonname, sockaddr = next(iter(infos))
+    return family, sockaddr
+
+
+def test(HandlerClass=BaseHTTPRequestHandler,
+         ServerClass=ThreadingHTTPServer,
+         protocol="HTTP/1.0", port=8000, bind=None, certfile=None):
+    """Test the HTTP request handler class.
+
+    This runs an HTTP server on port 8000 (or the port argument).
+
+    """
+    ServerClass.address_family, addr = _get_best_family(bind, port)
+    HandlerClass.protocol_version = protocol
+    with ServerClass(addr, HandlerClass) as httpd:
+        if certfile is not None:
+            httpd.socket = ssl.wrap_socket(httpd.socket, certfile=certfile, server_side=True)
+            
+        host, port = httpd.socket.getsockname()[:2]
+        url_host = f'[{host}]' if ':' in host else host
+        print(
+            f"Serving HTTP on {host} port {port} "
+            f"(http://{url_host}:{port}/) ..."
+        )
+        try:
+            httpd.serve_forever()
+        except KeyboardInterrupt:
+            print("\nKeyboard interrupt received, exiting.")
+            sys.exit(0)
+
+
+# httpd = HTTPServer(('localhost', 4443), CORSRequestHandler)
+# httpd.socket = ssl.wrap_socket (httpd.socket, certfile='./server.pem', server_side=True)
+# httpd.serve_forever()
+
+if __name__ == '__main__':
+    import sys
+    port = int(sys.argv[1]) if len(sys.argv) > 1 else 4443
+    certfile = int(sys.argv[2]) if len(sys.argv) > 2 else './server.pem'
+    test(CORSRequestHandler, HTTPServer, port=port, certfile=certfile)
