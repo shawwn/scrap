@@ -1,0 +1,34 @@
+#!/bin/bash
+set -e
+
+out="${1}"
+shift 1
+
+if [ -z "${out}" ]
+then
+    1>&2 echo "usage:"
+    1>&2 echo "  ${0} <output_filename.wav> [wav1.wav wav2.wav...] [ffmpeg-options]"
+    exit 1
+fi
+
+set -x
+
+# Get the list of files as arguments
+files=("$@")
+n=${#files[@]}
+
+# Generate the args
+args=()
+for file in "${files[@]}"; do
+  args+=('-i')
+  args+=("$file")
+done
+
+# Generate the format string
+fmt=""
+for ((i = 0; i < n; i++)); do
+    fmt+="[${i}:0]"
+done
+fmt+="concat=n=${n}:v=0:a=1[out]"
+
+exec ffmpeg "${args[@]}" -filter_complex "$fmt" -map '[out]' "$out"
