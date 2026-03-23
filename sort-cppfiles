@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 #==============================================================================
 # Functionality
@@ -59,7 +59,7 @@ def rearrange(lst, src, dst):
 
 
 def sort_module(fnames, idx):
-    for i in xrange(idx + 1, len(fnames)):
+    for i in range(idx + 1, len(fnames)):
         offset = same_module(fnames[idx], fnames[i])
         if offset is not None:
             rearrange(fnames, i, idx + offset)
@@ -67,7 +67,7 @@ def sort_module(fnames, idx):
     
 
 def sort_by_cpp_module(fnames):
-    for i in xrange(len(fnames)):
+    for i in range(len(fnames)):
         sort_module(fnames, i)
 
 
@@ -93,10 +93,10 @@ args = None
 
 def run():
     if args.verbose:
-        print args
+        print(args)
     if not has_stdin():
         # if there were no args and there was no input, prompt user.
-        print 'Enter input (press Ctrl-D when done):'
+        print('Enter input (press Ctrl-D when done):')
     filepaths = [line.strip() for line in sys.stdin]
 
     # DISABLED -- SLOW!
@@ -104,7 +104,7 @@ def run():
     sort_by_cpp_module(filepaths)
 
     for path in filepaths:
-        print path
+        print(path)
 
 def main():
     global args
