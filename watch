@@ -4,10 +4,13 @@ then
   exec /usr/bin/watch "$@"
 fi
 
+cmd=$(printf '%q ' "$@")
+
 while true
 do
   output=$("$@" 2>&1)
   clear
+  printf 'Every 1.0s: %s\n\n' "$cmd"
   printf '%s\n' "$output"
   sleep 1
 done
