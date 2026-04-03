@@ -6,7 +6,8 @@ fi
 
 while true
 do
-	clear
-	$*
-	sleep 1
+  output=$("$@" 2>&1)
+  clear
+  printf '%s\n' "$output"
+  sleep 1
 done
