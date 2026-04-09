@@ -10,7 +10,7 @@ then
     exit 1
 fi
 
-curl -fsSL "${url}" \
+curl -fsSL "${url}" | iconv -f ISO-8859-1 -t UTF-8 \
   | replace '<br /><br />' '\n\n' \
   | resub -m '.*?^[<]font[ ]size="2"[ ]face="verdana"[>]' '' \
   | resub -m '[<]/font[>][<]/td[>][<]/tr[>][<]/table[>].*?\Z' ''
