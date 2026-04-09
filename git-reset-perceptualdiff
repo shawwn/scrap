@@ -1,22 +1,25 @@
 #!/bin/bash
-
-LOCAL="${1}"
-shift
-REMOTE="${1}"
-shift
-
-if [ -z "${REMOTE}" ]
-then
-    1>&2 echo "usage:"
-    1>&2 echo "  ${0} <LOCAL> <REMOTE>"
-    1>&2 echo ""
-    1>&2 echo "try:"
-    1>&2 echo "  git difftool -yx git-reset-perceptualdiff"
-    exit 1
-fi
+# Revert modified files that are perceptually identical to HEAD.
+# Usage: git-reset-perceptualdiff [<pathspec>...]
+#   e.g. git-reset-perceptualdiff '*.png'
 
 set -e
 
-perceptualdiff "$LOCAL" "$REMOTE" "$@"
-git restore "$REMOTE"
+files=$(git diff --name-only -- "$@")
 
+if [ -z "$files" ]; then
+    echo "No modified files."
+    exit 0
+fi
+
+while IFS= read -r file; do
+    tmp=$(mktemp)
+    git show "HEAD:$file" > "$tmp"
+    if perceptualdiff "$tmp" "$file" 2>/dev/null; then
+        git restore "$file"
+        echo "reverted: $file"
+    else
+        echo "kept:     $file"
+    fi
+    rm -f "$tmp"
+done <<< "$files"
