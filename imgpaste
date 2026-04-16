@@ -1,8 +1,39 @@
 #!/usr/bin/env python3
-"""imgpaste - save clipboard image to a PNG file."""
+"""imgpaste - save clipboard image to a PNG file.
+
+Filename patterns (% expansions):
+  %   full timestamp  2026-04-16-03-12-27
+  %d  date only       2026-04-16
+  %t  time only       03-12-27
+  %%  literal %
+
+Extension defaults to .png if omitted.
+
+Examples:
+  imgpaste                   -> image-2026-04-16-03-12-27.png
+  imgpaste rtml-%            -> rtml-2026-04-16-03-12-27.png
+  imgpaste shot-%d           -> shot-2026-04-16.png
+  imgpaste clip-%t.jpg       -> clip-03-12-27.jpg
+"""
 import sys
 import os
 from datetime import datetime
+
+def expand_filename(template, now):
+    date = now.strftime("%Y-%m-%d")
+    time = now.strftime("%H-%M-%S")
+    stamp = f"{date}-{time}"
+    # Replace longest matches first to avoid %d being caught by bare %
+    result = (template
+              .replace("%%", "\x00")   # protect literal %%
+              .replace("%d", date)
+              .replace("%t", time)
+              .replace("%",  stamp)
+              .replace("\x00", "%"))
+    # Default extension to .png
+    if not os.path.splitext(result)[1]:
+        result += ".png"
+    return result
 
 def main():
     try:
@@ -31,11 +62,11 @@ def main():
         print("error: no image in clipboard", file=sys.stderr)
         sys.exit(1)
 
+    now = datetime.now()
     if len(sys.argv) > 1:
-        filename = sys.argv[1]
+        filename = expand_filename(sys.argv[1], now)
     else:
-        timestamp = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
-        filename = f"image-{timestamp}.png"
+        filename = expand_filename("image-%", now)
 
     with open(filename, "wb") as f:
         f.write(bytes(data))
