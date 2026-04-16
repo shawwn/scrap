@@ -8,12 +8,19 @@ Filename patterns (% expansions):
   %%  literal %
 
 Extension defaults to .png if omitted.
+If the target file exists, _2 / _3 / ... is appended before the extension.
+
+Usage:
+  imgpaste [-f] [FILENAME]
+
+  -f   overwrite existing file instead of auto-incrementing
 
 Examples:
   imgpaste                   -> image-2026-04-16-03-12-27.png
-  imgpaste rtml-%            -> rtml-2026-04-16-03-12-27.png
+  imgpaste rtml-%            -> rtml-2026-04-16-03-12-27.png  (or _2, _3 ...)
   imgpaste shot-%d           -> shot-2026-04-16.png
   imgpaste clip-%t.jpg       -> clip-03-12-27.jpg
+  imgpaste -f rtml-%         -> rtml-2026-04-16-03-12-27.png  (overwrite)
 """
 import sys
 import os
@@ -35,6 +42,17 @@ def expand_filename(template, now):
         result += ".png"
     return result
 
+def unique_filename(path):
+    if not os.path.exists(path):
+        return path
+    stem, ext = os.path.splitext(path)
+    n = 2
+    while True:
+        candidate = f"{stem}_{n}{ext}"
+        if not os.path.exists(candidate):
+            return candidate
+        n += 1
+
 def main():
     try:
         from AppKit import NSPasteboard, NSPasteboardTypePNG, NSBitmapImageRep, NSImage
@@ -42,6 +60,12 @@ def main():
     except ImportError:
         print("error: PyObjC AppKit not available", file=sys.stderr)
         sys.exit(1)
+
+    args = sys.argv[1:]
+    overwrite = False
+    if args and args[0] == "-f":
+        overwrite = True
+        args = args[1:]
 
     pb = NSPasteboard.generalPasteboard()
 
@@ -63,10 +87,9 @@ def main():
         sys.exit(1)
 
     now = datetime.now()
-    if len(sys.argv) > 1:
-        filename = expand_filename(sys.argv[1], now)
-    else:
-        filename = expand_filename("image-%", now)
+    filename = expand_filename(args[0] if args else "image-%", now)
+    if not overwrite:
+        filename = unique_filename(filename)
 
     with open(filename, "wb") as f:
         f.write(bytes(data))
