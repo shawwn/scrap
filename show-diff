@@ -1,0 +1,9 @@
+#!/bin/bash
+
+# For showing colorized diffs to people. Usage:
+#
+# git diff --cached | show-diff
+#
+set -x
+
+exec curl -s -F "content=<-" -F "syntax=diff" https://dpaste.com/api/v2/
