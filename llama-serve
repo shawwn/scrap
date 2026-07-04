@@ -19,13 +19,15 @@
 
 model="${1:-Qwen3.5-35B-A3B-Uncensored-HauhauCS-Aggressive-Q4_K_M.gguf}"
 port="${2:-8000}"
-shift 2
+ctx="${3:-8192}"
+ngl="${4:-99}"
+shift 4
 
 exec llama-server \
   -m "$model" \
   --jinja \
-  -c 8192 \
-  -ngl 99 \
+  -c "${ctx}" \
+  -ngl "${ngl}" \
   -fa on \
   --host 127.0.0.1 \
   --port $port
