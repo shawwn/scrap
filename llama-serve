@@ -1,0 +1,32 @@
+#!/bin/sh
+#
+# Notes on the flags:
+
+# --jinja uses the chat template baked into the GGUF, so it enters
+# chat mode automatically instead of raw text completion.
+#
+# -c 8192 sets context length. Raise it if you need more, but it eats
+# more RAM/VRAM.
+#
+# -ngl 99 offloads as many layers as possible to GPU. If you're on CPU
+# only, drop this.
+#
+# -fa enables flash attention, which usually speeds things up if your
+# build supports it.
+
+# If you're on Apple Silicon with Metal, -ngl 99 still works since
+# llama.cpp auto-detects Metal in the default build.
+
+model="${1:-Qwen3.5-35B-A3B-Uncensored-HauhauCS-Aggressive-Q4_K_M.gguf}"
+port="${2:-8000}"
+shift 2
+
+exec llama-server \
+  -m "$model" \
+  --jinja \
+  -c 8192 \
+  -ngl 99 \
+  -fa on \
+  --host 127.0.0.1 \
+  --port $port
+
