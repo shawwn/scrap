@@ -1,0 +1,4 @@
+#!/bin/bash
+# prints every item that's gitignored under the current/specified dir.
+
+find "${1:-.}" -type f -print0 | exec xargs -0 git check-ignore -v
