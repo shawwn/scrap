@@ -1,0 +1,27 @@
+#!/bin/bash
+
+clonesync() {                       # clonesync SRC DST
+  local src=${1%/} dst=${2%/}
+  [ -d "$src" ] || { echo "clonesync: no such dir: $src" >&2; return 1; }
+  mkdir -p "$dst" || return 1
+  gcp -a --reflink=always --remove-destination -u "$src/." "$dst/" || return 1
+  ( cd "$dst" && find . -mindepth 1 -depth ) | while IFS= read -r p; do
+      p=${p#./}
+      [ -e "$src/$p" ] || [ -L "$src/$p" ] || rm -rf "$dst/$p"
+  done
+}
+
+src="${1}"
+dst="${2}"
+shift 2
+
+if [ -z "${src}" ]
+then
+    1>&2 echo "usage:"
+    1>&2 echo "  ${0} <src> <dst>"
+    exit 1
+fi
+
+set -x
+clonesync "${src}" "${dst}"
+
