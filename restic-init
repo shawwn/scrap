@@ -1,0 +1,15 @@
+#!/bin/bash
+
+repo=${1:-~/restic}
+shift 1
+
+if [ -z "${repo}" ]
+then
+    1>&2 echo "usage:"
+    1>&2 echo "  ${0} <directory>"
+    exit 1
+fi
+
+set -x
+exec restic init -r ${repo} --insecure-no-password
+
