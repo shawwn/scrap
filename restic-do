@@ -1,0 +1,5 @@
+#!/bin/bash
+
+set -x
+
+exec restic -r ~/restic --insecure-no-password "$@"
