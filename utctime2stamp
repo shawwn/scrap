@@ -1,5 +1,4 @@
 #!/bin/sh
-cat <<EOF
-date --utc --date "1970-01-01 $1 sec" "+%Y-%m-%d %T"
-EOF
-date --utc --date "1970-01-01 $1 sec" "+%Y-%m-%d %T"
+secs="${1:-`utcnow`}"
+set -x
+exec gdate --utc --date "1970-01-01 ${secs} sec" "+%Y-%m-%dT%H:%M:%S"
