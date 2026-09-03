@@ -1,0 +1,13 @@
+#!/bin/bash
+
+img="${1}"
+shift 1
+
+if [ -z "${img}" ]
+then
+    xclip -selection clipboard -t image/png -o > /tmp/clip.png && exec eog /tmp/clip.png
+fi
+
+set -x
+exec eog "${img}"
+
