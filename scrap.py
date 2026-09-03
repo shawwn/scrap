@@ -199,7 +199,8 @@ def tee(logfile_name):
 #===============================================================================
 # other shell utils.
 #===============================================================================
-from distutils.spawn import find_executable
+# distutils was removed in Python 3.12; shutil.which is the stdlib replacement
+from shutil import which as find_executable
 
 # see http://stackoverflow.com/questions/6856119/can-i-use-an-alias-to-execute-a-program-from-a-python-script
 # import subprocess
@@ -237,7 +238,8 @@ def bash(cmdline, interactive=False, login=False):
 # load a binary python script file from ~/bin as a module, such as ~/bin/hex2ip
 #===============================================================================
 
-import imp
+import importlib.machinery
+import importlib.util
 import sys
 
 def load(name):
@@ -245,7 +247,15 @@ def load(name):
     modname = os.path.basename(name)
     pathname = os.path.normpath(os.path.join(scriptpath, modname))
     #modname, ext = os.path.splitext(basename)
-    return imp.load_source(modname, pathname)
+    # imp.load_source() until Python 3.12 removed the imp module. SourceFileLoader
+    # is the documented replacement and, unlike a plain spec_from_file_location,
+    # it still loads files with no .py extension (~/bin/hex2ip and friends).
+    loader = importlib.machinery.SourceFileLoader(modname, pathname)
+    spec = importlib.util.spec_from_file_location(modname, pathname, loader=loader)
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[modname] = module   # load_source registered it; keep that
+    loader.exec_module(module)
+    return module
 
 #===============================================================================
 # utilities.
