@@ -1,5 +1,5 @@
-#!/bin/sh
+#!/bin/bash
 when="${1:-10 years ago}"
-shift
+shift 1
 
 exec git shortlog -sne --since "${when}" "$@"
