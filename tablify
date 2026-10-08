@@ -32,29 +32,13 @@ def clip_env():
 
 
 def split_row(line):
-    """Split a `| a | b |` row on pipes that aren't escaped or inside backticks."""
+    """Split a `| a | b |` row on unescaped pipes, as GFM does (even inside backticks); `\\|` stays as-is."""
     s = line.strip()
     if s.startswith("|"):
         s = s[1:]
     if s.endswith("|") and not s.endswith("\\|"):
         s = s[:-1]
-    cells, cur, in_code, i = [], [], False, 0
-    while i < len(s):
-        c = s[i]
-        if c == "\\" and i + 1 < len(s) and s[i + 1] == "|":
-            cur.append("|")
-            i += 2
-            continue
-        if c == "`":
-            in_code = not in_code
-        if c == "|" and not in_code:
-            cells.append("".join(cur).strip())
-            cur = []
-        else:
-            cur.append(c)
-        i += 1
-    cells.append("".join(cur).strip())
-    return cells
+    return [c.strip() for c in re.split(r"(?<!\\)\|", s)]
 
 
 SEP_CELL = re.compile(r"^:?-+:?$")
@@ -123,22 +107,19 @@ def render(rows, header_sep, args):
     minimum = [min(natural[i], max(args.min_col, min(longest_word[i], args.max_word))) for i in range(ncols)]
     avail = args.width - (3 * ncols + 1)
     widths = natural if args.width <= 0 or sum(natural) <= avail else fit_widths(rows, natural, minimum, avail)
-    wrapped = any(widths[i] < natural[i] for i in range(ncols))
 
+    wrapped = [[wrap(c, widths[i]) for i, c in enumerate(row)] for row in rows]
+    # Trim each column to its widest line so a second pass finds nothing to change.
+    widths = [max(len(l) for r in wrapped for l in r[i]) or 1 for i in range(ncols)]
     rule = "|" + "|".join("-" * (w + 2) for w in widths) + "|"
-    blank = "|" + "|".join(" " * (w + 2) for w in widths) + "|"
     out = []
-    for n, row in enumerate(rows):
-        cells = [wrap(c, widths[i]) for i, c in enumerate(row)]
+    for n, cells in enumerate(wrapped):
         height = max(len(c) for c in cells)
         for k in range(height):
             parts = [(c[k] if k < len(c) else "").ljust(widths[i]) for i, c in enumerate(cells)]
             out.append("| " + " | ".join(parts) + " |")
-        is_last = n == len(rows) - 1
         if n == 0 and header_sep:
             out.append(rule)
-        elif wrapped and args.gap and not is_last:
-            out.append(blank)
     return out
 
 
@@ -150,23 +131,9 @@ def is_row(line):
 
 
 def merge(lines):
-    """Join the wrapped lines of one entry back into a single row."""
+    """Join a header that we wrapped onto several lines back into a single row."""
     ncols = max(len(r) for r in lines)
     return [" ".join(r[c] for r in lines if c < len(r) and r[c]) for c in range(ncols)]
-
-
-def unwrap(rows):
-    """Undo our own reflow: a table with all-empty rows has entries separated by them."""
-    if not any(not any(r) for r in rows):
-        return rows
-    entries, cur = [], []
-    for r in rows + [[""]]:
-        if any(r):
-            cur.append(r)
-        elif cur:
-            entries.append(merge(cur))
-            cur = []
-    return entries
 
 
 def tablify(text, args):
@@ -195,7 +162,7 @@ def tablify(text, args):
         if not k:
             out.extend(lines[i:j])  # pipes, but not a table
         else:
-            rows = [merge(block[:k])] + unwrap(block[k + 1:])
+            rows = [merge(block[:k])] + block[k + 1:]
             out.extend(indent + r for r in render(rows, True, args))
         i = j
     return nl.join(out) + (nl if text.endswith(("\n", "\r")) else "")
@@ -210,8 +177,6 @@ def main():
     p.add_argument("--min-col", type=int, default=8, help="narrowest a column may shrink to (default 8)")
     p.add_argument("--max-word", type=int, default=40,
                    help="words longer than this may be broken mid-word when wrapping (default 40)")
-    p.add_argument("--gap", action=argparse.BooleanOptionalAction, default=True,
-                   help="if any cell wrapped, put an empty row between rows (default on; --no-gap to pack them)")
     p.add_argument("-f", "--fence", action="store_true", help="wrap the output in a ``` code block")
     p.add_argument("-p", "--print-only", action="store_true", help="clipboard mode: print, leave the clipboard alone")
     p.add_argument("-i", "--in-place", action="store_true", help="rewrite the given files instead of printing")
