@@ -19,14 +19,15 @@ Input:
 `tablify -w 70`:
 
 ```
-| What         | Value                         | Code                |
-|--------------|-------------------------------|---------------------|
-| Guncam focal | 36445 px/rad (636.1 px/deg)   | apriltags.GUNCAM_FX |
-| length       |                               |                     |
-|              |                               |                     |
-| LRF parallax | 73mm right of the guncam: the | server.py           |
-|              | beam center is fx * 0.073 / R |                     |
-|              | px right of the boresight     |                     |
+| What           | Value                     | Code                  |
+|----------------|---------------------------|-----------------------|
+| Guncam focal   | **36445 px/rad** (636.1   | `apriltags.GUNCAM_FX` |
+| length         | px/deg)                   |                       |
+|                |                           |                       |
+| LRF parallax   | **73mm right** of the     | `server.py`           |
+|                | guncam: the beam center   |                       |
+|                | is `fx * 0.073 / R` px    |                       |
+|                | right of the boresight    |                       |
 ```
 
 If any cell wraps, an empty row separates the entries. Column widths are picked to keep
@@ -45,16 +46,16 @@ The clipboard is only read or written when there are no files and nothing is pip
 
 ## Options
 
-| Option                | Effect                                                           |
-|-----------------------|------------------------------------------------------------------|
-| `-w N`, `--width N`   | max table width, default 120; `-w 0` aligns without wrapping     |
-| `-k`, `--keep-markup` | keep `**` and backticks; by default they are stripped from cells |
-| `--no-gap`            | don't put empty rows between wrapped entries                     |
-| `-f`, `--fence`       | wrap the output in a ``` block, e.g. for Slack                   |
-| `-p`, `--print-only`  | clipboard mode: print the result but leave the clipboard alone   |
-| `-i`, `--in-place`    | rewrite the given files                                          |
-| `--min-col N`         | narrowest a column may shrink to, default 8                      |
-| `--max-word N`        | words longer than this may be broken mid-word, default 40        |
+| Option                 | Effect                                                         |
+|------------------------|----------------------------------------------------------------|
+| `-w N`, `--width N`    | max table width, default 120; `-w 0` aligns without wrapping   |
+| `-k`, `--strip-markup` | strip `**` and backticks from cells; by default they are kept  |
+| `--no-gap`             | don't put empty rows between wrapped entries                   |
+| `-f`, `--fence`        | wrap the output in a ``` block, e.g. for Slack                 |
+| `-p`, `--print-only`   | clipboard mode: print the result but leave the clipboard alone |
+| `-i`, `--in-place`     | rewrite the given files                                        |
+| `--min-col N`          | narrowest a column may shrink to, default 8                    |
+| `--max-word N`         | words longer than this may be broken mid-word, default 40      |
 
 ## Safe on whole files
 
@@ -73,7 +74,6 @@ into one row per entry (using the empty rows) and then wrapped again, so `-i` is
 
 - Wrapped tables aren't valid markdown and won't render as tables. Use `-w 0` for files you
   want to keep rendering.
-- Markup is stripped by default, so use `-k` when formatting markdown you plan to keep.
 - A table wrapped with `--no-gap` can't be joined back later, because nothing marks where one
   entry ends and the next begins.
 - A word longer than `--max-word` is broken mid-word, and joining the table back puts a space

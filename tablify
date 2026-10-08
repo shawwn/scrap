@@ -115,7 +115,7 @@ def wrap(cell, width):
 def render(rows, header_sep, args):
     ncols = max(len(r) for r in rows)
     rows = [r + [""] * (ncols - len(r)) for r in rows]
-    if not args.keep_markup:
+    if args.strip_markup:
         rows = [[strip_markup(c) for c in r] for r in rows]
 
     natural = [max(len(r[i]) for r in rows) or 1 for i in range(ncols)]
@@ -205,8 +205,8 @@ def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("-w", "--width", type=int, default=120,
                    help="max table width; long cells wrap to fit (0 = never wrap, default 120)")
-    p.add_argument("-k", "--keep-markup", action="store_true",
-                   help="keep ** and ` markup instead of stripping it")
+    p.add_argument("-k", "--strip-markup", action="store_true",
+                   help="strip ** and ` markup from cells (kept by default)")
     p.add_argument("--min-col", type=int, default=8, help="narrowest a column may shrink to (default 8)")
     p.add_argument("--max-word", type=int, default=40,
                    help="words longer than this may be broken mid-word when wrapping (default 40)")
