@@ -1,7 +1,7 @@
 # `tablify`
 
-Lines up markdown tables in monospace columns. Cells that make a table too wide are wrapped
-to fit.
+Lines up markdown tables in monospace columns. On the clipboard, cells that make a table too
+wide are wrapped to fit.
 
 Copy a table from your editor, run `tablify`, and paste the aligned version.
 
@@ -43,17 +43,21 @@ cat file.md | tablify    # format stdin to stdout
 
 The clipboard is only read or written when there are no files and nothing is piped in.
 
+Files and stdin are aligned but never wrapped unless you pass `-w N`. Markdown has no
+multi-line cells, so a markdown viewer would show each wrapped line as an extra row. The
+clipboard wraps at 120 by default, for pasting as plain monospace text.
+
 ## Options
 
-| Option                 | Effect                                                         |
-|------------------------|----------------------------------------------------------------|
-| `-w N`, `--width N`    | max table width, default 120; `-w 0` aligns without wrapping   |
-| `-k`, `--strip-markup` | strip `**` and backticks from cells; by default they are kept  |
-| `-f`, `--fence`        | wrap the output in a ``` block, e.g. for Slack                 |
-| `-p`, `--print-only`   | clipboard mode: print the result but leave the clipboard alone |
-| `-i`, `--in-place`     | rewrite the given files                                        |
-| `--min-col N`          | narrowest a column may shrink to, default 8                    |
-| `--max-word N`         | words longer than this may be broken mid-word, default 40      |
+| Option                 | Effect                                                            |
+|------------------------|-------------------------------------------------------------------|
+| `-w N`, `--width N`    | max table width; 0 = never wrap (default: 120 clipboard, 0 files) |
+| `-k`, `--strip-markup` | strip `**` and backticks from cells; by default they are kept     |
+| `-f`, `--fence`        | wrap the output in a ``` block, e.g. for Slack                    |
+| `-p`, `--print-only`   | clipboard mode: print the result but leave the clipboard alone    |
+| `-i`, `--in-place`     | rewrite the given files                                           |
+| `--min-col N`          | narrowest a column may shrink to, default 8                       |
+| `--max-word N`         | words longer than this may be broken mid-word, default 40         |
 
 ## Safe on whole files
 
@@ -70,7 +74,7 @@ Running it again gives the same output, so `-i` is safe to repeat. Cells split o
 
 ## Caveats
 
-- Each wrapped line is a row of its own, so a markdown viewer shows a long cell as several
-  rows. Use `-w 0` for files you want to render with one row per entry.
+- Don't wrap tables in files that get rendered: `-w N` on a file trades correct rendering
+  for narrow lines.
 - Once wrapped, the lines are just rows: running again with a different `-w` aligns them but
   can't rejoin and rewrap them.

@@ -170,8 +170,9 @@ def tablify(text, args):
 
 def main():
     p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument("-w", "--width", type=int, default=120,
-                   help="max table width; long cells wrap to fit (0 = never wrap, default 120)")
+    p.add_argument("-w", "--width", type=int,
+                   help="max table width; long cells wrap to fit, 0 = never wrap "
+                        "(default 120 for the clipboard, 0 for files and stdin)")
     p.add_argument("-k", "--strip-markup", action="store_true",
                    help="strip ** and ` markup from cells (kept by default)")
     p.add_argument("--min-col", type=int, default=8, help="narrowest a column may shrink to (default 8)")
@@ -189,7 +190,9 @@ def main():
         result = tablify(text, args)
         return "```\n" + result.rstrip("\n") + "\n```\n" if args.fence else result
 
+    # Markdown has no multi-line cells, so wrapping a file's table would add bogus rows.
     if args.files:
+        args.width = 0 if args.width is None else args.width
         for path in args.files:
             with open(path, newline="") as f:
                 text = f.read()
@@ -203,8 +206,10 @@ def main():
 
     mode = os.fstat(sys.stdin.fileno()).st_mode
     if stat.S_ISFIFO(mode) or stat.S_ISREG(mode):
+        args.width = 0 if args.width is None else args.width
         sys.stdout.write(run(sys.stdin.read()))
         return
+    args.width = 120 if args.width is None else args.width
     result = run(clip_read())
     sys.stdout.write(result)
     if not args.print_only:
