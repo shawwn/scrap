@@ -136,6 +136,38 @@ def merge(lines):
     return [" ".join(r[c] for r in lines if c < len(r) and r[c]) for c in range(ncols)]
 
 
+def ends_with_pipe(line):
+    s = line.rstrip()
+    return s.endswith("|") and not s.endswith("\\|")
+
+
+def unwrap_rows(lines, j, ncols, trailing):
+    """Collect body rows from lines[j:], rejoining rows that were hard-wrapped onto several lines.
+
+    A join is kept only when the header uses trailing pipes, the row lacks one, and joining the
+    following lines yields exactly ncols cells ending in a pipe; anything else stays as written.
+    """
+    rows = []
+    while j < len(lines) and is_row(lines[j]) and not FENCE.match(lines[j]):
+        joined, e = lines[j], j + 1
+        if trailing:
+            while not (ends_with_pipe(joined) and len(split_row(joined)) >= ncols):
+                nxt = lines[e] if e < len(lines) else ""
+                if not nxt.strip() or FENCE.match(nxt) or (ends_with_pipe(joined) and is_row(nxt)):
+                    break
+                cand = joined.rstrip() + " " + nxt.strip()
+                if len(split_row(cand)) > ncols:
+                    break
+                joined, e = cand, e + 1
+        if e > j + 1 and ends_with_pipe(joined) and len(split_row(joined)) == ncols:
+            rows.append(split_row(joined))
+            j = e
+        else:
+            rows.append(split_row(lines[j]))
+            j += 1
+    return rows, j
+
+
 def tablify(text, args):
     """Reformat GFM tables (header row, then a |---| row); every other line passes through untouched."""
     nl = "\r\n" if "\r\n" in text else "\n"
@@ -161,9 +193,11 @@ def tablify(text, args):
         k = next((n for n, r in enumerate(block) if is_sep(r)), None)
         if not k:
             out.extend(lines[i:j])  # pipes, but not a table
-        else:
-            rows = [merge(block[:k])] + block[k + 1:]
-            out.extend(indent + r for r in render(rows, True, args))
+            i = j
+            continue
+        header = merge(block[:k])
+        body, j = unwrap_rows(lines, i + k + 1, len(header), lines[i].rstrip().endswith("|"))
+        out.extend(indent + r for r in render([header] + body, True, args))
         i = j
     return nl.join(out) + (nl if text.endswith(("\n", "\r")) else "")
 
